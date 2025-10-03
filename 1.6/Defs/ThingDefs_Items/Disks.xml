@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+    <ThingDef Name="DiskBase" Abstract="True">
+        <thingClass>ThingWithComps</thingClass>
+        <category>Item</category>
+        <drawerType>MapMeshOnly</drawerType>
+        <useHitPoints>true</useHitPoints>
+        <selectable>true</selectable>
+        <altitudeLayer>Item</altitudeLayer>
+        <comps>
+            <li Class="CompProperties_Forbiddable"/>
+        </comps>
+        <alwaysHaulable>true</alwaysHaulable>
+        <drawGUIOverlay>true</drawGUIOverlay>
+        <rotatable>false</rotatable>
+        <pathCost>14</pathCost>
+        <allowedArchonexusCount>-1</allowedArchonexusCount>
+        <soundInteract>Metal_Drop</soundInteract>
+        <soundDrop>Standard_Drop</soundDrop>
+        <stackLimit>1</stackLimit>
+        <healthAffectsPrice>false</healthAffectsPrice>
+        <statBases>
+            <MaxHitPoints>70</MaxHitPoints>
+            <Mass>0.6</Mass>
+            <Flammability>0.6</Flammability>
+            <DeteriorationRate>2.0</DeteriorationRate>
+        </statBases>
+        <thingCategories>
+            <li>ItemsMisc</li>
+        </thingCategories>
+        <researchPrerequisites>
+            <li>MN_MatterNetwork</li>
+        </researchPrerequisites>
+        <recipeMaker>
+            <unfinishedThingDef>UnfinishedTechArmor</unfinishedThingDef>
+            <researchPrerequisite>MN_MatterNetwork</researchPrerequisite>
+            <recipeUsers>
+                <li>FabricationBench</li>
+            </recipeUsers>
+        </recipeMaker>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk1k</defName>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/disk_1k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <label>1k disk</label>
+        <description>A data storage disk that can hold up to 1024 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
+                <maxBytes>1024</maxBytes>
+            </li>
+        </comps>
+        <recipeMaker>
+            <skillRequirements>
+                <Crafting>6</Crafting>
+            </skillRequirements>
+        </recipeMaker>
+        <costList>
+            <Steel>50</Steel>
+            <ComponentIndustrial>1</ComponentIndustrial>
+            <Gold>5</Gold>
+        </costList>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk2k</defName>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/disk_2k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <label>2k disk</label>
+        <description>A data storage disk that can hold up to 2048 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
+                <maxBytes>2048</maxBytes>
+            </li>
+        </comps>
+        <recipeMaker>
+            <skillRequirements>
+                <Crafting>8</Crafting>
+            </skillRequirements>
+        </recipeMaker>
+        <costList>
+            <Steel>100</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+            <Gold>10</Gold>
+        </costList>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk4k</defName>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/disk_4k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <label>4k disk</label>
+        <description>A data storage disk that can hold up to 4096 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
+                <maxBytes>4096</maxBytes>
+            </li>
+        </comps>
+        <recipeMaker>
+            <skillRequirements>
+                <Crafting>10</Crafting>
+            </skillRequirements>
+        </recipeMaker>
+        <costList>
+            <Plasteel>50</Plasteel>
+            <ComponentSpacer>1</ComponentSpacer>
+            <Gold>15</Gold>
+        </costList>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk8k</defName>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/disk_8k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <label>8k disk</label>
+        <description>A data storage disk that can hold up to 8192 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
+                <maxBytes>8192</maxBytes>
+            </li>
+        </comps>
+        <recipeMaker>
+            <skillRequirements>
+                <Crafting>12</Crafting>
+            </skillRequirements>
+        </recipeMaker>
+        <costList>
+            <Plasteel>100</Plasteel>
+            <ComponentSpacer>2</ComponentSpacer>
+            <Gold>20</Gold>
+        </costList>
+    </ThingDef>
+</Defs>

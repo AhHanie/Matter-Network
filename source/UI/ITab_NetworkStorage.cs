@@ -1,0 +1,265 @@
+using System.Collections.Generic;
+using System.Linq;
+using RimWorld;
+using UnityEngine;
+using Verse;
+
+namespace SK_Matter_Network
+{
+    public class ITab_NetworkStorage : ITab
+    {
+        private const float WindowWidth = 900f;
+        private const float WindowHeight = 600f;
+        private const float OuterPadding = 10f;
+        private const float InnerSpacing = 8f;
+        private const float SearchHeight = 32f;
+        private const float CardWidth = 92f;
+        private const float CardHeight = 138f;
+        private const float IconSize = 64f;
+        private const float ButtonHeight = 24f;
+        private const float GridSpacing = 10f;
+
+        private static readonly Color RailColor = new Color(0.2f, 0.2f, 0.2f);
+        private static readonly Color CardColor = new Color(0.15f, 0.15f, 0.15f);
+        private static readonly Color CardOutlineColor = new Color(0.32f, 0.32f, 0.32f);
+        private static readonly Color AccentColor = new Color(0.42f, 0.75f, 0.82f);
+
+        private string searchText = string.Empty;
+        private Vector2 scrollPosition = Vector2.zero;
+        private NetworkBuildingNetworkInterface oldSelected;
+        private bool itemsCached;
+        private List<KeyValuePair<ThingDef, int>> cachedItems;
+
+        private NetworkBuildingNetworkInterface SelectedInterface => SelThing as NetworkBuildingNetworkInterface;
+
+        public bool ItemsCached
+        {
+            get => itemsCached;
+            set => itemsCached = value;
+        }
+
+        public ITab_NetworkStorage()
+        {
+            size = new Vector2(WindowWidth, WindowHeight);
+            labelKey = "MN_NetworkStorageTab";
+            oldSelected = null;
+        }
+
+        protected override void FillTab()
+        {
+            if (SelectedInterface == null || SelectedInterface.ParentNetwork == null)
+            {
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(new Rect(0f, 0f, size.x, size.y), "MN_NetworkStorageNoNetwork".Translate());
+                Text.Anchor = TextAnchor.UpperLeft;
+                return;
+            }
+
+            if (!SelectedInterface.ParentNetwork.HasActiveController)
+            {
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(new Rect(0f, 0f, size.x, size.y), "MN_NetworkStorageNoController".Translate());
+                Text.Anchor = TextAnchor.UpperLeft;
+                return;
+            }
+
+            if (oldSelected != SelectedInterface)
+            {
+                itemsCached = false;
+                scrollPosition = Vector2.zero;
+                oldSelected = SelectedInterface;
+            }
+
+            Rect mainRect = new Rect(0f, 0f, size.x, size.y).ContractedBy(OuterPadding);
+            List<KeyValuePair<ThingDef, int>> filteredItems = FilterItems(SelectedInterface.ParentNetwork.ItemDefToStackCount);
+            DrawUI(mainRect, filteredItems);
+        }
+
+        private void DrawUI(Rect rect, List<KeyValuePair<ThingDef, int>> items)
+        {
+            Widgets.DrawMenuSection(rect);
+            Rect innerRect = rect.ContractedBy(InnerSpacing);
+            DrawContentArea(innerRect, items);
+        }
+
+        private void DrawContentArea(Rect rect, List<KeyValuePair<ThingDef, int>> items)
+        {
+            string searchLabel = "MN_NetworkStorageSearchLabel".Translate();
+            float searchLabelWidth = Text.CalcSize(searchLabel).x + 6f;
+            Rect searchLabelRect = new Rect(rect.x, rect.y, searchLabelWidth, SearchHeight);
+            Rect searchFieldRect = new Rect(searchLabelRect.xMax + 6f, searchLabelRect.y, rect.width - searchLabelRect.width - 6f, SearchHeight);
+            Rect gridRect = new Rect(rect.x, searchFieldRect.yMax + InnerSpacing, rect.width, rect.height - SearchHeight - InnerSpacing);
+
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            Widgets.Label(searchLabelRect, searchLabel);
+            Text.Anchor = TextAnchor.UpperLeft;
+            string updatedSearch = Widgets.TextField(searchFieldRect, searchText);
+            if (updatedSearch != searchText)
+            {
+                searchText = updatedSearch;
+                itemsCached = false;
+                scrollPosition = Vector2.zero;
+                items = FilterItems(SelectedInterface.ParentNetwork.ItemDefToStackCount);
+            }
+
+            DrawItemsGrid(gridRect, items);
+        }
+
+        private void DrawItemsGrid(Rect rect, List<KeyValuePair<ThingDef, int>> items)
+        {
+            Widgets.DrawBoxSolid(rect, RailColor);
+            Widgets.DrawBoxSolidWithOutline(rect, Color.clear, CardOutlineColor);
+
+            Rect viewRect = rect.ContractedBy(6f);
+            int columns = Mathf.Max(1, Mathf.FloorToInt((viewRect.width + GridSpacing) / (CardWidth + GridSpacing)));
+            int rows = Mathf.CeilToInt(items.Count / (float)columns);
+            float contentHeight = Mathf.Max(viewRect.height, rows * (CardHeight + GridSpacing) - GridSpacing);
+            Rect scrollOutRect = viewRect;
+            Rect scrollViewRect = new Rect(0f, 0f, viewRect.width - 16f, contentHeight);
+
+            Widgets.BeginScrollView(scrollOutRect, ref scrollPosition, scrollViewRect);
+
+            if (items.Count == 0)
+            {
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(new Rect(0f, 0f, scrollViewRect.width, 40f), "MN_NetworkStorageNoItemsFiltered".Translate());
+                Text.Anchor = TextAnchor.UpperLeft;
+            }
+            else
+            {
+                for (int i = 0; i < items.Count; i++)
+                {
+                    int row = i / columns;
+                    int col = i % columns;
+                    Rect cardRect = new Rect(col * (CardWidth + GridSpacing), row * (CardHeight + GridSpacing), CardWidth, CardHeight);
+                    DrawItemCard(cardRect, items[i].Key, items[i].Value);
+                }
+            }
+
+            Widgets.EndScrollView();
+        }
+
+        private void DrawItemCard(Rect rect, ThingDef thingDef, int count)
+        {
+            Widgets.DrawBoxSolid(rect, CardColor);
+            Widgets.DrawBoxSolidWithOutline(rect, Color.clear, CardOutlineColor);
+            if (Mouse.IsOver(rect)) Widgets.DrawHighlight(rect);
+
+            Rect iconRect = new Rect(rect.x + 14f, rect.y + 8f, IconSize, IconSize);
+            Rect nameRect = new Rect(rect.x + 6f, iconRect.yMax + 4f, rect.width - 12f, 18f);
+            Rect countRect = new Rect(rect.x + 6f, nameRect.yMax + 2f, rect.width - 12f, 16f);
+            Rect buttonRect = new Rect(rect.x + 6f, rect.yMax - ButtonHeight - 6f, rect.width - 12f, ButtonHeight);
+
+            DrawThingTexture(iconRect, thingDef);
+            TooltipHandler.TipRegion(iconRect, thingDef.description ?? thingDef.LabelCap);
+
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.UpperCenter;
+            Widgets.Label(nameRect, thingDef.LabelCap.Truncate(nameRect.width));
+            Text.Anchor = TextAnchor.MiddleCenter;
+            GUI.color = AccentColor;
+            Widgets.Label(countRect, FormatItemCount(count));
+            GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            if (Widgets.ButtonText(buttonRect, "MN_NetworkStorageDropLabel".Translate()))
+                DropItem(thingDef);
+        }
+
+        private void DrawThingTexture(Rect rect, ThingDef thingDef)
+        {
+            Texture2D texture = thingDef.uiIcon != null ? thingDef.uiIcon : BaseContent.BadTex;
+            Color prev = GUI.color;
+            GUI.color = thingDef.uiIconColor;
+            Widgets.DrawTextureFitted(rect, texture, 1f);
+            GUI.color = prev;
+        }
+
+        private void DropItem(ThingDef thingDef)
+        {
+            if (SelectedInterface == null || SelectedInterface.ParentNetwork == null) return;
+
+            DataNetwork network = SelectedInterface.ParentNetwork;
+            NetworkBuildingController controller = network.ActiveController;
+            if (controller?.innerContainer == null) return;
+
+            Thing itemToDrop = null;
+            foreach (Thing t in controller.innerContainer.InnerListForReading)
+            {
+                if (t.def == thingDef) { itemToDrop = t; break; }
+            }
+
+            if (itemToDrop == null)
+            {
+                Log.Warning($"Could not find {thingDef.defName} in network storage");
+                return;
+            }
+
+            int toSplit = Mathf.Min(thingDef.stackLimit, itemToDrop.stackCount);
+            Thing newItem = itemToDrop.SplitOff(toSplit);
+            network.MarkBytesDirty();
+
+            GenPlace.TryPlaceThing(newItem, SelectedInterface.Position, SelectedInterface.Map, ThingPlaceMode.Near);
+            Log.Message($"Dropped {toSplit} of {thingDef.defName} near interface at {SelectedInterface.Position}");
+            itemsCached = false;
+        }
+
+        private List<KeyValuePair<ThingDef, int>> FilterItems(Dictionary<ThingDef, int> items)
+        {
+            if (itemsCached) return cachedItems;
+
+            itemsCached = true;
+
+            if (string.IsNullOrWhiteSpace(searchText))
+            {
+                cachedItems = items.OrderBy(kvp => kvp.Key.label).ToList();
+                return cachedItems;
+            }
+
+            string searchLower = searchText.ToLower();
+            cachedItems = items
+                .Where(kvp => kvp.Key.label.ToLower().Contains(searchLower))
+                .OrderBy(kvp => kvp.Key.label)
+                .ToList();
+            return cachedItems;
+        }
+
+        private string FormatItemCount(int count)
+        {
+            if (count < 1000) return count.ToString();
+            if (count <= 100000) return $"{count / 1000}{"MN_CountSuffixK".Translate()}";
+            return $"{(count / 1000000f):0.#}{"MN_CountSuffixMil".Translate()}";
+        }
+
+        protected override void UpdateSize()
+        {
+            base.UpdateSize();
+            size = new Vector2(WindowWidth, WindowHeight);
+        }
+
+        protected override void CloseTab()
+        {
+            if (SelectedInterface?.ParentNetwork != null)
+                SelectedInterface.ParentNetwork.CurrentTab = null;
+            oldSelected = null;
+            base.CloseTab();
+        }
+
+        public override void OnOpen()
+        {
+            itemsCached = false;
+            scrollPosition = Vector2.zero;
+            if (SelectedInterface?.ParentNetwork != null)
+                SelectedInterface.ParentNetwork.CurrentTab = this;
+            oldSelected = SelectedInterface;
+        }
+
+        public override void Notify_ClickOutsideWindow()
+        {
+            if (SelectedInterface?.ParentNetwork != null)
+                SelectedInterface.ParentNetwork.CurrentTab = null;
+            oldSelected = null;
+        }
+    }
+}

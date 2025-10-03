@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+    <ResearchProjectDef>
+        <defName>MN_MatterNetwork</defName>
+        <label>matter digitization</label>
+        <description>By reducing physical matter to stable digital patterns, colonists can archive goods in banks of encoded storage and retrieve them when needed. What was once a logistical nightmare becomes a seamless web of matter, memory, and control.</description>
+        <baseCost>6000</baseCost>
+        <techLevel>Spacer</techLevel>
+        <prerequisites>
+            <li>AdvancedFabrication</li>
+        </prerequisites>
+        <requiredResearchBuilding>HiTechResearchBench</requiredResearchBuilding>
+        <researchViewX>19.00</researchViewX>
+        <researchViewY>0.50</researchViewY>
+        <generalRules>
+            <rulesStrings>
+                <li>subject->matter-networking</li>
+                <li>subject_story->digitized a colony's storage infrastructure</li>
+                <li>subject_story->developed stable matter-to-data conversion</li>
+                <li>subject_story->linked storage devices into a unified logistics network</li>
+                <li>subject_gerund->constructing matter network infrastructure</li>
+            </rulesStrings>
+        </generalRules>
+    </ResearchProjectDef>
+</Defs>
