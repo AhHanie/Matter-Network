@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+    <ThingDef Name="DiskBase" Abstract="True">
+        <thingClass>ThingWithComps</thingClass>
+        <category>Item</category>
+        <drawerType>MapMeshOnly</drawerType>
+        <useHitPoints>true</useHitPoints>
+        <selectable>true</selectable>
+        <altitudeLayer>Item</altitudeLayer>
+        <stackLimit>75</stackLimit>
+        <comps>
+            <li Class="CompProperties_Forbiddable"/>
+        </comps>
+        <alwaysHaulable>true</alwaysHaulable>
+        <drawGUIOverlay>true</drawGUIOverlay>
+        <rotatable>false</rotatable>
+        <pathCost>14</pathCost>
+        <allowedArchonexusCount>-1</allowedArchonexusCount>
+        <graphicData>
+            <texPath>Things/Item/Resource/ComponentSpacer</texPath>
+            <graphicClass>Graphic_StackCount</graphicClass>
+        </graphicData>
+        <soundInteract>Metal_Drop</soundInteract>
+        <soundDrop>Standard_Drop</soundDrop>
+        <stackLimit>1</stackLimit>
+        <healthAffectsPrice>false</healthAffectsPrice>
+        <statBases>
+            <MaxHitPoints>70</MaxHitPoints>
+            <MarketValue>200</MarketValue>
+            <Mass>0.6</Mass>
+            <Flammability>0.6</Flammability>
+            <DeteriorationRate>2.0</DeteriorationRate>
+        </statBases>
+        <thingCategories>
+            <li>ItemsMisc</li>
+        </thingCategories>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk2k</defName>
+        <label>2k disk</label>
+        <description>A data storage disk that can hold up to 2048 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskDataStorage">
+                <maxBytes>100</maxBytes>
+            </li>
+        </comps>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk4k</defName>
+        <label>4k disk</label>
+        <description>A data storage disk that can hold up to 4096 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskDataStorage">
+                <maxBytes>4096</maxBytes>
+            </li>
+        </comps>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk8k</defName>
+        <label>8k disk</label>
+        <description>A data storage disk that can hold up to 8192 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskDataStorage">
+                <maxBytes>8192</maxBytes>
+            </li>
+        </comps>
+    </ThingDef>
+</Defs>

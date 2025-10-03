@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Matter Network</name>
+  <author>Sk</author>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <packageId>sk.matternetwork</packageId>
+  <description>A digital storage mod where items are stored as data.</description>
+  <modVersion>1.0.0</modVersion>
+  <url>https://github.com/AhHanie/LessUI</url>
+</ModMetaData>

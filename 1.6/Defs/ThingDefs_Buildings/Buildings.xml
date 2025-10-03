@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkCable</defName>
+        <label>network cable</label>
+        <description>A bundle of network cables for moving data around. Can be placed under walls and other buildings.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <category>Building</category>
+        <noRightClickDraftAttack>true</noRightClickDraftAttack>
+        <graphicData>
+            <texPath>Things/Building/Linked/PowerConduit_Atlas</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <linkType>Transmitter</linkType>
+            <linkFlags>
+                <li>PowerConduit</li>
+            </linkFlags>
+            <damageData>
+                <rect>(0,0.35,1,0.3)</rect>
+            </damageData>
+        </graphicData>
+        <uiIconPath>Things/Building/Linked/PowerConduit_MenuIcon</uiIconPath>
+        <uiIconScale>0.7</uiIconScale>
+        <building>
+            <isPowerConduit>false</isPowerConduit>
+            <ai_chillDestination>false</ai_chillDestination>
+            <isInert>true</isInert>
+            <isEdifice>false</isEdifice>
+            <canLandGravshipOn>true</canLandGravshipOn>
+            <blueprintGraphicData>
+                <texPath>Things/Building/Linked/PowerConduit_Blueprint_Atlas</texPath>
+            </blueprintGraphicData>
+            <canConstructInCorner>true</canConstructInCorner>
+        </building>
+        <drawerType>MapMeshOnly</drawerType>
+        <altitudeLayer>Conduits</altitudeLayer>
+        <passability>Standable</passability>
+        <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
+        <resourcesFractionWhenDeconstructed>0</resourcesFractionWhenDeconstructed>
+        <statBases>
+            <MaxHitPoints>80</MaxHitPoints>
+            <WorkToBuild>35</WorkToBuild>
+            <Flammability>0.7</Flammability>
+            <Beauty>-2</Beauty>
+        </statBases>
+        <drawStyleCategory>Conduits</drawStyleCategory>
+        <costList>
+            <Steel>1</Steel>
+        </costList>
+        <!-- <comps>
+            <li Class="CompProperties_Power">
+                <compClass>CompPowerTransmitter</compClass>
+                <transmitsPower>true</transmitsPower>
+            </li>
+        </comps> -->
+        <placeWorkers>
+            <li>PlaceWorker_Conduit</li>
+        </placeWorkers>
+        <rotatable>false</rotatable>
+        <selectable>true</selectable>
+        <neverMultiSelect>true</neverMultiSelect>
+        <soundImpactDefault>BulletImpact_Metal</soundImpactDefault>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+        <designationCategory>Power</designationCategory>
+        <uiOrder>2000</uiOrder>
+        <constructEffect>ConstructMetal</constructEffect>
+        <clearBuildingArea>false</clearBuildingArea>
+        <!-- <researchPrerequisites>
+            <li>Electricity</li>
+        </researchPrerequisites> -->
+        <replaceTags>
+            <li>Conduit</li>
+        </replaceTags>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_DiskDrive</defName>
+        <label>disk drive</label>
+        <description>the disk drive.</description>
+        <graphicData>
+            <texPath>Things/Building/Misc/VitalsMonitor</texPath>
+            <graphicClass>Graphic_Multi</graphicClass>
+            <shadowData>
+                <volume>(0.55, 0.30, 0.40)</volume>
+            </shadowData>
+        </graphicData>
+        <category>Building</category>
+        <noRightClickDraftAttack>true</noRightClickDraftAttack>
+        <statBases>
+            <MaxHitPoints>100</MaxHitPoints>
+            <Mass>8</Mass>
+            <WorkToBuild>500</WorkToBuild>
+            <StyleDominance MayRequire="Ludeon.RimWorld.Ideology">5</StyleDominance>
+            <Flammability>1.0</Flammability>
+            <Beauty>0.5</Beauty>
+        </statBases>
+        <thingClass>SK_Matter_Network.NetworkBuildingDiskDrive</thingClass>
+        <costList>
+            <Steel>50</Steel>
+            <ComponentIndustrial>3</ComponentIndustrial>
+        </costList>
+        <building>
+            <storageGroupTag>DiskDrive</storageGroupTag>
+            <fixedStorageSettings>
+                <filter>
+                    <thingDefs>
+                        <li>MN_Disk2k</li>
+                        <li>MN_Disk4k</li>
+                        <li>MN_Disk8k</li>
+                    </thingDefs>
+                </filter>
+            </fixedStorageSettings>
+            <defaultStorageSettings>
+                <priority>Preferred</priority>
+                <filter>
+                    <categories>
+                        <li>Items</li>
+                    </categories>
+                </filter>
+            </defaultStorageSettings>
+            <preventDeteriorationOnTop>true</preventDeteriorationOnTop>
+            <ignoreStoredThingsBeauty>true</ignoreStoredThingsBeauty>
+            <maxItemsInCell>6</maxItemsInCell>
+            <blueprintClass>Blueprint_Storage</blueprintClass>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <altitudeLayer>Building</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.4</fillPercent>
+        <castEdgeShadows>true</castEdgeShadows>
+        <pathCost>50</pathCost>
+        <defaultPlacingRot>South</defaultPlacingRot>
+        <inspectorTabs>
+            <li>ITab_Storage</li>
+        </inspectorTabs>
+        <surfaceType>None</surfaceType>
+        <canOverlapZones>false</canOverlapZones>
+        <!-- <researchPrerequisites>
+            <li>ComplexFurniture</li>
+        </researchPrerequisites> -->
+        <!-- <comps>
+            <li Class="CompProperties_Styleable" />
+        </comps> -->
+        <uiOrder>2050</uiOrder>
+        <designationCategory>Power</designationCategory>
+        <preventDroppingThingsOn>true</preventDroppingThingsOn>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkInterface</defName>
+        <label>network interface</label>
+        <description>the network interface.</description>
+        <graphicData>
+            <texPath>Things/Building/Misc/VitalsMonitor</texPath>
+            <graphicClass>Graphic_Multi</graphicClass>
+            <shadowData>
+                <volume>(0.55, 0.30, 0.40)</volume>
+            </shadowData>
+        </graphicData>
+        <category>Building</category>
+        <noRightClickDraftAttack>true</noRightClickDraftAttack>
+        <statBases>
+            <MaxHitPoints>100</MaxHitPoints>
+            <Mass>8</Mass>
+            <WorkToBuild>500</WorkToBuild>
+            <StyleDominance MayRequire="Ludeon.RimWorld.Ideology">5</StyleDominance>
+            <Flammability>1.0</Flammability>
+            <Beauty>0.5</Beauty>
+        </statBases>
+        <thingClass>SK_Matter_Network.NetworkBuildingNetworkInterface</thingClass>
+        <costList>
+            <Steel>50</Steel>
+            <ComponentIndustrial>3</ComponentIndustrial>
+        </costList>
+        <building>
+            <fixedStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Root</li>
+                    </categories>
+                </filter>
+            </fixedStorageSettings>
+            <defaultStorageSettings>
+                <priority>Preferred</priority>
+                <filter>
+                    <categories>
+                        <li>Foods</li>
+                        <li>Manufactured</li>
+                        <li>ResourcesRaw</li>
+                        <li>Items</li>
+                        <li>Weapons</li>
+                        <li>Apparel</li>
+                        <li>BodyParts</li>
+                    </categories>
+                </filter>
+            </defaultStorageSettings>
+            <preventDeteriorationOnTop>true</preventDeteriorationOnTop>
+            <ignoreStoredThingsBeauty>true</ignoreStoredThingsBeauty>
+            <maxItemsInCell>500</maxItemsInCell>
+            <blueprintClass>Blueprint_Storage</blueprintClass>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <altitudeLayer>Building</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.4</fillPercent>
+        <castEdgeShadows>true</castEdgeShadows>
+        <pathCost>50</pathCost>
+        <defaultPlacingRot>South</defaultPlacingRot>
+        <inspectorTabs>
+            <li>ITab_Storage</li>
+        </inspectorTabs>
+        <surfaceType>None</surfaceType>
+        <canOverlapZones>false</canOverlapZones>
+        <!-- <researchPrerequisites>
+            <li>ComplexFurniture</li>
+        </researchPrerequisites> -->
+        <!-- <comps>
+            <li Class="CompProperties_Styleable" />
+        </comps> -->
+        <uiOrder>2050</uiOrder>
+        <designationCategory>Power</designationCategory>
+        <preventDroppingThingsOn>true</preventDroppingThingsOn>
+        <hasInteractionCell>true</hasInteractionCell>
+        <interactionCellOffset>(0,0,1)</interactionCellOffset>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkController</defName>
+        <label>network controller</label>
+        <description>the network controller.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <graphicData>
+            <texPath>Things/Building/Misc/VitalsMonitor</texPath>
+            <graphicClass>Graphic_Multi</graphicClass>
+            <shadowData>
+                <volume>(0.55, 0.30, 0.40)</volume>
+            </shadowData>
+            <damageData>
+                <rectN>(0.078125,0.46875,0.859375,0.53125)</rectN>
+                <rectS>(0.078125,0.46875,0.859375,0.53125)</rectS>
+                <rectE>(0.125,0.46875,0.625,0.296875)</rectE>
+                <rectW>(0.25,0.46875,0.625,0.296875)</rectW>
+                <cornerTR>Damage/Corner</cornerTR>
+            </damageData>
+        </graphicData>
+        <defaultPlacingRot>South</defaultPlacingRot>
+        <!-- <researchPrerequisites>
+            <li>VitalsMonitor</li>
+        </researchPrerequisites> -->
+        <altitudeLayer>Building</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.2</fillPercent>
+        <statBases>
+            <MaxHitPoints>100</MaxHitPoints>
+            <WorkToBuild>6000</WorkToBuild>
+            <Mass>20</Mass>
+            <Flammability>0.7</Flammability>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>50</Steel>
+            <ComponentIndustrial>3</ComponentIndustrial>
+        </costList>
+        <building>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <designationCategory>Power</designationCategory>
+        <!-- <comps>
+            <li Class="CompProperties_Power">
+                <compClass>CompPowerTrader</compClass>
+                <shortCircuitInRain>true</shortCircuitInRain>
+                <basePowerConsumption>80</basePowerConsumption>
+            </li>
+            <li Class="CompProperties_Flickable"/>
+            <li Class="CompProperties_Facility">
+                <statOffsets>
+                    <MedicalTendQualityOffset>0.07</MedicalTendQualityOffset>
+                    <ImmunityGainSpeedFactor>0.02</ImmunityGainSpeedFactor>
+                    <SurgerySuccessChanceFactor>0.05</SurgerySuccessChanceFactor>
+                </statOffsets>
+                <maxSimultaneous>1</maxSimultaneous>
+                <mustBePlacedAdjacent>true</mustBePlacedAdjacent>
+            </li>
+        </comps> -->
+        <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
+        <uiIconScale>0.85</uiIconScale>
+    </ThingDef>
+</Defs>
