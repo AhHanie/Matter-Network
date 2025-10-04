@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using JetBrains.Annotations;
+using System.Collections.Generic;
 using System.Text;
 using Verse;
 
@@ -76,6 +77,7 @@ namespace SK_Matter_Network
         {
             base.PostExposeData();
             Scribe_Deep.Look(ref innerContainer, "innerContainer", this);
+            Scribe_Values.Look(ref cachedUsedBytes, "cachedUsedBytes", 0);
         }
 
         public override string CompInspectStringExtra()
@@ -106,6 +108,62 @@ namespace SK_Matter_Network
                 Log.Error($"Failed to add items to disk {parent.LabelShort}");
             }
             return 0;
+        }
+
+        public bool RemoveItemFromStorage(Thing item, int count)
+        {
+            // Check if item is still in container (it might have been removed by SplitOff already)
+            bool itemStillInContainer = innerContainer.Contains(item);
+
+            if (!itemStillInContainer && count < item.stackCount)
+            {
+                // Partial removal but item not in container - shouldn't happen
+                Log.Error($"Item {item.LabelShort} not in disk {parent.LabelShort} container for partial removal");
+                return false;
+            }
+
+            if (itemStillInContainer)
+            {
+                // Item is still here, need to remove it
+                int originalStackCount = item.stackCount;
+
+                if (count >= originalStackCount)
+                {
+                    // Remove entire item
+                    if (innerContainer.Remove(item))
+                    {
+                        cachedUsedBytes -= originalStackCount;
+                        Log.Message($"Removed entire stack of {item.LabelShort} from disk {parent.LabelShort}");
+                        return true;
+                    }
+                    else
+                    {
+                        Log.Error($"Failed to remove {item.LabelShort} from disk {parent.LabelShort}");
+                        return false;
+                    }
+                }
+                else
+                {
+                    // Partial removal - just update the bytes
+                    cachedUsedBytes -= count;
+                    Log.Message($"Reduced {item.LabelShort} stack by {count} in disk {parent.LabelShort}");
+                    return true;
+                }
+            }
+            else
+            {
+                // Item was already removed (by SplitOff when entire stack taken)
+                // Just update the bytes
+                cachedUsedBytes -= count;
+                Log.Message($"Item {item.LabelShort} already removed from disk {parent.LabelShort} (by SplitOff), updating bytes");
+                return true;
+            }
+        }
+
+
+        public List<Thing> GetAllStoredItems()
+        {
+            return new List<Thing>(innerContainer.InnerListForReading);
         }
     }
 }

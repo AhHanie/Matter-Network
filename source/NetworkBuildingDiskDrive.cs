@@ -20,6 +20,8 @@ namespace SK_Matter_Network
         private int cachedMaxBytes = 0;
         private int cachedUsedBytes = 0;
         private bool cacheDirty = true;
+        private Dictionary<Thing, Thing> itemToDisk;
+
         public int MaximumItems => def.building.maxItemsInCell * def.size.Area;
 
         public IReadOnlyList<Thing> HeldItems => innerContainer.InnerListForReading;
@@ -142,6 +144,7 @@ namespace SK_Matter_Network
         {
             innerContainer = new ThingOwner<Thing>(this, oneStackOnly: false);
             innerContainer.dontTickContents = true;
+            itemToDisk = new Dictionary<Thing, Thing>();
         }
 
         public override void SpawnSetup(Map map, bool respawningAfterLoad)
@@ -229,6 +232,15 @@ namespace SK_Matter_Network
             Scribe_Deep.Look(ref innerContainer, "innerContainer", this);
             Scribe_Deep.Look(ref settings, "settings", this);
             Scribe_References.Look(ref storageGroup, "storageGroup");
+
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                if (itemToDisk == null)
+                {
+                    itemToDisk = new Dictionary<Thing, Thing>();
+                }
+                RebuildItemToDiskMapping();
+            }
         }
 
         public void UpdateStorageCache()
@@ -352,6 +364,7 @@ namespace SK_Matter_Network
                     if (actuallyAdded > 0)
                     {
                         storedItems.Add(item);
+                        itemToDisk[itemToStore] = disk;
                     }
                 }
             }
@@ -363,6 +376,74 @@ namespace SK_Matter_Network
             }
 
             return (itemsAdded, storedItems);
+        }
+
+        public bool RemoveItem(Thing item, int count)
+        {
+            if (!itemToDisk.TryGetValue(item, out Thing disk))
+            {
+                Log.Warning($"Attempted to remove item {item.LabelShort} but it's not tracked in disk drive at {Position}");
+                return false;
+            }
+
+            CompDiskDataStorage diskStorage = disk.TryGetComp<CompDiskDataStorage>();
+
+            // Actually remove the item from the disk's inner container
+            bool success = diskStorage.RemoveItemFromStorage(item, count);
+
+            if (success)
+            {
+                if (count >= item.stackCount || item.Destroyed)
+                {
+                    // Item fully removed from network
+                    itemToDisk.Remove(item);
+                    Log.Message($"Removed {item.LabelShort} from disk {disk.LabelShort} in disk drive at {Position}");
+                }
+                else
+                {
+                    // Partial removal - item still exists with reduced stack
+                    Log.Message($"Removed {count} of {item.LabelShort} from disk {disk.LabelShort} in disk drive at {Position}");
+                }
+
+                cacheDirty = true;
+                return true;
+            }
+
+            return false;
+        }
+
+        private void RebuildItemToDiskMapping()
+        {
+            itemToDisk.Clear();
+
+            foreach (Thing disk in HeldItems)
+            {
+                CompDiskDataStorage diskStorage = disk.TryGetComp<CompDiskDataStorage>();
+                if (diskStorage != null)
+                {
+                    foreach (Thing storedItem in diskStorage.GetAllStoredItems())
+                    {
+                        itemToDisk[storedItem] = disk;
+                    }
+                }
+            }
+
+            Log.Message($"Rebuilt item-to-disk mapping for disk drive at {Position}: {itemToDisk.Count} items tracked");
+        }
+        public List<Thing> GetAllStoredItems()
+        {
+            List<Thing> allItems = new List<Thing>();
+
+            foreach (Thing disk in HeldItems)
+            {
+                CompDiskDataStorage diskStorage = disk.TryGetComp<CompDiskDataStorage>();
+                if (diskStorage != null)
+                {
+                    allItems.AddRange(diskStorage.GetAllStoredItems());
+                }
+            }
+
+            return allItems;
         }
     }
 }

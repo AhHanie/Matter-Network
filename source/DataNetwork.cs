@@ -15,6 +15,7 @@ namespace SK_Matter_Network
         private StorageSettings storageSettings;
         private bool isBroadcastingSettingsChange = false;
         private HashSet<Thing> storedItems;
+        private Dictionary<Thing, NetworkBuildingDiskDrive> itemToDiskDrive;
 
         public List<NetworkBuilding> Buildings => buildings;
         public string NetworkId => networkId;
@@ -35,6 +36,7 @@ namespace SK_Matter_Network
             storageSettings = new StorageSettings();
             isBroadcastingSettingsChange = false;
             storedItems = new HashSet<Thing>();
+            itemToDiskDrive = new Dictionary<Thing, NetworkBuildingDiskDrive>();
         }
 
         public void AddBuilding(NetworkBuilding building)
@@ -91,7 +93,24 @@ namespace SK_Matter_Network
 
                 if (building.def == BuildingDefOf.MN_DiskDrive)
                 {
-                    diskDrives.Remove(building as NetworkBuildingDiskDrive);
+                    NetworkBuildingDiskDrive diskDrive = building as NetworkBuildingDiskDrive;
+
+                    List<Thing> itemsToRemove = new List<Thing>();
+                    foreach (var kvp in itemToDiskDrive)
+                    {
+                        if (kvp.Value == diskDrive)
+                        {
+                            itemsToRemove.Add(kvp.Key);
+                        }
+                    }
+
+                    foreach (Thing item in itemsToRemove)
+                    {
+                        itemToDiskDrive.Remove(item);
+                        storedItems.Remove(item);
+                    }
+
+                    diskDrives.Remove(diskDrive);
                 }
                 else if (building.def == BuildingDefOf.MN_NetworkInterface)
                 {
@@ -141,7 +160,12 @@ namespace SK_Matter_Network
                 {
                     int toAddThisRound = UnityEngine.Mathf.Min(itemsRemaining, driveCanAccept);
                     var (actuallyAdded, storedThings) = diskDrive.AddItem(item, toAddThisRound);
-                    this.storedItems.AddRange(storedThings);
+
+                    foreach (Thing storedThing in storedThings)
+                    {
+                        this.storedItems.Add(storedThing);
+                        itemToDiskDrive[storedThing] = diskDrive;
+                    }
 
                     totalAdded += actuallyAdded;
                     itemsRemaining -= actuallyAdded;
@@ -160,6 +184,35 @@ namespace SK_Matter_Network
             }
 
             return totalAdded;
+        }
+
+        public bool RemoveItem(Thing item, int count)
+        {
+            if (!itemToDiskDrive.TryGetValue(item, out NetworkBuildingDiskDrive diskDrive))
+            {
+                Log.Warning($"Attempted to remove item {item.LabelShort} but it's not tracked in network {networkId}");
+                return false;
+            }
+
+            bool success = diskDrive.RemoveItem(item, count);
+
+            if (success)
+            {
+                if (count >= item.stackCount || item.Destroyed)
+                {
+                    // Item fully removed
+                    itemToDiskDrive.Remove(item);
+                    storedItems.Remove(item);
+                    Log.Message($"Removed {item.LabelShort} from network {networkId}");
+                }
+                else
+                {
+                    // Partial removal - item still exists in network
+                    Log.Message($"Removed {count} of {item.LabelShort} from network {networkId}");
+                }
+            }
+
+            return success;
         }
 
         public void Notify_SettingsChanged(StorageSettings interfaceSettings)
@@ -189,6 +242,11 @@ namespace SK_Matter_Network
             Scribe_Collections.Look(ref diskDrives, "diskDrives", LookMode.Reference);
             Scribe_Collections.Look(ref networkInterfaces, "networkInterfaces", LookMode.Reference);
             Scribe_Deep.Look(ref storageSettings, "storageSettings");
+
+            if (Scribe.mode == LoadSaveMode.PostLoadInit)
+            {
+                RebuildItemTracking();
+            }
         }
 
         public bool AcceptsItem(Thing item)
@@ -199,6 +257,23 @@ namespace SK_Matter_Network
         public bool ItemInNetwork(Thing item)
         {
             return storedItems.Contains(item);
+        }
+
+        private void RebuildItemTracking()
+        {
+            storedItems = new HashSet<Thing>();
+            itemToDiskDrive = new Dictionary<Thing, NetworkBuildingDiskDrive>();
+
+            foreach (NetworkBuildingDiskDrive diskDrive in diskDrives)
+            {
+                foreach (Thing item in diskDrive.GetAllStoredItems())
+                {
+                    storedItems.Add(item);
+                    itemToDiskDrive[item] = diskDrive;
+                }
+            }
+
+            Log.Message($"Rebuilt item tracking for network {networkId}: {storedItems.Count} items tracked");
         }
     }
 }

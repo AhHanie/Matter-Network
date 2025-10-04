@@ -61,12 +61,15 @@
     <Compile Include="NetworkBuildingDiskDrive.cs" />
     <Compile Include="NetworkBuildingNetworkInterface.cs" />
     <Compile Include="NetworkManager.cs" />
+    <Compile Include="Patches\HaulAIUtility.cs" />
     <Compile Include="Patches\ListerHaulables.cs" />
+    <Compile Include="Patches\Pawn_CarryTracker.cs" />
     <Compile Include="Patches\Reachability.cs" />
     <Compile Include="Patches\StorageSettings.cs" />
     <Compile Include="Patches\StoreUtility.cs" />
     <Compile Include="Patches\Toils_Goto.cs" />
     <Compile Include="Patches\Toils_Haul.cs" />
+    <Compile Include="Patches\WorkGiver_DoBill.cs" />
     <Compile Include="SectionLayer_NetworkOverlay.cs" />
     <Compile Include="Comps\NetworksMapComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
