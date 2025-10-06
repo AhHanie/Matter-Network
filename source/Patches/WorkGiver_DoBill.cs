@@ -112,7 +112,6 @@ namespace SK_Matter_Network.Patches
 
                 codes.InsertRange(insertIndex, instructionsToInsert);
 
-                Log.Message("[Matter Network]: Successfully patched TryFindBestIngredientsHelper");
                 return codes;
             }
         }

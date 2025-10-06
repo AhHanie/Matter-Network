@@ -17,7 +17,7 @@ namespace SK_Matter_Network
 
     public class CompDiskDataStorage : ThingComp, IThingHolder
     {
-        private ThingOwner<Thing> innerContainer;
+        private ThingOwnerDisk<Thing> innerContainer;
         private int cachedUsedBytes = 0;
 
         public CompProperties_DiskDataStorage Props => (CompProperties_DiskDataStorage)props;
@@ -32,7 +32,7 @@ namespace SK_Matter_Network
 
         public CompDiskDataStorage()
         {
-            innerContainer = new ThingOwner<Thing>(this, oneStackOnly: false);
+            innerContainer = new ThingOwnerDisk<Thing>(this, oneStackOnly: false);
             innerContainer.dontTickContents = true;
         }
 
@@ -50,22 +50,6 @@ namespace SK_Matter_Network
         {
             if (UsedBytes >= MaxBytes) return false;
             return true;
-        }
-
-        public bool TryAddItem(Thing item)
-        {
-            if (!CanAcceptItem(item))
-            {
-                return false;
-            }
-
-            int spaceNeeded = item.stackCount;
-            if (spaceNeeded > AvailableBytes)
-            {
-                return false;
-            }
-
-            return innerContainer.TryAdd(item, canMergeWithExistingStacks: true);
         }
 
         public bool TryRemoveItem(Thing item)
@@ -103,67 +87,31 @@ namespace SK_Matter_Network
                 Log.Message($"Disk {parent.LabelShort} accepted {originalStackCount} {item.def.defName}");
                 return originalStackCount;
             }
-            else
-            {
-                Log.Error($"Failed to add items to disk {parent.LabelShort}");
-            }
+
+            Log.Error($"Failed to add items to disk {parent.LabelShort}");
             return 0;
         }
 
-        public bool RemoveItemFromStorage(Thing item, int count)
+        public void RemoveItemFromStorage(Thing item, int count, bool forceRemove)
         {
-            // Check if item is still in container (it might have been removed by SplitOff already)
-            bool itemStillInContainer = innerContainer.Contains(item);
-
-            if (!itemStillInContainer && count < item.stackCount)
+            if (forceRemove)
             {
-                // Partial removal but item not in container - shouldn't happen
-                Log.Error($"Item {item.LabelShort} not in disk {parent.LabelShort} container for partial removal");
-                return false;
+                innerContainer.Remove(item);
             }
-
-            if (itemStillInContainer)
-            {
-                // Item is still here, need to remove it
-                int originalStackCount = item.stackCount;
-
-                if (count >= originalStackCount)
-                {
-                    // Remove entire item
-                    if (innerContainer.Remove(item))
-                    {
-                        cachedUsedBytes -= originalStackCount;
-                        Log.Message($"Removed entire stack of {item.LabelShort} from disk {parent.LabelShort}");
-                        return true;
-                    }
-                    else
-                    {
-                        Log.Error($"Failed to remove {item.LabelShort} from disk {parent.LabelShort}");
-                        return false;
-                    }
-                }
-                else
-                {
-                    // Partial removal - just update the bytes
-                    cachedUsedBytes -= count;
-                    Log.Message($"Reduced {item.LabelShort} stack by {count} in disk {parent.LabelShort}");
-                    return true;
-                }
-            }
-            else
-            {
-                // Item was already removed (by SplitOff when entire stack taken)
-                // Just update the bytes
-                cachedUsedBytes -= count;
-                Log.Message($"Item {item.LabelShort} already removed from disk {parent.LabelShort} (by SplitOff), updating bytes");
-                return true;
-            }
+            cachedUsedBytes -= count;
+            Log.Message($"Reduced {item.LabelShort} stack by {count} in disk {parent.LabelShort}");
         }
 
 
         public List<Thing> GetAllStoredItems()
         {
             return new List<Thing>(innerContainer.InnerListForReading);
+        }
+
+        public void SetUsedBytes(int bytes)
+        {
+            cachedUsedBytes = bytes;
+            Log.Message($"Disk {parent.LabelShort} bytes corrected to {bytes}");
         }
     }
 }

@@ -14,6 +14,11 @@ namespace SK_Matter_Network.Patches
         {
             public static bool Prefix(Thing t, ref bool __result)
             {
+                if (t.MapHeld == null)
+                {
+                    return true;
+                }
+
                 NetworksMapComponent mapComp = t.MapHeld.GetComponent<NetworksMapComponent>();
                 if (mapComp.TryGetItemNetwork(t, out DataNetwork network))
                 {
@@ -21,6 +26,7 @@ namespace SK_Matter_Network.Patches
                     if (!network.AcceptsItem(t) || network.Faction != Faction.OfPlayer)
                     {
                         __result = false;
+                        return false;
                     }
                     if (StoreUtility.TryFindBestBetterStorageFor(t, null, t.MapHeld, network.StorageSettings.Priority, Faction.OfPlayer, out var _, out var _, needAccurateResult: false))
                     {
@@ -37,6 +43,10 @@ namespace SK_Matter_Network.Patches
         {
             public static bool Prefix(Thing t, Pawn carrier, Map map, Faction faction, ISlotGroup slotGroup, bool needAccurateResult, ref IntVec3 closestSlot, ref float closestDistSquared, ref StoragePriority foundPriority)
             {
+                if (t.MapHeld == null)
+                {
+                    return true;
+                }
                 NetworksMapComponent mapComp = t.MapHeld.GetComponent<NetworksMapComponent>();
                 if (!mapComp.TryGetItemNetwork(t, out DataNetwork network))
                 {
@@ -44,7 +54,7 @@ namespace SK_Matter_Network.Patches
                 }
                 if (slotGroup == null || !slotGroup.Settings.AllowedToAccept(t))
                 {
-                    return false;
+                    return true;
                 }
                 List<NetworkBuildingNetworkInterface> interfaces = network.NetworkInterfaces;
                 List<IntVec3> cellsList = slotGroup.CellsList;
@@ -83,6 +93,11 @@ namespace SK_Matter_Network.Patches
         {
             public static bool Prefix(Thing t, Pawn carrier, Map map, StoragePriority currentPriority, Faction faction, out IHaulDestination haulDestination, bool acceptSamePriority, bool requiresDestReservation, ref bool __result)
             {
+                if (t.MapHeld == null)
+                {
+                    haulDestination = null;
+                    return true;
+                }
                 NetworksMapComponent mapComp = t.MapHeld.GetComponent<NetworksMapComponent>();
                 if (!mapComp.TryGetItemNetwork(t, out DataNetwork network))
                 {
@@ -151,6 +166,10 @@ namespace SK_Matter_Network.Patches
         {
             public static bool Prefix(Thing t, bool forced, ref StoragePriority __result)
             {
+                if (t.MapHeld == null)
+                {
+                    return true;
+                }
                 NetworksMapComponent mapComp = t.MapHeld.GetComponent<NetworksMapComponent>();
                 if (mapComp.TryGetItemNetwork(t, out DataNetwork network))
                 {
@@ -170,6 +189,10 @@ namespace SK_Matter_Network.Patches
         {
             public static bool Prefix(Thing t, ref bool __result)
             {
+                if (t.MapHeld == null)
+                {
+                    return true;
+                }
                 NetworksMapComponent mapComp = t.MapHeld.GetComponent<NetworksMapComponent>();
                 if (mapComp.TryGetItemNetwork(t, out DataNetwork network))
                 {
@@ -185,6 +208,10 @@ namespace SK_Matter_Network.Patches
         {
             public static bool Prefix(Thing t, ref bool __result)
             {
+                if (t.MapHeld == null)
+                {
+                    return true;
+                }
                 NetworksMapComponent mapComp = t.MapHeld.GetComponent<NetworksMapComponent>();
                 if (mapComp.TryGetItemNetwork(t, out DataNetwork network))
                 {

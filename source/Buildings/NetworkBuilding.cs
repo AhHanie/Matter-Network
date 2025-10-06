@@ -4,7 +4,8 @@ namespace SK_Matter_Network
 {
     public class NetworkBuilding : Building
     {
-        public DataNetwork ParentNetwork { get; set; }
+        private DataNetwork parentNetwork;
+        public DataNetwork ParentNetwork { get => parentNetwork; set => parentNetwork = value; }
 
         public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
         {
@@ -25,6 +26,10 @@ namespace SK_Matter_Network
         public override void SpawnSetup(Map map, bool respawningAfterLoad)
         {
             base.SpawnSetup(map, respawningAfterLoad);
+            if (respawningAfterLoad)
+            {
+                return;
+            }
             NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
             mapComp.AddBuilding(this);
             Log.Message($"Adding building to map comp, {Position}");
@@ -44,6 +49,12 @@ namespace SK_Matter_Network
             }
 
             return baseString;
+        }
+
+        public override void ExposeData()
+        {
+            base.ExposeData();
+            Scribe_References.Look(ref parentNetwork, "parentNetwork");
         }
     }
 }

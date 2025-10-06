@@ -134,10 +134,72 @@ namespace SK_Matter_Network
         public void Notify_ItemAdded(Thing item)
         {
             base.MapHeld.listerHaulables.Notify_AddedThing(item);
+            CompDiskDataStorage diskStorage = item.TryGetComp<CompDiskDataStorage>();
+            HandleDiskAdded(item, diskStorage);
+            cacheDirty = true;
         }
 
         public void Notify_ItemRemoved(Thing item)
         {
+            CompDiskDataStorage diskStorage = item.TryGetComp<CompDiskDataStorage>();
+            HandleDiskRemoved(item, diskStorage);
+            cacheDirty = true;
+        }
+
+        private void HandleDiskAdded(Thing disk, CompDiskDataStorage diskStorage)
+        {
+            List<Thing> itemsInDisk = diskStorage.GetAllStoredItems();
+
+            if (itemsInDisk.Count > 0)
+            {
+                Log.Message($"Disk {disk.LabelShort} added to drive at {Position}. Adding {itemsInDisk.Count} items to network tracking.");
+
+                foreach (Thing storedItem in itemsInDisk)
+                {
+                    if (!itemToDisk.ContainsKey(storedItem))
+                    {
+                        itemToDisk[storedItem] = disk;
+                    }
+                }
+
+                if (ParentNetwork != null)
+                {
+                    ParentNetwork.AddDiskDriveItems(this, itemsInDisk);
+                }
+
+                Log.Message($"Added {itemsInDisk.Count} items to disk drive tracking from disk {disk.LabelShort}.");
+            }
+        }
+
+        private void HandleDiskRemoved(Thing disk, CompDiskDataStorage diskStorage)
+        {
+            List<Thing> itemsInDisk = diskStorage.GetAllStoredItems();
+
+            if (itemsInDisk.Count > 0)
+            {
+                Log.Message($"Disk {disk.LabelShort} removed from drive at {Position}. Cleaning up {itemsInDisk.Count} items from network tracking.");
+
+                List<Thing> itemsToRemove = new List<Thing>();
+                foreach (Thing storedItem in itemsInDisk)
+                {
+                    if (itemToDisk.ContainsKey(storedItem) && itemToDisk[storedItem] == disk)
+                    {
+                        itemsToRemove.Add(storedItem);
+                    }
+                }
+
+                foreach (Thing storedItem in itemsToRemove)
+                {
+                    itemToDisk.Remove(storedItem);
+                }
+
+                if (ParentNetwork != null)
+                {
+                    ParentNetwork.RemoveDiskDriveItems(this, itemsInDisk);
+                }
+
+                Log.Message($"Removed {itemsToRemove.Count} items from disk drive tracking. Items remain in disk's container.");
+            }
         }
 
         public NetworkBuildingDiskDrive()
@@ -185,7 +247,7 @@ namespace SK_Matter_Network
 
         public override void DrawExtraSelectionOverlays()
         {
-            
+
         }
 
         public override IEnumerable<Gizmo> GetGizmos()
@@ -361,9 +423,10 @@ namespace SK_Matter_Network
                     var actuallyAdded = diskStorage.TryAddItemToComp(itemToStore);
                     itemsAdded += actuallyAdded;
 
-                    if (actuallyAdded > 0)
+                    // This is a new item and wasn't merged with an existing one, start tracking it.
+                    if (actuallyAdded > 0 && !itemToStore.Destroyed && itemToStore.stackCount > 0)
                     {
-                        storedItems.Add(item);
+                        storedItems.Add(itemToStore);
                         itemToDisk[itemToStore] = disk;
                     }
                 }
@@ -378,7 +441,7 @@ namespace SK_Matter_Network
             return (itemsAdded, storedItems);
         }
 
-        public bool RemoveItem(Thing item, int count)
+        public bool RemoveItem(Thing item, int count, bool forceRemove)
         {
             if (!itemToDisk.TryGetValue(item, out Thing disk))
             {
@@ -388,27 +451,19 @@ namespace SK_Matter_Network
 
             CompDiskDataStorage diskStorage = disk.TryGetComp<CompDiskDataStorage>();
 
-            // Actually remove the item from the disk's inner container
-            bool success = diskStorage.RemoveItemFromStorage(item, count);
+            diskStorage.RemoveItemFromStorage(item, count, forceRemove);
+            cacheDirty = true;
 
-            if (success)
+            if (forceRemove || item.Destroyed || item.holdingOwner != diskStorage.InnerContainer)
             {
-                if (count >= item.stackCount || item.Destroyed)
-                {
-                    // Item fully removed from network
-                    itemToDisk.Remove(item);
-                    Log.Message($"Removed {item.LabelShort} from disk {disk.LabelShort} in disk drive at {Position}");
-                }
-                else
-                {
-                    // Partial removal - item still exists with reduced stack
-                    Log.Message($"Removed {count} of {item.LabelShort} from disk {disk.LabelShort} in disk drive at {Position}");
-                }
-
-                cacheDirty = true;
+                // Item fully removed from network
+                itemToDisk.Remove(item);
+                Log.Message($"Removed {item.LabelShort} from disk {disk.LabelShort} in disk drive at {Position}");
                 return true;
             }
 
+            // Partial removal - item still exists with reduced stack
+            Log.Message($"Removed {count} of {item.LabelShort} from disk {disk.LabelShort} in disk drive at {Position}");
             return false;
         }
 
@@ -427,8 +482,6 @@ namespace SK_Matter_Network
                     }
                 }
             }
-
-            Log.Message($"Rebuilt item-to-disk mapping for disk drive at {Position}: {itemToDisk.Count} items tracked");
         }
         public List<Thing> GetAllStoredItems()
         {
@@ -444,6 +497,11 @@ namespace SK_Matter_Network
             }
 
             return allItems;
+        }
+
+        public void MarkCacheDirty()
+        {
+            cacheDirty = true;
         }
     }
 }

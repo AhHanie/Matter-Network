@@ -5,7 +5,7 @@ using Verse;
 
 namespace SK_Matter_Network
 {
-    public class DataNetwork : IExposable
+    public class DataNetwork : IExposable, ILoadReferenceable
     {
         private List<NetworkBuilding> buildings;
         private HashSet<IntVec3> networkBuildingsCells;
@@ -53,7 +53,15 @@ namespace SK_Matter_Network
 
                 if (building.def == BuildingDefOf.MN_DiskDrive)
                 {
-                    diskDrives.Add(building as NetworkBuildingDiskDrive);
+                    NetworkBuildingDiskDrive diskDrive = building as NetworkBuildingDiskDrive;
+                    diskDrives.Add(diskDrive);
+
+                    List<Thing> existingItems = diskDrive.GetAllStoredItems();
+                    if (existingItems.Count > 0)
+                    {
+                        AddDiskDriveItems(diskDrive, existingItems);
+                        Log.Message($"Added disk drive at {building.Position} to network {networkId} with {existingItems.Count} existing items");
+                    }
                 }
                 else if (building.def == BuildingDefOf.MN_NetworkInterface)
                 {
@@ -95,20 +103,7 @@ namespace SK_Matter_Network
                 {
                     NetworkBuildingDiskDrive diskDrive = building as NetworkBuildingDiskDrive;
 
-                    List<Thing> itemsToRemove = new List<Thing>();
-                    foreach (var kvp in itemToDiskDrive)
-                    {
-                        if (kvp.Value == diskDrive)
-                        {
-                            itemsToRemove.Add(kvp.Key);
-                        }
-                    }
-
-                    foreach (Thing item in itemsToRemove)
-                    {
-                        itemToDiskDrive.Remove(item);
-                        storedItems.Remove(item);
-                    }
+                    RemoveDiskDriveItems(diskDrive, diskDrive.GetAllStoredItems());
 
                     diskDrives.Remove(diskDrive);
                 }
@@ -165,6 +160,7 @@ namespace SK_Matter_Network
                     {
                         this.storedItems.Add(storedThing);
                         itemToDiskDrive[storedThing] = diskDrive;
+                        buildings[0].Map.listerThings.Add(storedThing);
                     }
 
                     totalAdded += actuallyAdded;
@@ -183,10 +179,13 @@ namespace SK_Matter_Network
                 Log.Message($"Network {networkId} stored {totalAdded} of {item.def.defName} across {diskDrives.Count} disk drives");
             }
 
+            ValidateNetwork();
+
             return totalAdded;
         }
 
-        public bool RemoveItem(Thing item, int count)
+        // This is happening after TryStartCarry has completed.
+        public bool RemoveItem(Thing item, int count, bool forceRemove = false)
         {
             if (!itemToDiskDrive.TryGetValue(item, out NetworkBuildingDiskDrive diskDrive))
             {
@@ -194,25 +193,63 @@ namespace SK_Matter_Network
                 return false;
             }
 
-            bool success = diskDrive.RemoveItem(item, count);
+            bool success = diskDrive.RemoveItem(item, count, forceRemove);
 
             if (success)
             {
-                if (count >= item.stackCount || item.Destroyed)
+                itemToDiskDrive.Remove(item);
+                storedItems.Remove(item);
+                buildings[0].Map.listerThings.Remove(item);
+                Log.Message($"Removed {item.LabelShort} from network {networkId}");
+            }
+            else
+            {
+                Log.Message($"Removed {count} of {item.LabelShort} from network {networkId}");
+            }
+
+            ValidateNetwork();
+
+            return success;
+        }
+
+        public void RemoveDiskDriveItems(NetworkBuildingDiskDrive diskDrive, List<Thing> items)
+        {
+            int removedCount = 0;
+            foreach (Thing item in items)
+            {
+                if (itemToDiskDrive.TryGetValue(item, out NetworkBuildingDiskDrive trackedDrive) && trackedDrive == diskDrive)
                 {
-                    // Item fully removed
-                    itemToDiskDrive.Remove(item);
                     storedItems.Remove(item);
-                    Log.Message($"Removed {item.LabelShort} from network {networkId}");
-                }
-                else
-                {
-                    // Partial removal - item still exists in network
-                    Log.Message($"Removed {count} of {item.LabelShort} from network {networkId}");
+                    itemToDiskDrive.Remove(item);
+                    buildings[0].Map.listerThings.Remove(item);
+                    removedCount++;
                 }
             }
 
-            return success;
+            if (removedCount > 0)
+            {
+                Log.Message($"Removed {removedCount} items from network {networkId} tracking due to disk removal from drive at {diskDrive.Position}");
+            }
+        }
+
+        public void AddDiskDriveItems(NetworkBuildingDiskDrive diskDrive, List<Thing> items)
+        {
+            int addedCount = 0;
+            foreach (Thing item in items)
+            {
+                if (!storedItems.Contains(item))
+                {
+                    storedItems.Add(item);
+                    itemToDiskDrive[item] = diskDrive;
+                    buildings[0].Map.listerThings.Add(item);
+                    addedCount++;
+                }
+            }
+
+            if (addedCount > 0)
+            {
+                Log.Message($"Added {addedCount} items to network {networkId} tracking due to disk addition to drive at {diskDrive.Position}");
+            }
         }
 
         public void Notify_SettingsChanged(StorageSettings interfaceSettings)
@@ -274,6 +311,127 @@ namespace SK_Matter_Network
             }
 
             Log.Message($"Rebuilt item tracking for network {networkId}: {storedItems.Count} items tracked");
+        }
+
+        public string GetUniqueLoadID()
+        {
+            return networkId;
+        }
+
+        // Debugging Function
+        public void ValidateNetwork()
+        {
+            bool foundIssues = false;
+            HashSet<Thing> validItems = new HashSet<Thing>();
+            Dictionary<Thing, NetworkBuildingDiskDrive> validItemToDiskDrive = new Dictionary<Thing, NetworkBuildingDiskDrive>();
+
+            // Validate each disk drive
+            foreach (NetworkBuildingDiskDrive diskDrive in diskDrives)
+            {
+                // Validate each disk in the disk drive
+                foreach (Thing disk in diskDrive.HeldItems)
+                {
+                    CompDiskDataStorage diskStorage = disk.TryGetComp<CompDiskDataStorage>();
+                    if (diskStorage == null)
+                    {
+                        Log.Warning($"Network {networkId}: Disk {disk.LabelShort} at drive {diskDrive.Position} has no CompDiskDataStorage");
+                        continue;
+                    }
+
+                    int actualBytes = 0;
+                    List<Thing> itemsToRemove = new List<Thing>();
+
+                    // Count actual bytes and find problematic items
+                    List<Thing> storedItemsList = diskStorage.GetAllStoredItems();
+                    foreach (Thing item in storedItemsList)
+                    {
+                        if (item == null || item.Destroyed || item.stackCount <= 0)
+                        {
+                            itemsToRemove.Add(item);
+                            foundIssues = true;
+                            Log.Error($"Network {networkId}: Found invalid item in disk {disk.LabelShort} at drive {diskDrive.Position} - " +
+                                     $"Item: {item?.LabelShort ?? "null"}, Destroyed: {item?.Destroyed ?? true}, StackCount: {item?.stackCount ?? 0}");
+                        }
+                        else
+                        {
+                            actualBytes += item.stackCount;
+                            validItems.Add(item);
+                            validItemToDiskDrive[item] = diskDrive;
+                        }
+                    }
+
+                    // Remove invalid items from disk storage
+                    foreach (Thing itemToRemove in itemsToRemove)
+                    {
+                        if (itemToRemove != null)
+                        {
+                            diskDrive.RemoveItem(itemToRemove, 0, true);
+                            Log.Message($"Network {networkId}: Removed invalid item from disk drive / disk {diskDrive.LabelShort} {disk.LabelShort}");
+                        }
+                    }
+
+                    // Validate bytes
+                    if (diskStorage.UsedBytes != actualBytes)
+                    {
+                        foundIssues = true;
+                        Log.Error($"Network {networkId}: Disk {disk.LabelShort} at drive {diskDrive.Position} byte mismatch - " +
+                                 $"Cached: {diskStorage.UsedBytes}, Actual: {actualBytes}. Correcting...");
+
+                        diskStorage.SetUsedBytes(actualBytes);
+                    }
+                }
+
+                // Mark disk drive cache as dirty so it recalculates
+                diskDrive.MarkCacheDirty();
+            }
+
+            // Validate network tracking
+            if (storedItems.Count != validItems.Count || !storedItems.SetEquals(validItems))
+            {
+                foundIssues = true;
+                Log.Error($"Network {networkId}: Network item tracking mismatch - " +
+                         $"Tracked: {storedItems.Count}, Valid: {validItems.Count}. Correcting...");
+
+                // Remove items from network tracking that shouldn't be there
+                List<Thing> itemsToRemoveFromNetwork = storedItems.Where(item => !validItems.Contains(item)).ToList();
+
+                foreach (Thing item in itemsToRemoveFromNetwork)
+                {
+                    storedItems.Remove(item);
+                    itemToDiskDrive.Remove(item);
+
+                    buildings[0].Map.listerThings.Remove(item);
+
+                    Log.Message($"Network {networkId}: Removed {item?.LabelShort ?? "null"} from network tracking");
+                }
+
+                // Add items that should be tracked but aren't
+                foreach (Thing item in validItems)
+                {
+                    if (!storedItems.Contains(item))
+                    {
+                        storedItems.Add(item);
+
+                        buildings[0].Map.listerThings.Add(item);
+
+                        Log.Message($"Network {networkId}: Added {item.LabelShort} to network tracking");
+                    }
+                }
+
+                // Update itemToDiskDrive mapping
+                itemToDiskDrive = validItemToDiskDrive;
+            }
+
+            if (foundIssues)
+            {
+                Log.Error($"Network {networkId}: Validation found and corrected issues. " +
+                         $"Final item count: {storedItems.Count}, Disk drives: {diskDrives.Count}");
+            }
+            else
+            {
+                Log.Message($"Network {networkId}: Validation passed - no issues found. " +
+                           $"Items: {storedItems.Count}, Disk drives: {diskDrives.Count}");
+            }
         }
     }
 }

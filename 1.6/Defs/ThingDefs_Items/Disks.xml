@@ -37,12 +37,23 @@
     </ThingDef>
 
     <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk1k</defName>
+        <label>1k disk</label>
+        <description>A data storage disk that can hold up to 1024 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskDataStorage">
+                <maxBytes>1024</maxBytes>
+            </li>
+        </comps>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
         <defName>MN_Disk2k</defName>
         <label>2k disk</label>
         <description>A data storage disk that can hold up to 2048 bytes of information. Each stored item consumes 1 byte per unit.</description>
         <comps>
             <li Class="SK_Matter_Network.CompProperties_DiskDataStorage">
-                <maxBytes>100</maxBytes>
+                <maxBytes>2048</maxBytes>
             </li>
         </comps>
     </ThingDef>

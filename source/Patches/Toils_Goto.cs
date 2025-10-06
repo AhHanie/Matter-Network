@@ -14,8 +14,6 @@ namespace SK_Matter_Network.Patches
         {
             public static void Postfix(ref Toil __result, TargetIndex ind, PathEndMode peMode)
             {
-                // We can't check the target at patch time since the job hasn't been assigned yet
-                // So we wrap the initAction to check when it executes
                 Toil originalToil = __result;
                 Action originalInitAction = originalToil.initAction;
 
@@ -25,7 +23,6 @@ namespace SK_Matter_Network.Patches
                     LocalTargetInfo dest = actor.jobs.curJob.GetTarget(ind);
                     Thing thing = dest.Thing;
 
-                    // Check early if this is a network item
                     if (thing == null || thing.MapHeld == null)
                     {
                         originalInitAction();
@@ -35,13 +32,11 @@ namespace SK_Matter_Network.Patches
                     NetworksMapComponent mapComp = thing.MapHeld.GetComponent<NetworksMapComponent>();
                     if (mapComp == null || !mapComp.TryGetItemNetwork(thing, out DataNetwork network))
                     {
-                        // Not a network item, use original behavior
                         originalInitAction();
                         return;
                     }
 
                     originalToil.debugName = "GotoCell";
-                    // Item is in network, redirect to interface
                     NetworkBuildingNetworkInterface closestInterface = FindClosestReachableInterface(actor, network);
 
                     if (closestInterface != null)
