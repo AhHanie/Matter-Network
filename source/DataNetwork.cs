@@ -16,6 +16,7 @@ namespace SK_Matter_Network
         private bool isBroadcastingSettingsChange = false;
         private HashSet<Thing> storedItems;
         private Dictionary<Thing, NetworkBuildingDiskDrive> itemToDiskDrive;
+        private Map map;
 
         public List<NetworkBuilding> Buildings => buildings;
         public string NetworkId => networkId;
@@ -32,11 +33,15 @@ namespace SK_Matter_Network
             networkBuildingsCells = new HashSet<IntVec3>();
             diskDrives = new List<NetworkBuildingDiskDrive>();
             networkInterfaces = new List<NetworkBuildingNetworkInterface>();
-            networkId = System.Guid.NewGuid().ToString();
             storageSettings = new StorageSettings();
-            isBroadcastingSettingsChange = false;
             storedItems = new HashSet<Thing>();
             itemToDiskDrive = new Dictionary<Thing, NetworkBuildingDiskDrive>();
+        }
+
+        public DataNetwork(Map map) : this()
+        {
+            networkId = System.Guid.NewGuid().ToString();
+            this.map = map;
         }
 
         public void AddBuilding(NetworkBuilding building)
@@ -207,8 +212,6 @@ namespace SK_Matter_Network
                 Log.Message($"Removed {count} of {item.LabelShort} from network {networkId}");
             }
 
-            ValidateNetwork();
-
             return success;
         }
 
@@ -279,6 +282,7 @@ namespace SK_Matter_Network
             Scribe_Collections.Look(ref diskDrives, "diskDrives", LookMode.Reference);
             Scribe_Collections.Look(ref networkInterfaces, "networkInterfaces", LookMode.Reference);
             Scribe_Deep.Look(ref storageSettings, "storageSettings");
+            Scribe_References.Look(ref map, "map");
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
@@ -307,6 +311,7 @@ namespace SK_Matter_Network
                 {
                     storedItems.Add(item);
                     itemToDiskDrive[item] = diskDrive;
+                    map.listerThings.Add(item);
                 }
             }
 

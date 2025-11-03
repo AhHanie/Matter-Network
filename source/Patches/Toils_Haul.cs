@@ -135,6 +135,7 @@ namespace SK_Matter_Network.Patches
                 {
                     network.RemoveItem(thing, count);
                     Log.Message($"[TakeToInventory] Removed {count} of {thing.def.defName} from network {network.NetworkId}");
+                    network.ValidateNetwork();
                 }
             }
         }

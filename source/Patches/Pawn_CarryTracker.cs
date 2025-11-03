@@ -30,6 +30,7 @@ namespace SK_Matter_Network.Patches
                 Log.Message($"Pawn {___pawn.LabelShort} picked up {__result} of {item.def.defName} from network {network.NetworkId}");
 
                 network.RemoveItem(item, __result);
+                network.ValidateNetwork();
             }
         }
 
@@ -62,6 +63,7 @@ namespace SK_Matter_Network.Patches
                     Log.Message($"Pawn {___pawn.LabelShort} picked up entire stack ({amountPickedUp}) of {item.def.defName} from network {network.NetworkId}");
 
                     network.RemoveItem(item, amountPickedUp);
+                    network.ValidateNetwork();
                 }
             }
         }

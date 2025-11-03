@@ -77,11 +77,8 @@
         <label>disk drive</label>
         <description>the disk drive.</description>
         <graphicData>
-            <texPath>Things/Building/Misc/VitalsMonitor</texPath>
-            <graphicClass>Graphic_Multi</graphicClass>
-            <shadowData>
-                <volume>(0.55, 0.30, 0.40)</volume>
-            </shadowData>
+            <texPath>Things/Building/disk_drive_off_north</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
         </graphicData>
         <category>Building</category>
         <noRightClickDraftAttack>true</noRightClickDraftAttack>
@@ -103,6 +100,7 @@
             <fixedStorageSettings>
                 <filter>
                     <thingDefs>
+                        <li>MN_Disk1k</li>
                         <li>MN_Disk2k</li>
                         <li>MN_Disk4k</li>
                         <li>MN_Disk8k</li>
@@ -126,9 +124,7 @@
         <altitudeLayer>Building</altitudeLayer>
         <passability>PassThroughOnly</passability>
         <fillPercent>0.4</fillPercent>
-        <castEdgeShadows>true</castEdgeShadows>
         <pathCost>50</pathCost>
-        <defaultPlacingRot>South</defaultPlacingRot>
         <inspectorTabs>
             <li>ITab_Storage</li>
         </inspectorTabs>
@@ -150,11 +146,8 @@
         <label>network interface</label>
         <description>the network interface.</description>
         <graphicData>
-            <texPath>Things/Building/Misc/VitalsMonitor</texPath>
+            <texPath>Things/Building/network_interface</texPath>
             <graphicClass>Graphic_Multi</graphicClass>
-            <shadowData>
-                <volume>(0.55, 0.30, 0.40)</volume>
-            </shadowData>
         </graphicData>
         <category>Building</category>
         <noRightClickDraftAttack>true</noRightClickDraftAttack>
@@ -202,9 +195,7 @@
         <altitudeLayer>Building</altitudeLayer>
         <passability>PassThroughOnly</passability>
         <fillPercent>0.4</fillPercent>
-        <castEdgeShadows>true</castEdgeShadows>
         <pathCost>50</pathCost>
-        <defaultPlacingRot>South</defaultPlacingRot>
         <inspectorTabs>
             <li>ITab_Storage</li>
         </inspectorTabs>
@@ -220,7 +211,7 @@
         <designationCategory>Power</designationCategory>
         <preventDroppingThingsOn>true</preventDroppingThingsOn>
         <hasInteractionCell>true</hasInteractionCell>
-        <interactionCellOffset>(0,0,1)</interactionCellOffset>
+        <interactionCellOffset>(0,0,-1)</interactionCellOffset>
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
@@ -229,20 +220,10 @@
         <description>the network controller.</description>
         <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
         <graphicData>
-            <texPath>Things/Building/Misc/VitalsMonitor</texPath>
+            <texPath>Things/Building/network_controller</texPath>
             <graphicClass>Graphic_Multi</graphicClass>
-            <shadowData>
-                <volume>(0.55, 0.30, 0.40)</volume>
-            </shadowData>
-            <damageData>
-                <rectN>(0.078125,0.46875,0.859375,0.53125)</rectN>
-                <rectS>(0.078125,0.46875,0.859375,0.53125)</rectS>
-                <rectE>(0.125,0.46875,0.625,0.296875)</rectE>
-                <rectW>(0.25,0.46875,0.625,0.296875)</rectW>
-                <cornerTR>Damage/Corner</cornerTR>
-            </damageData>
+            <drawSize>(1,1)</drawSize>
         </graphicData>
-        <defaultPlacingRot>South</defaultPlacingRot>
         <!-- <researchPrerequisites>
             <li>VitalsMonitor</li>
         </researchPrerequisites> -->

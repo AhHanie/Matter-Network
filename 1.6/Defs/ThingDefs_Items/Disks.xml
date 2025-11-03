@@ -16,10 +16,6 @@
         <rotatable>false</rotatable>
         <pathCost>14</pathCost>
         <allowedArchonexusCount>-1</allowedArchonexusCount>
-        <graphicData>
-            <texPath>Things/Item/Resource/ComponentSpacer</texPath>
-            <graphicClass>Graphic_StackCount</graphicClass>
-        </graphicData>
         <soundInteract>Metal_Drop</soundInteract>
         <soundDrop>Standard_Drop</soundDrop>
         <stackLimit>1</stackLimit>
@@ -38,6 +34,10 @@
 
     <ThingDef ParentName="DiskBase">
         <defName>MN_Disk1k</defName>
+        <graphicData>
+            <texPath>Things/Item/disk_1k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
         <label>1k disk</label>
         <description>A data storage disk that can hold up to 1024 bytes of information. Each stored item consumes 1 byte per unit.</description>
         <comps>
@@ -49,6 +49,10 @@
 
     <ThingDef ParentName="DiskBase">
         <defName>MN_Disk2k</defName>
+        <graphicData>
+            <texPath>Things/Item/disk_2k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
         <label>2k disk</label>
         <description>A data storage disk that can hold up to 2048 bytes of information. Each stored item consumes 1 byte per unit.</description>
         <comps>
@@ -60,6 +64,10 @@
 
     <ThingDef ParentName="DiskBase">
         <defName>MN_Disk4k</defName>
+        <graphicData>
+            <texPath>Things/Item/disk_4k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
         <label>4k disk</label>
         <description>A data storage disk that can hold up to 4096 bytes of information. Each stored item consumes 1 byte per unit.</description>
         <comps>
@@ -71,6 +79,10 @@
 
     <ThingDef ParentName="DiskBase">
         <defName>MN_Disk8k</defName>
+        <graphicData>
+            <texPath>Things/Item/disk_8k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
         <label>8k disk</label>
         <description>A data storage disk that can hold up to 8192 bytes of information. Each stored item consumes 1 byte per unit.</description>
         <comps>

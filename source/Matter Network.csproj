@@ -62,11 +62,16 @@
     <Compile Include="Buildings\NetworkBuildingNetworkInterface.cs" />
     <Compile Include="NetworkManager.cs" />
     <Compile Include="Patches\FoodUtility.cs" />
+    <Compile Include="Patches\GridsUtility.cs" />
     <Compile Include="Patches\HaulAIUtility.cs" />
     <Compile Include="Patches\ListerHaulables.cs" />
+    <Compile Include="Patches\ListerThings.cs" />
+    <Compile Include="Patches\Map.cs" />
+    <Compile Include="Patches\GenClosest.cs" />
     <Compile Include="Patches\Pawn_ApparelTracker.cs" />
     <Compile Include="Patches\Pawn_CarryTracker.cs" />
     <Compile Include="Patches\Pawn_JobTracker.cs" />
+    <Compile Include="Patches\Pawn_TradeTracker.cs" />
     <Compile Include="Patches\Reachability.cs" />
     <Compile Include="Patches\StorageSettings.cs" />
     <Compile Include="Patches\StoreUtility.cs" />
@@ -74,6 +79,10 @@
     <Compile Include="Patches\ToilFailConditions.cs" />
     <Compile Include="Patches\Toils_Goto.cs" />
     <Compile Include="Patches\Toils_Haul.cs" />
+    <Compile Include="Patches\Toils_JobTransforms.cs" />
+    <Compile Include="Patches\TradeDeal.cs" />
+    <Compile Include="Patches\TradeShip.cs" />
+    <Compile Include="Patches\TradeUtility.cs" />
     <Compile Include="Patches\WorkGiver_DoBill.cs" />
     <Compile Include="SectionLayer_NetworkOverlay.cs" />
     <Compile Include="Comps\NetworksMapComponent.cs" />

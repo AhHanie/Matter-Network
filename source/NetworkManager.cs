@@ -12,7 +12,7 @@ namespace SK_Matter_Network
 
             if (adjacentBuildings.Count == 0)
             {
-                DataNetwork newNetwork = new DataNetwork();
+                DataNetwork newNetwork = new DataNetwork(mapComp.map);
                 newNetwork.AddBuilding(building);
                 mapComp.AddNetwork(newNetwork);
                 Log.Message($"Created new network for building at {building.Position}");
@@ -30,7 +30,7 @@ namespace SK_Matter_Network
 
                 if (adjacentNetworks.Count == 0)
                 {
-                    DataNetwork newNetwork = new DataNetwork();
+                    DataNetwork newNetwork = new DataNetwork(mapComp.map);
                     newNetwork.AddBuilding(building);
                     mapComp.AddNetwork(newNetwork);
                 }
@@ -91,7 +91,7 @@ namespace SK_Matter_Network
 
                 for (int i = 1; i < connectedGroups.Count; i++)
                 {
-                    DataNetwork newNetwork = new DataNetwork();
+                    DataNetwork newNetwork = new DataNetwork(mapComp.map);
                     foreach (NetworkBuilding b in connectedGroups[i])
                     {
                         newNetwork.AddBuilding(b);
