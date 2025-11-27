@@ -16,6 +16,7 @@ namespace SK_Matter_Network
         private bool isBroadcastingSettingsChange = false;
         private HashSet<Thing> storedItems;
         private Dictionary<Thing, NetworkBuildingDiskDrive> itemToDiskDrive;
+        private Dictionary<ThingDef, int> itemDefToStackCount;
         private Map map;
 
         public List<NetworkBuilding> Buildings => buildings;
@@ -25,6 +26,7 @@ namespace SK_Matter_Network
         public bool IsBroadcastingSettingsChange => isBroadcastingSettingsChange;
         public HashSet<Thing> StoredItems => storedItems;
         public List<NetworkBuildingNetworkInterface> NetworkInterfaces => networkInterfaces;
+        public Dictionary<ThingDef, int> ItemDefToStackCount => itemDefToStackCount;
         public Faction Faction => buildings.First().Faction;
 
         public DataNetwork()
@@ -36,6 +38,7 @@ namespace SK_Matter_Network
             storageSettings = new StorageSettings();
             storedItems = new HashSet<Thing>();
             itemToDiskDrive = new Dictionary<Thing, NetworkBuildingDiskDrive>();
+            itemDefToStackCount = new Dictionary<ThingDef, int>();
         }
 
         public DataNetwork(Map map) : this()
@@ -166,6 +169,7 @@ namespace SK_Matter_Network
                         this.storedItems.Add(storedThing);
                         itemToDiskDrive[storedThing] = diskDrive;
                         buildings[0].Map.listerThings.Add(storedThing);
+                        AddItemToDefDictionary(storedThing);
                     }
 
                     totalAdded += actuallyAdded;
@@ -205,6 +209,7 @@ namespace SK_Matter_Network
                 itemToDiskDrive.Remove(item);
                 storedItems.Remove(item);
                 buildings[0].Map.listerThings.Remove(item);
+                RemoveItemFromDefDictionary(item);
                 Log.Message($"Removed {item.LabelShort} from network {networkId}");
             }
             else
@@ -225,6 +230,7 @@ namespace SK_Matter_Network
                     storedItems.Remove(item);
                     itemToDiskDrive.Remove(item);
                     buildings[0].Map.listerThings.Remove(item);
+                    RemoveItemFromDefDictionary(item);
                     removedCount++;
                 }
             }
@@ -245,6 +251,7 @@ namespace SK_Matter_Network
                     storedItems.Add(item);
                     itemToDiskDrive[item] = diskDrive;
                     buildings[0].Map.listerThings.Add(item);
+                    AddItemToDefDictionary(item);
                     addedCount++;
                 }
             }
@@ -300,10 +307,35 @@ namespace SK_Matter_Network
             return storedItems.Contains(item);
         }
 
+        private void AddItemToDefDictionary(Thing item)
+        {
+            if (itemDefToStackCount.ContainsKey(item.def))
+            {
+                itemDefToStackCount[item.def] += item.stackCount;
+            }
+            else
+            {
+                itemDefToStackCount[item.def] = item.stackCount;
+            }
+        }
+
+        private void RemoveItemFromDefDictionary(Thing item)
+        {
+            if (itemDefToStackCount.ContainsKey(item.def))
+            {
+                itemDefToStackCount[item.def] -= item.stackCount;
+                if (itemDefToStackCount[item.def] <= 0)
+                {
+                    itemDefToStackCount.Remove(item.def);
+                }
+            }
+        }
+
         private void RebuildItemTracking()
         {
             storedItems = new HashSet<Thing>();
             itemToDiskDrive = new Dictionary<Thing, NetworkBuildingDiskDrive>();
+            itemDefToStackCount = new Dictionary<ThingDef, int>();
 
             foreach (NetworkBuildingDiskDrive diskDrive in diskDrives)
             {
@@ -312,10 +344,11 @@ namespace SK_Matter_Network
                     storedItems.Add(item);
                     itemToDiskDrive[item] = diskDrive;
                     map.listerThings.Add(item);
+                    AddItemToDefDictionary(item);
                 }
             }
 
-            Log.Message($"Rebuilt item tracking for network {networkId}: {storedItems.Count} items tracked");
+            Log.Message($"Rebuilt item tracking for network {networkId}: {storedItems.Count} items tracked, {itemDefToStackCount.Count} item types");
         }
 
         public string GetUniqueLoadID()
@@ -404,9 +437,8 @@ namespace SK_Matter_Network
                 {
                     storedItems.Remove(item);
                     itemToDiskDrive.Remove(item);
-
                     buildings[0].Map.listerThings.Remove(item);
-
+                    RemoveItemFromDefDictionary(item);
                     Log.Message($"Network {networkId}: Removed {item?.LabelShort ?? "null"} from network tracking");
                 }
 
@@ -416,9 +448,8 @@ namespace SK_Matter_Network
                     if (!storedItems.Contains(item))
                     {
                         storedItems.Add(item);
-
                         buildings[0].Map.listerThings.Add(item);
-
+                        AddItemToDefDictionary(item);
                         Log.Message($"Network {networkId}: Added {item.LabelShort} to network tracking");
                     }
                 }
@@ -427,15 +458,37 @@ namespace SK_Matter_Network
                 itemToDiskDrive = validItemToDiskDrive;
             }
 
+            // Validate itemDefToStackCount dictionary
+            Dictionary<ThingDef, int> expectedStackCounts = new Dictionary<ThingDef, int>();
+            foreach (Thing item in validItems)
+            {
+                if (expectedStackCounts.ContainsKey(item.def))
+                {
+                    expectedStackCounts[item.def] += item.stackCount;
+                }
+                else
+                {
+                    expectedStackCounts[item.def] = item.stackCount;
+                }
+            }
+
+            if (itemDefToStackCount.Count != expectedStackCounts.Count ||
+                !itemDefToStackCount.All(kvp => expectedStackCounts.ContainsKey(kvp.Key) && expectedStackCounts[kvp.Key] == kvp.Value))
+            {
+                foundIssues = true;
+                Log.Error($"Network {networkId}: Item def stack count mismatch detected. Correcting...");
+                itemDefToStackCount = expectedStackCounts;
+            }
+
             if (foundIssues)
             {
                 Log.Error($"Network {networkId}: Validation found and corrected issues. " +
-                         $"Final item count: {storedItems.Count}, Disk drives: {diskDrives.Count}");
+                         $"Final item count: {storedItems.Count}, Disk drives: {diskDrives.Count}, Item types: {itemDefToStackCount.Count}");
             }
             else
             {
                 Log.Message($"Network {networkId}: Validation passed - no issues found. " +
-                           $"Items: {storedItems.Count}, Disk drives: {diskDrives.Count}");
+                           $"Items: {storedItems.Count}, Disk drives: {diskDrives.Count}, Item types: {itemDefToStackCount.Count}");
             }
         }
     }

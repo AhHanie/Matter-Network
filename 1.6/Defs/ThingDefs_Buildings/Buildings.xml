@@ -77,11 +77,10 @@
         <label>disk drive</label>
         <description>the disk drive.</description>
         <graphicData>
-            <texPath>Things/Building/disk_drive_off_north</texPath>
-            <graphicClass>Graphic_Single</graphicClass>
+            <texPath>Things/Building/disk_drive</texPath>
+            <graphicClass>Graphic_Multi</graphicClass>
         </graphicData>
         <category>Building</category>
-        <noRightClickDraftAttack>true</noRightClickDraftAttack>
         <statBases>
             <MaxHitPoints>100</MaxHitPoints>
             <Mass>8</Mass>
