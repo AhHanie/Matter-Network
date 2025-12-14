@@ -197,6 +197,7 @@
         <pathCost>50</pathCost>
         <inspectorTabs>
             <li>ITab_Storage</li>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
         </inspectorTabs>
         <surfaceType>None</surfaceType>
         <canOverlapZones>false</canOverlapZones>
