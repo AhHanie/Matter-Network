@@ -13,7 +13,7 @@ namespace SK_Matter_Network
         static Resources()
         {
             Graphic atlasGraphic = GraphicDatabase.Get<Graphic_Single>(
-                "Things/Special/DataNetwork/TransmitterAtlas",
+                "MatterNetwork/Things/Special/DataNetwork/TransmitterAtlas",
                 ShaderDatabase.MetaOverlay,
                 Vector2.one,
                 new Color(0f, 1f, 0f, 0.4f)
@@ -26,8 +26,8 @@ namespace SK_Matter_Network
 
             atlasGraphic.MatSingle.renderQueue = 3600;
 
-            groupByDefIcon = ContentFinder<Texture2D>.Get("UI/Icons/groupbydef");
-            allStacksIcon = ContentFinder<Texture2D>.Get("UI/Icons/allstacks");
+            groupByDefIcon = ContentFinder<Texture2D>.Get("MatterNetwork/UI/Icons/groupbydef");
+            allStacksIcon = ContentFinder<Texture2D>.Get("MatterNetwork/UI/Icons/allstacks");
         }
     }
 }

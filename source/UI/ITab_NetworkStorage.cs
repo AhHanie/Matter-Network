@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using LessUI;
 using RimWorld;
 using UnityEngine;
 using Verse;
@@ -10,24 +8,36 @@ namespace SK_Matter_Network
 {
     public class ITab_NetworkStorage : ITab
     {
-        private StrongBox<string> searchTextBox = new StrongBox<string>("");
         private const float WindowWidth = 900f;
         private const float WindowHeight = 600f;
-        private const float LeftColumnWidth = 90f;
-        private const float ItemSlotSize = 75f;
-        private const float Padding = 10f;
-        private const float ItemButtonHeight = 60f;
-        private StrongBox<Vector2> scrollPosition;
-        private List<Button> renderedButtons;
+        private const float OuterPadding = 10f;
+        private const float InnerSpacing = 8f;
+        private const float LeftRailWidth = 100f;
+        private const float HeaderHeight = 40f;
+        private const float SearchHeight = 32f;
+        private const float CardWidth = 92f;
+        private const float CardHeight = 138f;
+        private const float IconSize = 64f;
+        private const float ButtonHeight = 24f;
+        private const float GridSpacing = 10f;
 
-        private NetworkBuildingNetworkInterface SelectedInterface => SelThing as NetworkBuildingNetworkInterface;
+        private static readonly Color RailColor = new Color(0.2f, 0.2f, 0.2f);
+        private static readonly Color RailHighlightColor = new Color(0.28f, 0.31f, 0.35f);
+        private static readonly Color CardColor = new Color(0.15f, 0.15f, 0.15f);
+        private static readonly Color CardOutlineColor = new Color(0.32f, 0.32f, 0.32f);
+        private static readonly Color AccentColor = new Color(0.42f, 0.75f, 0.82f);
+
+        private string searchText = string.Empty;
+        private Vector2 scrollPosition = Vector2.zero;
         private NetworkBuildingNetworkInterface oldSelected;
         private bool itemsCached;
-        List<KeyValuePair<ThingDef, int>> cachedItems;
+        private List<KeyValuePair<ThingDef, int>> cachedItems;
+
+        private NetworkBuildingNetworkInterface SelectedInterface => SelThing as NetworkBuildingNetworkInterface;
 
         public bool ItemsCached
         {
-            get => itemsCached; 
+            get => itemsCached;
             set => itemsCached = value;
         }
 
@@ -35,9 +45,6 @@ namespace SK_Matter_Network
         {
             size = new Vector2(WindowWidth, WindowHeight);
             labelKey = "MN_NetworkStorageTab";
-            scrollPosition = new StrongBox<Vector2>(Vector2.zero);
-            itemsCached = false;
-            renderedButtons = new List<Button>();
             oldSelected = null;
         }
 
@@ -46,168 +53,175 @@ namespace SK_Matter_Network
             if (SelectedInterface == null || SelectedInterface.ParentNetwork == null)
             {
                 Text.Anchor = TextAnchor.MiddleCenter;
-                Widgets.Label(new Rect(0, 0, size.x, size.y), "No network connected");
+                Widgets.Label(new Rect(0f, 0f, size.x, size.y), "No network connected");
                 Text.Anchor = TextAnchor.UpperLeft;
                 return;
             }
 
-            // Used for when switching between different network interfaces on different networks without actually closing the tab GUI
             if (oldSelected != SelectedInterface)
             {
                 itemsCached = false;
+                scrollPosition = Vector2.zero;
+                oldSelected = SelectedInterface;
             }
 
-            Rect mainRect = new Rect(0, 0, size.x, size.y).ContractedBy(Padding);
-
-            Dictionary<ThingDef, int> networkItems = SelectedInterface.ParentNetwork.ItemDefToStackCount;
-            List<KeyValuePair<ThingDef, int>> filteredItems = FilterItems(networkItems);
+            Rect mainRect = new Rect(0f, 0f, size.x, size.y).ContractedBy(OuterPadding);
+            List<KeyValuePair<ThingDef, int>> filteredItems = FilterItems(SelectedInterface.ParentNetwork.ItemDefToStackCount);
             DrawUI(mainRect, filteredItems);
         }
 
         private void DrawUI(Rect rect, List<KeyValuePair<ThingDef, int>> items)
         {
-            Rect leftColumnRect = new Rect(rect.x, rect.y, LeftColumnWidth, rect.height);
+            Widgets.DrawMenuSection(rect);
 
+            Rect innerRect = rect.ContractedBy(InnerSpacing);
+            Rect leftRailRect = new Rect(innerRect.x, innerRect.y, LeftRailWidth, innerRect.height);
             Rect contentRect = new Rect(
-                rect.x + LeftColumnWidth + Padding,
-                rect.y,
-                rect.width - LeftColumnWidth - Padding,
-                rect.height
-            );
+                leftRailRect.xMax + InnerSpacing,
+                innerRect.y,
+                innerRect.width - LeftRailWidth - InnerSpacing,
+                innerRect.height);
 
-            DrawLeftColumn(leftColumnRect);
-
+            DrawLeftRail(leftRailRect);
             DrawContentArea(contentRect, items);
         }
 
-        private void DrawLeftColumn(Rect rect)
+        private void DrawLeftRail(Rect rect)
         {
-            Canvas canvas = new Canvas(rect: rect);
-            Stack stack = new Stack(widthMode: SizeMode.Fill, verticalSpacing: 5f);
+            Widgets.DrawBoxSolid(rect, RailColor);
+            Widgets.DrawBoxSolidWithOutline(rect, Color.clear, CardOutlineColor);
 
-            stack.AddChild(new Label("Controls"));
-            // TODO: Future buttons will be added here
+            Rect controlsRect = new Rect(rect.x + 6f, rect.y + 6f, rect.width - 12f, 34f);
+            Widgets.DrawBoxSolid(controlsRect, RailHighlightColor);
+            Widgets.DrawBoxSolidWithOutline(controlsRect, Color.clear, AccentColor);
 
-            canvas.AddChild(stack);
-            canvas.Render();
+            Text.Anchor = TextAnchor.MiddleCenter;
+            Text.Font = GameFont.Small;
+            GUI.color = AccentColor;
+            Widgets.Label(controlsRect, "Controls");
+            GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
         }
 
         private void DrawContentArea(Rect rect, List<KeyValuePair<ThingDef, int>> items)
         {
-            Canvas canvas = new Canvas(rect: rect);
-            Stack mainStack = new Stack(widthMode: SizeMode.Fill, heightMode: SizeMode.Fill, verticalSpacing: Padding);
+            Rect headerRect = new Rect(rect.x, rect.y, rect.width, HeaderHeight);
+            Rect searchLabelRect = new Rect(rect.x, headerRect.yMax + InnerSpacing, 55f, SearchHeight);
+            Rect searchFieldRect = new Rect(
+                searchLabelRect.xMax + 6f,
+                searchLabelRect.y,
+                rect.width - searchLabelRect.width - 6f,
+                SearchHeight);
+            Rect gridRect = new Rect(
+                rect.x,
+                searchFieldRect.yMax + InnerSpacing,
+                rect.width,
+                rect.height - HeaderHeight - SearchHeight - (InnerSpacing * 2f));
 
-            Row searchRow = new Row(horizontalSpacing: 5f, widthMode: SizeMode.Fill, heightMode: SizeMode.Content);
-            searchRow.AddChild(new Label("Search:", widthMode: SizeMode.Content));
+            Text.Anchor = TextAnchor.MiddleCenter;
+            Text.Font = GameFont.Medium;
+            GUI.color = AccentColor;
+            Widgets.Label(headerRect, "Matter Network");
+            GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
 
-            TextEntry searchField = new TextEntry(
-                text: searchTextBox,
-                widthMode: SizeMode.Fill,
-                height: 30f
-            );
-            searchRow.AddChild(searchField);
-
-            mainStack.AddChild(searchRow);
-
-            int itemsPerRow = Mathf.FloorToInt(rect.width / (ItemSlotSize + 5f));
-            itemsPerRow = Mathf.Max(1, itemsPerRow);
-
-            ScrollContainer scrollCanvas = new ScrollContainer(
-                widthMode: SizeMode.Fill,
-                heightMode: SizeMode.Fill,
-                scrollPosition: scrollPosition,
-                padding: 5f
-            );
-
-            Grid itemGrid = new Grid(
-                columns: itemsPerRow,
-                cellWidth: ItemSlotSize,
-                cellHeight: ItemSlotSize + ItemButtonHeight,
-                columnSpacing: 10f,
-                rowSpacing: 10f
-            );
-
-            foreach (var kvp in items)
+            Text.Font = GameFont.Small;
+            Widgets.Label(searchLabelRect, "Search:");
+            string updatedSearch = Widgets.TextField(searchFieldRect, searchText);
+            if (updatedSearch != searchText)
             {
-                var (stack, button) = CreateItemSlot(kvp.Key, kvp.Value);
-                itemGrid.AddChild(stack);
-                renderedButtons.Add(button);
-            }
-
-            scrollCanvas.AddChild(itemGrid);
-            mainStack.AddChild(scrollCanvas);
-
-            canvas.AddChild(mainStack);
-            canvas.Render();
-
-            if (searchField.Changed)
-            {
+                searchText = updatedSearch;
                 itemsCached = false;
+                scrollPosition = Vector2.zero;
+                items = FilterItems(SelectedInterface.ParentNetwork.ItemDefToStackCount);
             }
 
-            for (int i=0;i<renderedButtons.Count;i++)
+            DrawItemsGrid(gridRect, items);
+        }
+
+        private void DrawItemsGrid(Rect rect, List<KeyValuePair<ThingDef, int>> items)
+        {
+            Widgets.DrawBoxSolid(rect, RailColor);
+            Widgets.DrawBoxSolidWithOutline(rect, Color.clear, CardOutlineColor);
+
+            Rect viewRect = rect.ContractedBy(6f);
+            int columns = Mathf.Max(1, Mathf.FloorToInt((viewRect.width + GridSpacing) / (CardWidth + GridSpacing)));
+            int rows = Mathf.CeilToInt(items.Count / (float)columns);
+            float contentHeight = Mathf.Max(viewRect.height, rows * (CardHeight + GridSpacing) - GridSpacing);
+            Rect scrollOutRect = viewRect;
+            Rect scrollViewRect = new Rect(0f, 0f, viewRect.width - 16f, contentHeight);
+
+            Widgets.BeginScrollView(scrollOutRect, ref scrollPosition, scrollViewRect);
+
+            if (items.Count == 0)
             {
-                if (renderedButtons[i].Clicked)
+                Text.Anchor = TextAnchor.MiddleCenter;
+                Widgets.Label(new Rect(0f, 0f, scrollViewRect.width, 40f), "No items match the current filter.");
+                Text.Anchor = TextAnchor.UpperLeft;
+            }
+            else
+            {
+                for (int i = 0; i < items.Count; i++)
                 {
-                    DropItem(items.ToList()[i].Key);
+                    int row = i / columns;
+                    int column = i % columns;
+                    Rect cardRect = new Rect(
+                        column * (CardWidth + GridSpacing),
+                        row * (CardHeight + GridSpacing),
+                        CardWidth,
+                        CardHeight);
+
+                    DrawItemCard(cardRect, items[i].Key, items[i].Value);
                 }
             }
 
-            renderedButtons.Clear();
+            Widgets.EndScrollView();
         }
 
-        private (UIElement, Button) CreateItemSlot(ThingDef thingDef, int count)
+        private void DrawItemCard(Rect rect, ThingDef thingDef, int count)
         {
-            Stack itemStack = new Stack(
-                widthMode: SizeMode.Fixed,
-                heightMode: SizeMode.Fixed,
-                width: ItemSlotSize,
-                height: ItemSlotSize + ItemButtonHeight,
-                verticalSpacing: 2f
-            );
+            Widgets.DrawBoxSolid(rect, CardColor);
+            Widgets.DrawBoxSolidWithOutline(rect, Color.clear, CardOutlineColor);
 
+            if (Mouse.IsOver(rect))
+            {
+                Widgets.DrawHighlight(rect);
+            }
+
+            Rect iconRect = new Rect(rect.x + 14f, rect.y + 8f, IconSize, IconSize);
+            Rect nameRect = new Rect(rect.x + 6f, iconRect.yMax + 6f, rect.width - 12f, 34f);
+            Rect countRect = new Rect(rect.x + 6f, nameRect.yMax + 2f, rect.width - 12f, 18f);
+            Rect buttonRect = new Rect(rect.x + 6f, rect.yMax - ButtonHeight - 6f, rect.width - 12f, ButtonHeight);
+
+            DrawThingTexture(iconRect, thingDef);
+            TooltipHandler.TipRegion(iconRect, thingDef.description ?? thingDef.LabelCap);
+
+            Text.Font = GameFont.Tiny;
+            Text.Anchor = TextAnchor.UpperCenter;
+            Widgets.Label(nameRect, thingDef.LabelCap.Truncate(nameRect.width));
+            Text.Anchor = TextAnchor.MiddleCenter;
+            GUI.color = AccentColor;
+            Widgets.Label(countRect, $"x{count}");
+            GUI.color = Color.white;
+            Text.Anchor = TextAnchor.UpperLeft;
+
+            if (Widgets.ButtonText(buttonRect, "Drop"))
+            {
+                DropItem(thingDef);
+            }
+        }
+
+        private void DrawThingTexture(Rect rect, ThingDef thingDef)
+        {
             Texture2D texture = GetThingTexture(thingDef);
-
-            Icon itemIcon = new Icon(
-                texture: texture,
-                widthMode: SizeMode.Fixed,
-                heightMode: SizeMode.Fixed,
-                width: ItemSlotSize,
-                height: ItemSlotSize,
-                tooltip: thingDef.description
-            );
-            itemStack.AddChild(itemIcon);
-
-            Label nameLabel = new Label(
-                text: thingDef.LabelCap.Truncate(ItemSlotSize),
-                widthMode: SizeMode.Fixed,
-                width: ItemSlotSize
-            );
-            itemStack.AddChild(nameLabel);
-
-            Label countLabel = new Label(
-                text: $"x{count}",
-                widthMode: SizeMode.Fixed,
-                width: ItemSlotSize
-            );
-            itemStack.AddChild(countLabel);
-
-            Button dropButton = new Button(
-                text: "Drop",
-                widthMode: SizeMode.Fill,
-                height: 20f
-            );
-
-            itemStack.AddChild(dropButton);
-
-            return (itemStack, dropButton);
+            GUI.color = Color.white;
+            Widgets.DrawTextureFitted(rect, texture, 1f);
         }
 
         private Texture2D GetThingTexture(ThingDef thingDef)
         {
             if (thingDef.DrawMatSingle != null && thingDef.DrawMatSingle.mainTexture != null)
             {
-                Texture2D icon = Widgets.GetIconFor(thingDef);
                 return thingDef.DrawMatSingle.mainTexture as Texture2D;
             }
 
@@ -242,6 +256,7 @@ namespace SK_Matter_Network
 
             GenPlace.TryPlaceThing(newItem, SelectedInterface.Position, SelectedInterface.Map, ThingPlaceMode.Near);
             Log.Message($"Dropped {itemToDrop.LabelShort} near network interface at {SelectedInterface.Position}");
+            itemsCached = false;
         }
 
         private List<KeyValuePair<ThingDef, int>> FilterItems(Dictionary<ThingDef, int> items)
@@ -253,13 +268,13 @@ namespace SK_Matter_Network
 
             itemsCached = true;
 
-            if (string.IsNullOrWhiteSpace(searchTextBox.Value))
+            if (string.IsNullOrWhiteSpace(searchText))
             {
                 cachedItems = items.OrderBy(kvp => kvp.Key.label).ToList();
                 return cachedItems;
             }
 
-            string searchLower = searchTextBox.Value.ToLower();
+            string searchLower = searchText.ToLower();
             cachedItems = items
                 .Where(kvp => kvp.Key.label.ToLower().Contains(searchLower))
                 .OrderBy(kvp => kvp.Key.label)
@@ -275,7 +290,11 @@ namespace SK_Matter_Network
 
         protected override void CloseTab()
         {
-            SelectedInterface.ParentNetwork.CurrentTab = null;
+            if (SelectedInterface?.ParentNetwork != null)
+            {
+                SelectedInterface.ParentNetwork.CurrentTab = null;
+            }
+
             oldSelected = null;
             base.CloseTab();
         }
@@ -283,13 +302,23 @@ namespace SK_Matter_Network
         public override void OnOpen()
         {
             itemsCached = false;
-            SelectedInterface.ParentNetwork.CurrentTab = this;
+            scrollPosition = Vector2.zero;
+
+            if (SelectedInterface?.ParentNetwork != null)
+            {
+                SelectedInterface.ParentNetwork.CurrentTab = this;
+            }
+
             oldSelected = SelectedInterface;
         }
 
         public override void Notify_ClickOutsideWindow()
         {
-            SelectedInterface.ParentNetwork.CurrentTab = null;
+            if (SelectedInterface?.ParentNetwork != null)
+            {
+                SelectedInterface.ParentNetwork.CurrentTab = null;
+            }
+
             oldSelected = null;
         }
     }

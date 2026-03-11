@@ -40,18 +40,14 @@ namespace SK_Matter_Network.Patches
                 List<Thing> chosenThings = __result;
                 ThingRequest thingRequest = ThingRequest.ForDef(def);
                 int countFound = 0;
-                Log.Message($"HMM: {def.defName}");
                 NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
                 foreach (DataNetwork network in mapComp.Networks)
                 {
                     if (ThingListProcessor(network.StoredItems.ToList()))
                     {
-                        Log.Message($"CNT: {chosenThings.Count}");
                         return;
                     }
                 }
-
-                Log.Message($"CNT: {chosenThings.Count}");
 
                 bool ThingListProcessor(List<Thing> things)
                 {

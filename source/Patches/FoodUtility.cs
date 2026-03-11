@@ -45,7 +45,10 @@ namespace SK_Matter_Network.Patches
                         }
                     }
                 }
-                __result = result;
+                if (result != null)
+                {
+                    __result = result;
+                }
             }
         }
     }

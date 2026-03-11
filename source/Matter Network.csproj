@@ -39,10 +39,6 @@
       <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="LessUI">
-      <HintPath>..\..\LessUI\1.6\Assemblies\LessUI.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -68,16 +64,18 @@
     <Compile Include="BuildingDefOf.cs" />
     <Compile Include="Comps\CompDiskDataStorage.cs" />
     <Compile Include="DataNetwork.cs" />
+    <Compile Include="Logger.cs" />
     <Compile Include="Mod.cs" />
+    <Compile Include="Patches\ThingWithComps.cs" />
     <Compile Include="Buildings\NetworkBuilding.cs" />
     <Compile Include="Buildings\NetworkBuildingDiskDrive.cs" />
     <Compile Include="Buildings\NetworkBuildingNetworkInterface.cs" />
     <Compile Include="NetworkManager.cs" />
     <Compile Include="Patches\FoodUtility.cs" />
+    <Compile Include="Patches\Game.cs" />
     <Compile Include="Patches\GridsUtility.cs" />
     <Compile Include="Patches\HaulAIUtility.cs" />
     <Compile Include="Patches\ListerHaulables.cs" />
-    <Compile Include="Patches\ListerThings.cs" />
     <Compile Include="Patches\Map.cs" />
     <Compile Include="Patches\GenClosest.cs" />
     <Compile Include="Patches\Pawn_ApparelTracker.cs" />
@@ -87,7 +85,6 @@
     <Compile Include="Patches\Reachability.cs" />
     <Compile Include="Patches\StorageSettings.cs" />
     <Compile Include="Patches\StoreUtility.cs" />
-    <Compile Include="Patches\ThingWithComps.cs" />
     <Compile Include="Patches\ToilFailConditions.cs" />
     <Compile Include="Patches\Toils_Goto.cs" />
     <Compile Include="Patches\Toils_Haul.cs" />

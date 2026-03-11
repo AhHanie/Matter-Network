@@ -77,8 +77,8 @@
         <label>disk drive</label>
         <description>the disk drive.</description>
         <graphicData>
-            <texPath>Things/Building/disk_drive</texPath>
-            <graphicClass>Graphic_Multi</graphicClass>
+            <texPath>MatterNetwork/Things/Building/DiskDrive</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
         </graphicData>
         <category>Building</category>
         <statBases>
@@ -138,6 +138,7 @@
         <uiOrder>2050</uiOrder>
         <designationCategory>Power</designationCategory>
         <preventDroppingThingsOn>true</preventDroppingThingsOn>
+        <rotatable>false</rotatable>
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
@@ -145,8 +146,8 @@
         <label>network interface</label>
         <description>the network interface.</description>
         <graphicData>
-            <texPath>Things/Building/network_interface</texPath>
-            <graphicClass>Graphic_Multi</graphicClass>
+            <texPath>MatterNetwork/Things/Building/NetworkInterface</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
         </graphicData>
         <category>Building</category>
         <noRightClickDraftAttack>true</noRightClickDraftAttack>
@@ -212,6 +213,7 @@
         <preventDroppingThingsOn>true</preventDroppingThingsOn>
         <hasInteractionCell>true</hasInteractionCell>
         <interactionCellOffset>(0,0,-1)</interactionCellOffset>
+        <rotatable>false</rotatable>
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
@@ -220,7 +222,7 @@
         <description>the network controller.</description>
         <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
         <graphicData>
-            <texPath>Things/Building/network_controller</texPath>
+            <texPath>MatterNetwork/Things/Building/NetworkController</texPath>
             <graphicClass>Graphic_Multi</graphicClass>
             <drawSize>(1,1)</drawSize>
         </graphicData>
@@ -264,5 +266,6 @@
         </comps> -->
         <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
         <uiIconScale>0.85</uiIconScale>
+        <rotatable>false</rotatable>
     </ThingDef>
 </Defs>

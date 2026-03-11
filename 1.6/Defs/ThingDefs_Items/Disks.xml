@@ -35,7 +35,7 @@
     <ThingDef ParentName="DiskBase">
         <defName>MN_Disk1k</defName>
         <graphicData>
-            <texPath>Things/Item/disk_1k</texPath>
+            <texPath>MatterNetwork/Things/Item/disk_1k</texPath>
             <graphicClass>Graphic_Single</graphicClass>
         </graphicData>
         <label>1k disk</label>
@@ -50,7 +50,7 @@
     <ThingDef ParentName="DiskBase">
         <defName>MN_Disk2k</defName>
         <graphicData>
-            <texPath>Things/Item/disk_2k</texPath>
+            <texPath>MatterNetwork/Things/Item/disk_2k</texPath>
             <graphicClass>Graphic_Single</graphicClass>
         </graphicData>
         <label>2k disk</label>
@@ -65,7 +65,7 @@
     <ThingDef ParentName="DiskBase">
         <defName>MN_Disk4k</defName>
         <graphicData>
-            <texPath>Things/Item/disk_4k</texPath>
+            <texPath>MatterNetwork/Things/Item/disk_4k</texPath>
             <graphicClass>Graphic_Single</graphicClass>
         </graphicData>
         <label>4k disk</label>
@@ -80,7 +80,7 @@
     <ThingDef ParentName="DiskBase">
         <defName>MN_Disk8k</defName>
         <graphicData>
-            <texPath>Things/Item/disk_8k</texPath>
+            <texPath>MatterNetwork/Things/Item/disk_8k</texPath>
             <graphicClass>Graphic_Single</graphicClass>
         </graphicData>
         <label>8k disk</label>

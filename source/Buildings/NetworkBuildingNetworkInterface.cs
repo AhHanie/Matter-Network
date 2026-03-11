@@ -297,6 +297,11 @@ namespace SK_Matter_Network
             }
         }
 
+        public override void DrawGUIOverlay()
+        {
+            return;
+        }
+
         public override void ExposeData()
         {
             base.ExposeData();
