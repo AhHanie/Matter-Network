@@ -51,11 +51,6 @@ namespace SK_Matter_Network.Patches
                     float distSquared = GetClosestInterfaceDistanceSquared(center, network);
                     foreach (Thing item in network.StoredItems)
                     {
-                        if (item == null || item.Destroyed)
-                        {
-                            continue;
-                        }
-
                         if (distSquared > maxDistanceSquared)
                         {
                             continue;
@@ -149,10 +144,11 @@ namespace SK_Matter_Network.Patches
                 {
                     NetworkBuildingNetworkInterface reachableInterface = null;
                     float closestInterfaceDistSquared = float.MaxValue;
+                    PathEndMode interfacePeMode = GetInterfacePathEndMode(peMode);
 
                     foreach (NetworkBuildingNetworkInterface interf in network.NetworkInterfaces)
                     {
-                        if (map.reachability.CanReach(center, interf.InteractionCell, peMode, traverseParams))
+                        if (map.reachability.CanReach(center, interf.InteractionCell, interfacePeMode, traverseParams))
                         {
                             float interfaceDistSquared = (center - interf.InteractionCell).LengthHorizontalSquared;
                             if (interfaceDistSquared < closestInterfaceDistSquared)
@@ -170,11 +166,6 @@ namespace SK_Matter_Network.Patches
 
                     foreach (Thing item in network.StoredItems)
                     {
-                        if (item == null || item.Destroyed)
-                        {
-                            continue;
-                        }
-
                         float distSquared = closestInterfaceDistSquared;
 
                         if (distSquared > maxDistanceSquared)
@@ -233,6 +224,82 @@ namespace SK_Matter_Network.Patches
             }
         }
 
+        //[HarmonyPatch(typeof(GenClosest), nameof(GenClosest.ClosestThingReachable))]
+        //public static class ClosestThingReachable
+        //{
+        //    public static void Postfix(
+        //        IntVec3 root,
+        //        Map map,
+        //        ThingRequest thingReq,
+        //        PathEndMode peMode,
+        //        TraverseParms traverseParams,
+        //        float maxDistance,
+        //        Predicate<Thing> validator,
+        //        IEnumerable<Thing> customGlobalSearchSet,
+        //        int searchRegionsMin,
+        //        int searchRegionsMax,
+        //        bool forceAllowGlobalSearch,
+        //        RegionType traversableRegionTypes,
+        //        bool ignoreEntirelyForbiddenRegions,
+        //        bool lookInHaulSources,
+        //        ref Thing __result)
+        //    {
+        //        if (!lookInHaulSources)
+        //        {
+        //            return;
+        //        }
+
+        //        NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
+        //        if (mapComp.Networks.Count == 0)
+        //        {
+        //            return;
+        //        }
+
+        //        float maxDistanceSquared = maxDistance * maxDistance;
+        //        float currentBestDistSquared = GetThingDistanceSquared(root, map, peMode, traverseParams, __result);
+        //        Thing bestNetworkThing = null;
+        //        float bestNetworkDistSquared = float.MaxValue;
+
+        //        foreach (DataNetwork network in mapComp.Networks)
+        //        {
+        //            float reachableInterfaceDistSquared = GetClosestReachableInterfaceDistanceSquared(root, map, peMode, traverseParams, network);
+        //            if (reachableInterfaceDistSquared > maxDistanceSquared)
+        //            {
+        //                continue;
+        //            }
+
+        //            foreach (Thing item in network.StoredItems)
+        //            {
+        //                if (!thingReq.IsUndefined && !thingReq.Accepts(item))
+        //                {
+        //                    continue;
+        //                }
+
+        //                if (!map.reachability.CanReach(root, item, peMode, traverseParams))
+        //                {
+        //                    continue;
+        //                }
+
+        //                if (validator != null && !validator(item))
+        //                {
+        //                    continue;
+        //                }
+
+        //                if (reachableInterfaceDistSquared < bestNetworkDistSquared)
+        //                {
+        //                    bestNetworkThing = item;
+        //                    bestNetworkDistSquared = reachableInterfaceDistSquared;
+        //                }
+        //            }
+        //        }
+
+        //        if (bestNetworkThing != null && (__result == null || bestNetworkDistSquared < currentBestDistSquared))
+        //        {
+        //            __result = bestNetworkThing;
+        //        }
+        //    }
+        //}
+
         private static Map TryGetMapFromSearchSet(IEnumerable searchSet)
         {
             if (searchSet == null)
@@ -265,6 +332,49 @@ namespace SK_Matter_Network.Patches
             }
 
             return closestDistSquared;
+        }
+
+        private static float GetClosestReachableInterfaceDistanceSquared(IntVec3 center, Map map, PathEndMode peMode, TraverseParms traverseParams, DataNetwork network)
+        {
+            float closestDistSquared = float.MaxValue;
+            PathEndMode interfacePeMode = GetInterfacePathEndMode(peMode);
+
+            foreach (NetworkBuildingNetworkInterface interf in network.NetworkInterfaces)
+            {
+                if (interf.Map != map)
+                {
+                    continue;
+                }
+
+                if (!map.reachability.CanReach(center, interf.InteractionCell, interfacePeMode, traverseParams))
+                {
+                    continue;
+                }
+
+                float distSquared = (center - interf.InteractionCell).LengthHorizontalSquared;
+                if (distSquared < closestDistSquared)
+                {
+                    closestDistSquared = distSquared;
+                }
+            }
+
+            return closestDistSquared;
+        }
+
+        private static float GetThingDistanceSquared(IntVec3 center, Map map, PathEndMode peMode, TraverseParms traverseParams, Thing thing)
+        {
+            NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
+            if (mapComp.TryGetItemNetwork(thing, out DataNetwork network))
+            {
+                return GetClosestReachableInterfaceDistanceSquared(center, map, peMode, traverseParams, network);
+            }
+
+            return (center - thing.PositionHeld).LengthHorizontalSquared;
+        }
+
+        private static PathEndMode GetInterfacePathEndMode(PathEndMode peMode)
+        {
+            return peMode == PathEndMode.InteractionCell ? PathEndMode.OnCell : peMode;
         }
     }
 }

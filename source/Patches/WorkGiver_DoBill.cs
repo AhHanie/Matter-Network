@@ -53,33 +53,31 @@ namespace SK_Matter_Network.Patches
                 }
 
                 var pawnField = AccessTools.Field(displayClassType, "pawn");
+                var billGiverField = AccessTools.Field(displayClassType, "billGiver");
+                var searchRadiusField = AccessTools.Field(displayClassType, "searchRadius");
                 var thingValidatorField = AccessTools.Field(displayClassType, "thingValidator");
+                var clearMethod = AccessTools.Method(typeof(List<Thing>), "Clear");
 
-                // Find the insertion point: ldsfld newRelevantThings followed by Clear, after the foreach loop
+                // Find the post-haul-source cleanup:
+                //   ldsfld newRelevantThings
+                //   callvirt List<Thing>.Clear
+                //   ldloc.0
+                //   ldloc.0
+                //   ldfld pawn
+                // This corresponds to IL_029a in the provided method body.
                 int insertIndex = -1;
                 for (int i = 0; i < codes.Count; i++)
                 {
                     if (codes[i].LoadsField(newRelevantThingsField) &&
                         i + 1 < codes.Count &&
-                        codes[i + 1].Calls(AccessTools.Method(typeof(List<Thing>), "Clear")))
+                        codes[i + 1].Calls(clearMethod) &&
+                        i + 4 < codes.Count &&
+                        codes[i + 2].opcode == OpCodes.Ldloc_0 &&
+                        codes[i + 3].opcode == OpCodes.Ldloc_0 &&
+                        codes[i + 4].LoadsField(pawnField))
                     {
-                        // Check if there's an endfinally within the previous 20 instructions
-                        // This ensures we're at the right Clear call (after the foreach)
-                        bool foundEndFinally = false;
-                        for (int j = Math.Max(0, i - 20); j < i; j++)
-                        {
-                            if (codes[j].opcode == OpCodes.Endfinally)
-                            {
-                                foundEndFinally = true;
-                                break;
-                            }
-                        }
-
-                        if (foundEndFinally)
-                        {
-                            insertIndex = i;
-                            break;
-                        }
+                        insertIndex = i;
+                        break;
                     }
                 }
 
@@ -95,6 +93,14 @@ namespace SK_Matter_Network.Patches
                     // Load pawn (from display class stored in local 0)
                     new CodeInstruction(OpCodes.Ldloc_0),
                     new CodeInstruction(OpCodes.Ldfld, pawnField),
+
+                    // Load billGiver (from display class stored in local 0)
+                    new CodeInstruction(OpCodes.Ldloc_0),
+                    new CodeInstruction(OpCodes.Ldfld, billGiverField),
+
+                    // Load searchRadius (from display class stored in local 0)
+                    new CodeInstruction(OpCodes.Ldloc_0),
+                    new CodeInstruction(OpCodes.Ldfld, searchRadiusField),
                     
                     // Load relevantThings (static field)
                     new CodeInstruction(OpCodes.Ldsfld, relevantThingsField),
@@ -110,18 +116,30 @@ namespace SK_Matter_Network.Patches
                     new CodeInstruction(OpCodes.Call, addNetworkThingsMethod)
                 };
 
+                instructionsToInsert[0].labels.AddRange(codes[insertIndex].labels);
+                codes[insertIndex].labels.Clear();
+                instructionsToInsert[0].blocks.AddRange(codes[insertIndex].blocks);
+                codes[insertIndex].blocks.Clear();
+
                 codes.InsertRange(insertIndex, instructionsToInsert);
+                Log.Message($"[Matter Network]: Patched WorkGiver_DoBill.TryFindBestIngredientsHelper transpiler successfully at instruction {insertIndex}.");
 
                 return codes;
             }
         }
 
-        public static void AddNetworkThings(Pawn pawn, List<Thing> relevantThings, HashSet<Thing> processedThings, Predicate<Thing> thingValidator)
+        public static void AddNetworkThings(Pawn pawn, Thing billGiver, float searchRadius, List<Thing> relevantThings, HashSet<Thing> processedThings, Predicate<Thing> thingValidator)
         {
             NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
+            float radiusSq = searchRadius * searchRadius;
 
             foreach (DataNetwork network in mapComp.Networks)
             {
+                if (!HasReachableInterfaceInRadius(pawn, billGiver, searchRadius, radiusSq, network))
+                {
+                    continue;
+                }
+
                 foreach (Thing thing in network.StoredItems)
                 {
                     if (!processedThings.Contains(thing) &&
@@ -134,6 +152,29 @@ namespace SK_Matter_Network.Patches
                     }
                 }
             }
+        }
+
+        private static bool HasReachableInterfaceInRadius(Pawn pawn, Thing billGiver, float searchRadius, float radiusSq, DataNetwork network)
+        {
+            foreach (NetworkBuildingNetworkInterface interf in network.NetworkInterfaces)
+            {
+                if (!interf.Position.InHorDistOf(billGiver.Position, searchRadius))
+                {
+                    continue;
+                }
+
+                if ((interf.Position - billGiver.Position).LengthHorizontalSquared > radiusSq)
+                {
+                    continue;
+                }
+
+                if (pawn.Map.reachability.CanReach(pawn.Position, interf.InteractionCell, PathEndMode.OnCell, TraverseParms.For(pawn)))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

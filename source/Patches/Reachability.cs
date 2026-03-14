@@ -23,9 +23,10 @@ namespace SK_Matter_Network.Patches
                 }
 
                 List<NetworkBuildingNetworkInterface> interfaces = network.NetworkInterfaces;
+                PathEndMode interfacePeMode = GetInterfacePathEndMode(peMode);
                 foreach (NetworkBuildingNetworkInterface interf in interfaces)
                 {
-                    if (__instance.CanReach(start, interf.InteractionCell, peMode, traverseParams))
+                    if (__instance.CanReach(start, interf.InteractionCell, interfacePeMode, traverseParams))
                     {
                         __result = true;
                         return false;
@@ -35,6 +36,42 @@ namespace SK_Matter_Network.Patches
                 __result = false;
                 return false;
             }
+        }
+
+        //[HarmonyPatch(typeof(ReachabilityImmediate), nameof(ReachabilityImmediate.CanReachImmediate), new Type[] { typeof(IntVec3), typeof(LocalTargetInfo), typeof(Map), typeof(PathEndMode), typeof(Pawn) })]
+        //public static class CanReachImmediate
+        //{
+        //    public static bool Prefix(IntVec3 start, LocalTargetInfo target, Map map, PathEndMode peMode, Pawn pawn, ref bool __result)
+        //    {
+        //        if (!(target.Thing?.def.EverStorable(false) ?? false))
+        //        {
+        //            return true;
+        //        }
+
+        //        NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
+        //        if (!mapComp.TryGetItemNetwork(target.Thing, out DataNetwork network))
+        //        {
+        //            return true;
+        //        }
+
+        //        PathEndMode interfacePeMode = GetInterfacePathEndMode(peMode);
+        //        foreach (NetworkBuildingNetworkInterface interf in network.NetworkInterfaces)
+        //        {
+        //            if (ReachabilityImmediate.CanReachImmediate(start, interf.InteractionCell, map, interfacePeMode, pawn))
+        //            {
+        //                __result = true;
+        //                return false;
+        //            }
+        //        }
+
+        //        __result = false;
+        //        return false;
+        //    }
+        //}
+
+        private static PathEndMode GetInterfacePathEndMode(PathEndMode peMode)
+        {
+            return peMode == PathEndMode.InteractionCell ? PathEndMode.OnCell : peMode;
         }
     }
 }

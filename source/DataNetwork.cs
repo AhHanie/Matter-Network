@@ -87,6 +87,10 @@ namespace SK_Matter_Network
                     {
                         storageSettings.CopyFrom(networkInterface.GetStandaloneSettings());
                     }
+                    else
+                    {
+                        networkInterface.NotifyNetworkSettingsChanged();
+                    }
                 }
 
                 Logger.Message($"Added building at {building.Position} to network {networkId}. Network now has {buildings.Count} buildings.");

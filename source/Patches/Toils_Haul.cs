@@ -57,7 +57,7 @@ namespace SK_Matter_Network.Patches
 
                 if (displayClassType == null)
                 {
-                    Logger.Error("[Matter Network] Could not find TakeToInventory display class");
+                    Logger.Error("Could not find TakeToInventory display class");
                     return null;
                 }
 
@@ -69,7 +69,7 @@ namespace SK_Matter_Network.Patches
 
                 if (method == null)
                 {
-                    Logger.Error("[Matter Network] Could not find TakeToInventory lambda method");
+                    Logger.Error("Could not find TakeToInventory lambda method");
                 }
 
                 return method;
@@ -118,7 +118,7 @@ namespace SK_Matter_Network.Patches
 
                 if (stackCountInsertIndex == -1 || insertIndex == -1)
                 {
-                    Logger.Error("[Matter Network] Could not find insertion point in TakeToInventory transpiler");
+                    Logger.Error("Could not find insertion point in TakeToInventory transpiler");
                     return codes;
                 }
 
@@ -141,7 +141,7 @@ namespace SK_Matter_Network.Patches
                 codes.InsertRange(stackCountInsertIndex, stackCountCaptureInstructions);
                 insertIndex += stackCountCaptureInstructions.Count;
                 codes.InsertRange(insertIndex, instructionsToInsert);
-                Logger.Message("[Matter Network] TakeToInventory transpiler patched successfully.");
+                Logger.Message("TakeToInventory transpiler patched successfully.");
 
                 return codes;
             }

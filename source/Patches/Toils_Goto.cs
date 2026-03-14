@@ -30,7 +30,7 @@ namespace SK_Matter_Network.Patches
                     }
 
                     NetworksMapComponent mapComp = thing.MapHeld.GetComponent<NetworksMapComponent>();
-                    if (mapComp == null || !mapComp.TryGetItemNetwork(thing, out DataNetwork network))
+                    if (!mapComp.TryGetItemNetwork(thing, out DataNetwork network))
                     {
                         originalInitAction();
                         return;
@@ -42,6 +42,7 @@ namespace SK_Matter_Network.Patches
                     if (closestInterface != null)
                     {
                         Log.Message($"Redirecting {actor.LabelShort} to network interface at {closestInterface.Position} to retrieve {thing.LabelShort}");
+                        PathEndMode interfacePeMode = peMode == PathEndMode.InteractionCell ? PathEndMode.OnCell : peMode;
 
                         if (actor.Position == closestInterface.InteractionCell)
                         {
@@ -50,7 +51,7 @@ namespace SK_Matter_Network.Patches
                         }
                         else
                         {
-                            actor.pather.StartPath(closestInterface.InteractionCell, peMode);
+                            actor.pather.StartPath(closestInterface.InteractionCell, interfacePeMode);
                         }
                     }
                     else

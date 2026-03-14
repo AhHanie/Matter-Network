@@ -34,8 +34,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Publicize Include="Assembly-CSharp:Verse.AI.Pawn_PathFollower.pawn" />
     <Publicize Include="Assembly-CSharp:RimWorld.Pawn_TraderTracker.pawn" />
     <Publicize Include="Assembly-CSharp:RimWorld.Pawn_TraderTracker.ReachableForTrade" />
+    <Publicize Include="Assembly-CSharp:RimWorld.ResourceCounter.map" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
@@ -88,8 +90,10 @@
     <Compile Include="Patches\GenClosest.cs" />
     <Compile Include="Patches\Pawn_ApparelTracker.cs" />
     <Compile Include="Patches\Pawn_CarryTracker.cs" />
+    <Compile Include="Patches\PickupAndHaulCompat.cs" />
     <Compile Include="Patches\Pawn_JobTracker.cs" />
     <Compile Include="Patches\Pawn_TradeTracker.cs" />
+    <Compile Include="Patches\ResourceCounter.cs" />
     <Compile Include="Patches\Reachability.cs" />
     <Compile Include="Patches\StorageSettings.cs" />
     <Compile Include="Patches\StoreUtility.cs" />

@@ -214,17 +214,14 @@ namespace SK_Matter_Network
         private void DrawThingTexture(Rect rect, ThingDef thingDef)
         {
             Texture2D texture = GetThingTexture(thingDef);
-            GUI.color = Color.white;
+            Color previousColor = GUI.color;
+            GUI.color = thingDef.uiIconColor;
             Widgets.DrawTextureFitted(rect, texture, 1f);
+            GUI.color = previousColor;
         }
 
         private Texture2D GetThingTexture(ThingDef thingDef)
         {
-            if (thingDef.DrawMatSingle != null && thingDef.DrawMatSingle.mainTexture != null)
-            {
-                return thingDef.DrawMatSingle.mainTexture as Texture2D;
-            }
-
             if (thingDef.uiIcon != null)
             {
                 return thingDef.uiIcon;
