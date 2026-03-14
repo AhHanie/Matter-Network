@@ -8,7 +8,12 @@ namespace SK_Matter_Network.Patches
         [HarmonyPatch(typeof(Pawn_CarryTracker), "TryStartCarry", new System.Type[] { typeof(Thing), typeof(int), typeof(bool) })]
         public static class TryStartCarry_Int
         {
-            public static void Postfix(Thing item, int count, int __result, Pawn ___pawn)
+            public static void Prefix(Thing item, ref int __state)
+            {
+                __state = item.stackCount;
+            }
+
+            public static void Postfix(Thing item, int count, int __result, Pawn ___pawn, int __state)
             {
                 if (__result <= 0)
                 {
@@ -29,7 +34,7 @@ namespace SK_Matter_Network.Patches
 
                 Log.Message($"Pawn {___pawn.LabelShort} picked up {__result} of {item.def.defName} from network {network.NetworkId}");
 
-                network.RemoveItem(item, __result);
+                network.RemoveItem(item, __result, __result >= __state);
                 network.ValidateNetwork();
             }
         }
@@ -37,7 +42,12 @@ namespace SK_Matter_Network.Patches
         [HarmonyPatch(typeof(Pawn_CarryTracker), "TryStartCarry", new System.Type[] { typeof(Thing) })]
         public static class TryStartCarry_Thing
         {
-            public static void Postfix(Thing item, bool __result, Pawn ___pawn)
+            public static void Prefix(Thing item, ref int __state)
+            {
+                __state = item.stackCount;
+            }
+
+            public static void Postfix(Thing item, bool __result, Pawn ___pawn, int __state)
             {
                 if (!__result)
                 {
@@ -62,7 +72,7 @@ namespace SK_Matter_Network.Patches
                     int amountPickedUp = carriedThing.stackCount;
                     Log.Message($"Pawn {___pawn.LabelShort} picked up entire stack ({amountPickedUp}) of {item.def.defName} from network {network.NetworkId}");
 
-                    network.RemoveItem(item, amountPickedUp);
+                    network.RemoveItem(item, amountPickedUp, amountPickedUp >= __state);
                     network.ValidateNetwork();
                 }
             }

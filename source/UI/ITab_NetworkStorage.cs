@@ -189,8 +189,8 @@ namespace SK_Matter_Network
             }
 
             Rect iconRect = new Rect(rect.x + 14f, rect.y + 8f, IconSize, IconSize);
-            Rect nameRect = new Rect(rect.x + 6f, iconRect.yMax + 6f, rect.width - 12f, 34f);
-            Rect countRect = new Rect(rect.x + 6f, nameRect.yMax + 2f, rect.width - 12f, 18f);
+            Rect nameRect = new Rect(rect.x + 6f, iconRect.yMax + 4f, rect.width - 12f, 18f);
+            Rect countRect = new Rect(rect.x + 6f, nameRect.yMax + 2f, rect.width - 12f, 16f);
             Rect buttonRect = new Rect(rect.x + 6f, rect.yMax - ButtonHeight - 6f, rect.width - 12f, ButtonHeight);
 
             DrawThingTexture(iconRect, thingDef);
@@ -201,7 +201,7 @@ namespace SK_Matter_Network
             Widgets.Label(nameRect, thingDef.LabelCap.Truncate(nameRect.width));
             Text.Anchor = TextAnchor.MiddleCenter;
             GUI.color = AccentColor;
-            Widgets.Label(countRect, $"x{count}");
+            Widgets.Label(countRect, FormatItemCount(count));
             GUI.color = Color.white;
             Text.Anchor = TextAnchor.UpperLeft;
 
@@ -249,13 +249,14 @@ namespace SK_Matter_Network
                 return;
             }
 
-            int toSplit = Mathf.Min(itemToDrop.def.stackLimit, itemToDrop.stackCount);
+            int itemStackCount = itemToDrop.stackCount;
+            int toSplit = Mathf.Min(itemToDrop.def.stackLimit, itemStackCount);
             Thing newItem = itemToDrop.SplitOff(toSplit);
 
-            SelectedInterface.ParentNetwork.RemoveItem(itemToDrop, toSplit);
+            SelectedInterface.ParentNetwork.RemoveItem(itemToDrop, toSplit, toSplit >= itemStackCount);
 
             GenPlace.TryPlaceThing(newItem, SelectedInterface.Position, SelectedInterface.Map, ThingPlaceMode.Near);
-            Log.Message($"Dropped {itemToDrop.LabelShort} near network interface at {SelectedInterface.Position}");
+            Log.Message($"Dropped {toSplit} of {itemToDrop.LabelShort} near network interface at {SelectedInterface.Position}");
             itemsCached = false;
         }
 
@@ -280,6 +281,21 @@ namespace SK_Matter_Network
                 .OrderBy(kvp => kvp.Key.label)
                 .ToList();
             return cachedItems;
+        }
+
+        private string FormatItemCount(int count)
+        {
+            if (count < 1000)
+            {
+                return count.ToString();
+            }
+
+            if (count <= 100000)
+            {
+                return $"{count / 1000}{"MN_CountSuffixK".Translate()}";
+            }
+
+            return $"{(count / 1000000f):0.#}{"MN_CountSuffixMil".Translate()}";
         }
 
         protected override void UpdateSize()

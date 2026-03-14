@@ -7,8 +7,8 @@ namespace SK_Matter_Network
     public static class Resources
     {
         public static readonly Graphic LinkedOverlayGraphic;
-        public static readonly Texture2D groupByDefIcon;
-        public static readonly Texture2D allStacksIcon;
+        public static readonly CachedTexture LockedIcon = new CachedTexture("MatterNetwork/UI/Icons/Locked");
+        public static readonly CachedTexture UnlockedIcon = new CachedTexture("MatterNetwork/UI/Icons/Unlocked");
 
         static Resources()
         {
@@ -25,9 +25,6 @@ namespace SK_Matter_Network
             );
 
             atlasGraphic.MatSingle.renderQueue = 3600;
-
-            groupByDefIcon = ContentFinder<Texture2D>.Get("MatterNetwork/UI/Icons/groupbydef");
-            allStacksIcon = ContentFinder<Texture2D>.Get("MatterNetwork/UI/Icons/allstacks");
         }
     }
 }

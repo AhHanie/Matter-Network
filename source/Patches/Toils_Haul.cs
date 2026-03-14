@@ -27,14 +27,14 @@ namespace SK_Matter_Network.Patches
                 }
                 if (haulThing.stackCount == 0)
                 {
-                    Log.Message(pawn?.ToString() + " tried to start carry " + haulThing?.ToString() + " which had stackcount 0.");
+                    Logger.Message(pawn?.ToString() + " tried to start carry " + haulThing?.ToString() + " which had stackcount 0.");
                     pawn.jobs.EndCurrentJob(JobCondition.Incompletable);
                     __result = true;
                     return false;
                 }
                 if (pawn.jobs.curJob.count <= 0)
                 {
-                    Log.Error("Invalid count: " + pawn.jobs.curJob.count + ", setting to 1. Job was " + pawn.jobs.curJob);
+                    Logger.Error("Invalid count: " + pawn.jobs.curJob.count + ", setting to 1. Job was " + pawn.jobs.curJob);
                     pawn.jobs.curJob.count = 1;
                 }
                 __result = false;
@@ -57,11 +57,11 @@ namespace SK_Matter_Network.Patches
 
                 if (displayClassType == null)
                 {
-                    Log.Error("[Matter Network] Could not find TakeToInventory display class");
+                    Logger.Error("[Matter Network] Could not find TakeToInventory display class");
                     return null;
                 }
 
-                // Find the lambda method (the one that contains the actual logic)
+                // Find the lambda method (the one that contains the actual Loggeric)
                 var method = AccessTools.FirstMethod(
                     displayClassType,
                     m => m.Name.Contains("TakeToInventory")
@@ -69,7 +69,7 @@ namespace SK_Matter_Network.Patches
 
                 if (method == null)
                 {
-                    Log.Error("[Matter Network] Could not find TakeToInventory lambda method");
+                    Logger.Error("[Matter Network] Could not find TakeToInventory lambda method");
                 }
 
                 return method;
@@ -87,17 +87,26 @@ namespace SK_Matter_Network.Patches
 					thing.def.soundPickup.PlayOneShot(new TargetInfo(actor.Position, actor.Map));
 				}
              */
-            public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+            public static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator generator)
             {
                 var codes = new List<CodeInstruction>(instructions);
+                LocalBuilder originalStackCountLocal = generator.DeclareLocal(typeof(int));
 
-                // Find the TryAdd call followed by pop
+                // Capture the original stack count before SplitOff mutates the tracked thing.
+                var splitOffMethod = AccessTools.Method(typeof(Thing), nameof(Thing.SplitOff), new Type[] { typeof(int) });
+                var stackCountField = AccessTools.Field(typeof(Thing), nameof(Thing.stackCount));
                 var tryAddMethod = AccessTools.Method(typeof(ThingOwner), nameof(ThingOwner.TryAdd), new Type[] { typeof(Thing), typeof(bool) });
                 var removeFromNetworkMethod = AccessTools.Method(typeof(TakeToInventory), nameof(RemoveFromNetwork));
 
+                int stackCountInsertIndex = -1;
                 int insertIndex = -1;
                 for (int i = 0; i < codes.Count; i++)
                 {
+                    if (stackCountInsertIndex == -1 && codes[i].Calls(splitOffMethod))
+                    {
+                        stackCountInsertIndex = i;
+                    }
+
                     if (codes[i].Calls(tryAddMethod) &&
                         i + 1 < codes.Count &&
                         codes[i + 1].opcode == OpCodes.Pop)
@@ -107,34 +116,43 @@ namespace SK_Matter_Network.Patches
                     }
                 }
 
-                if (insertIndex == -1)
+                if (stackCountInsertIndex == -1 || insertIndex == -1)
                 {
-                    Log.Error("[Matter Network] Could not find insertion point in TakeToInventory transpiler");
+                    Logger.Error("[Matter Network] Could not find insertion point in TakeToInventory transpiler");
                     return codes;
                 }
 
-                // Insert the call to RemoveFromNetwork(actor, thing, num)
-                // Based on the IL, local variables are: [0] actor, [1] thing, [2] num
+                var stackCountCaptureInstructions = new List<CodeInstruction>
+                {
+                    new CodeInstruction(OpCodes.Ldloc_1),
+                    new CodeInstruction(OpCodes.Ldfld, stackCountField),
+                    new CodeInstruction(OpCodes.Stloc, originalStackCountLocal.LocalIndex)
+                };
+
                 var instructionsToInsert = new List<CodeInstruction>
                 {
-                    new CodeInstruction(OpCodes.Ldloc_0),  // Load actor (Pawn)
-                    new CodeInstruction(OpCodes.Ldloc_1),  // Load thing (Thing)
-                    new CodeInstruction(OpCodes.Ldloc_2),  // Load num (int)
+                    new CodeInstruction(OpCodes.Ldloc_0),
+                    new CodeInstruction(OpCodes.Ldloc_1),
+                    new CodeInstruction(OpCodes.Ldloc_2),
+                    new CodeInstruction(OpCodes.Ldloc, originalStackCountLocal.LocalIndex),
                     new CodeInstruction(OpCodes.Call, removeFromNetworkMethod)
                 };
 
+                codes.InsertRange(stackCountInsertIndex, stackCountCaptureInstructions);
+                insertIndex += stackCountCaptureInstructions.Count;
                 codes.InsertRange(insertIndex, instructionsToInsert);
+                Logger.Message("[Matter Network] TakeToInventory transpiler patched successfully.");
 
                 return codes;
             }
 
-            public static void RemoveFromNetwork(Pawn actor, Thing thing, int count)
+            public static void RemoveFromNetwork(Pawn actor, Thing thing, int count, int originalStackCount)
             {
                 NetworksMapComponent mapComp = actor.Map.GetComponent<NetworksMapComponent>();
                 if (mapComp.TryGetItemNetwork(thing, out DataNetwork network))
                 {
-                    network.RemoveItem(thing, count);
-                    Log.Message($"[TakeToInventory] Removed {count} of {thing.def.defName} from network {network.NetworkId}");
+                    network.RemoveItem(thing, count, count >= originalStackCount);
+                    Logger.Message($"[TakeToInventory] Removed {count} of {thing.def.defName} from network {network.NetworkId}");
                     network.ValidateNetwork();
                 }
             }

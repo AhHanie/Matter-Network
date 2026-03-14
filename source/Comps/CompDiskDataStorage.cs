@@ -84,22 +84,25 @@ namespace SK_Matter_Network
             if (innerContainer.TryAdd(item, canMergeWithExistingStacks: true))
             {
                 cachedUsedBytes += originalStackCount;
-                Log.Message($"Disk {parent.LabelShort} accepted {originalStackCount} {item.def.defName}");
+                Logger.Message($"Disk {parent.LabelShort} accepted {originalStackCount} {item.def.defName}");
                 return originalStackCount;
             }
 
-            Log.Error($"Failed to add items to disk {parent.LabelShort}");
+            Logger.Error($"Failed to add items to disk {parent.LabelShort}");
             return 0;
         }
 
         public void RemoveItemFromStorage(Thing item, int count, bool forceRemove)
         {
+            Logger.Message($"[DiskStorage.Remove] Before count={count} force={forceRemove} usedBytes={cachedUsedBytes} item={Logger.DescribeThing(item)}");
+
+            bool removedFromContainer = false;
             if (forceRemove)
             {
-                innerContainer.Remove(item);
+                removedFromContainer = innerContainer.Remove(item);
             }
             cachedUsedBytes -= count;
-            Log.Message($"Reduced {item.LabelShort} stack by {count} in disk {parent.LabelShort}");
+            Logger.Message($"[DiskStorage.Remove] After count={count} force={forceRemove} removedFromContainer={removedFromContainer} usedBytes={cachedUsedBytes} item={Logger.DescribeThing(item)}");
         }
 
 
@@ -111,7 +114,7 @@ namespace SK_Matter_Network
         public void SetUsedBytes(int bytes)
         {
             cachedUsedBytes = bytes;
-            Log.Message($"Disk {parent.LabelShort} bytes corrected to {bytes}");
+            Logger.Message($"Disk {parent.LabelShort} bytes corrected to {bytes}");
         }
     }
 }

@@ -10,7 +10,7 @@ namespace SK_Matter_Network
         public Mod(ModContentPack content): base(content)
         {
             instance = new Harmony("rimworld.sk.matternetwork");
-            LongEventHandler.QueueLongEvent(Init, "Sk.MatterNetwork.Init", doAsynchronously: true, null);
+            LongEventHandler.QueueLongEvent(Init, "MN.LoadingLabel", doAsynchronously: true, null);
         }
 
         public static void Init()

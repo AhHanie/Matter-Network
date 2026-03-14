@@ -158,11 +158,12 @@ namespace SK_Matter_Network
 
         public void Notify_ItemAdded(Thing item)
         {
-            Log.Message($"Interface: Item added: {item.stackCount} {item.def.defName}");
+            Logger.Message($"Interface: Item added: {item.stackCount} {item.def.defName}");
             base.MapHeld.listerHaulables.Notify_AddedThing(item);
 
             if (ParentNetwork != null && innerContainer.Contains(item))
             {
+                item.Position = this.Position;
                 ProcessItemTransfer(item);
             }
         }
@@ -173,13 +174,13 @@ namespace SK_Matter_Network
 
             if (networkCanAccept <= 0)
             {
-                Log.Message($"Network storage full - cannot accept {item.def.defName}. Item will remain in interface.");
+                Logger.Message($"Network storage full - cannot accept {item.def.defName}. Item will remain in interface.");
                 return;
             }
 
             int toTransfer = Mathf.Min(item.stackCount, networkCanAccept);
 
-            Log.Message($"Attempting to transfer {toTransfer} of {item.stackCount} {item.def.defName} to network");
+            Logger.Message($"Attempting to transfer {toTransfer} of {item.stackCount} {item.def.defName} to network");
 
             Thing itemsToTransfer;
             if (toTransfer >= item.stackCount)
@@ -195,7 +196,7 @@ namespace SK_Matter_Network
 
             if (actuallyTransferred > 0)
             {
-                Log.Message($"Successfully transferred {actuallyTransferred} {item.def.defName} from interface to network");
+                Logger.Message($"Successfully transferred {actuallyTransferred} {item.def.defName} from interface to network");
 
                 if (actuallyTransferred < itemsToTransfer.stackCount)
                 {
@@ -203,13 +204,13 @@ namespace SK_Matter_Network
                     Thing remainingItems = itemsToTransfer.SplitOff(remaining);
 
                     GenPlace.TryPlaceThing(remainingItems, Position, Map, ThingPlaceMode.Near);
-                    Log.Warning($"Network partially full: dropped {remaining} {item.def.defName} near interface at {Position}");
+                    Logger.Warning($"Network partially full: dropped {remaining} {item.def.defName} near interface at {Position}");
                 }
             }
             else
             {
                 GenPlace.TryPlaceThing(itemsToTransfer, Position, Map, ThingPlaceMode.Near);
-                Log.Warning($"Failed to transfer to network and failed to return to container: dropped {itemsToTransfer.LabelShort} near interface at {Position}");
+                Logger.Warning($"Failed to transfer to network and failed to return to container: dropped {itemsToTransfer.LabelShort} near interface at {Position}");
             }
         }
 

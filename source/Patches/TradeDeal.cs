@@ -27,15 +27,5 @@ namespace SK_Matter_Network.Patches
                 return true;
             }
         }
-
-        [HarmonyPatch(typeof(TradeDeal), "AddAllTradeables")]
-        public static class AddAllTradeables
-        {
-            public static void Postfix()
-            {
-                Patch_Pawn_TradeTracker.PAWNTRADER_COLONYTHINGSBUY_FLAG = false;
-                Patch_Pawn_TradeTracker.PAWNTRADER_COLONYTHINGSBUY_MAP = null;
-            }
-        }
     }
 }

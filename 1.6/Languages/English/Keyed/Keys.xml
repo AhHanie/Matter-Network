@@ -2,4 +2,12 @@
 <LanguageData>
     <!-- ITab labels -->
     <MN_NetworkStorageTab>Network</MN_NetworkStorageTab>
+    <MN.LoadingLabel>Loading Matter Network</MN.LoadingLabel>
+    <MN_DiskDriveLockLabel>Lock disks</MN_DiskDriveLockLabel>
+    <MN_DiskDriveUnlockLabel>Unlock disks</MN_DiskDriveUnlockLabel>
+    <MN_DiskDriveLockDesc>When locked, disks in this drive will not be hauled out because of storage priority.</MN_DiskDriveLockDesc>
+    <MN_DiskDriveLockedMessage>{0} locked.</MN_DiskDriveLockedMessage>
+    <MN_DiskDriveUnlockedMessage>{0} unlocked.</MN_DiskDriveUnlockedMessage>
+    <MN_CountSuffixK>k</MN_CountSuffixK>
+    <MN_CountSuffixMil>mil</MN_CountSuffixMil>
 </LanguageData>

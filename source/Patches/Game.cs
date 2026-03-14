@@ -1,10 +1,5 @@
 ﻿using HarmonyLib;
 using RimWorld;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Verse;
 
 namespace SK_Matter_Network.Patches
@@ -16,6 +11,7 @@ namespace SK_Matter_Network.Patches
         {
             public static void Postfix()
             {
+                NetworksStaticCache.Reset();
             }
         }
     }

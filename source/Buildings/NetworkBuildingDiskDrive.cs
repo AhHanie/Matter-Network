@@ -20,6 +20,7 @@ namespace SK_Matter_Network
         private int cachedMaxBytes = 0;
         private int cachedUsedBytes = 0;
         private bool cacheDirty = true;
+        private bool locked = false;
         private Dictionary<Thing, Thing> itemToDisk;
 
         public int MaximumItems => def.building.maxItemsInCell * def.size.Area;
@@ -77,6 +78,8 @@ namespace SK_Matter_Network
         bool IStorageGroupMember.ShowRenameButton => base.Faction == Faction.OfPlayer;
 
         private static StringBuilder sb = new StringBuilder();
+
+        public bool Locked => locked;
 
         public void GetChildHolders(List<IThingHolder> outChildren)
         {
@@ -182,6 +185,7 @@ namespace SK_Matter_Network
                 List<Thing> itemsToRemove = new List<Thing>();
                 foreach (Thing storedItem in itemsInDisk)
                 {
+                    Logger.Message($"[HandleDiskRemoved] Inspecting disk item tracked={itemToDisk.ContainsKey(storedItem)} item={Logger.DescribeThing(storedItem)}");
                     if (itemToDisk.ContainsKey(storedItem) && itemToDisk[storedItem] == disk)
                     {
                         itemsToRemove.Add(storedItem);
@@ -256,6 +260,30 @@ namespace SK_Matter_Network
             {
                 yield return gizmo;
             }
+
+            yield return new Command_Action
+            {
+                defaultLabel = (locked ? "MN_DiskDriveUnlockLabel" : "MN_DiskDriveLockLabel").Translate(),
+                defaultDesc = "MN_DiskDriveLockDesc".Translate(),
+                icon = (locked ? Resources.LockedIcon : Resources.UnlockedIcon).Texture,
+                action = delegate
+                {
+                    locked = !locked;
+                    foreach (Thing disk in HeldItems)
+                    {
+                        if (Locked)
+                        {
+                            NetworksStaticCache.SetIsInValidBestStorage(disk, true);
+                        }
+                        else
+                        {
+                            NetworksStaticCache.RemoveThing(disk);
+                        }
+                    }
+                    Messages.Message((locked ? "MN_DiskDriveLockedMessage" : "MN_DiskDriveUnlockedMessage").Translate(LabelCap), this, MessageTypeDefOf.TaskCompletion);
+                }
+            };
+
             foreach (Gizmo item2 in StorageSettingsClipboard.CopyPasteGizmosFor(GetStoreSettings()))
             {
                 yield return item2;
@@ -294,6 +322,7 @@ namespace SK_Matter_Network
             Scribe_Deep.Look(ref innerContainer, "innerContainer", this);
             Scribe_Deep.Look(ref settings, "settings", this);
             Scribe_References.Look(ref storageGroup, "storageGroup");
+            Scribe_Values.Look(ref locked, "locked", false);
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
@@ -450,9 +479,12 @@ namespace SK_Matter_Network
             }
 
             CompDiskDataStorage diskStorage = disk.TryGetComp<CompDiskDataStorage>();
+            Logger.Message($"[DiskDrive.Remove] Before count={count} force={forceRemove} item={Logger.DescribeThing(item)} disk={Logger.DescribeThing(disk)}");
 
             diskStorage.RemoveItemFromStorage(item, count, forceRemove);
             cacheDirty = true;
+
+            Logger.Message($"[DiskDrive.Remove] After count={count} force={forceRemove} item={Logger.DescribeThing(item)} disk={Logger.DescribeThing(disk)}");
 
             if (forceRemove || item.Destroyed || item.holdingOwner != diskStorage.InnerContainer)
             {

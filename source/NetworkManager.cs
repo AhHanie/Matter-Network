@@ -15,7 +15,7 @@ namespace SK_Matter_Network
                 DataNetwork newNetwork = new DataNetwork(mapComp.map);
                 newNetwork.AddBuilding(building);
                 mapComp.AddNetwork(newNetwork);
-                Log.Message($"Created new network for building at {building.Position}");
+                Logger.Message($"Created new network for building at {building.Position}");
             }
             else
             {
@@ -38,7 +38,7 @@ namespace SK_Matter_Network
                 {
                     DataNetwork network = adjacentNetworks.First();
                     network.AddBuilding(building);
-                    Log.Message($"Added building at {building.Position} to existing network {network.NetworkId}");
+                    Logger.Message($"Added building at {building.Position} to existing network {network.NetworkId}");
                 }
                 else
                 {
@@ -52,7 +52,7 @@ namespace SK_Matter_Network
                         MergeNetworks(primaryNetwork, networkToMerge, mapComp);
                     }
 
-                    Log.Message($"Merged {networksToMerge.Count + 1} networks into network {primaryNetwork.NetworkId} when adding building at {building.Position}");
+                    Logger.Message($"Merged {networksToMerge.Count + 1} networks into network {primaryNetwork.NetworkId} when adding building at {building.Position}");
                 }
             }
         }
@@ -62,7 +62,7 @@ namespace SK_Matter_Network
             DataNetwork network = building.ParentNetwork;
             if (network == null)
             {
-                Log.Warning($"Tried to remove building at {building.Position} but it has no parent network");
+                Logger.Warning($"Tried to remove building at {building.Position} but it has no parent network");
                 return;
             }
 
@@ -71,7 +71,7 @@ namespace SK_Matter_Network
             if (network.IsEmpty())
             {
                 mapComp.RemoveNetwork(network);
-                Log.Message($"Removed empty network {network.NetworkId}");
+                Logger.Message($"Removed empty network {network.NetworkId}");
                 return;
             }
 
@@ -79,7 +79,7 @@ namespace SK_Matter_Network
 
             if (connectedGroups.Count > 1)
             {
-                Log.Message($"Network {network.NetworkId} was split into {connectedGroups.Count} groups");
+                Logger.Message($"Network {network.NetworkId} was split into {connectedGroups.Count} groups");
 
                 List<NetworkBuilding> firstGroup = connectedGroups[0];
                 List<NetworkBuilding> buildingsToRemove = network.Buildings.Where(b => !firstGroup.Contains(b)).ToList();
@@ -97,7 +97,7 @@ namespace SK_Matter_Network
                         newNetwork.AddBuilding(b);
                     }
                     mapComp.AddNetwork(newNetwork);
-                    Log.Message($"Created new network {newNetwork.NetworkId} with {newNetwork.BuildingCount} buildings after split");
+                    Logger.Message($"Created new network {newNetwork.NetworkId} with {newNetwork.BuildingCount} buildings after split");
                 }
             }
         }

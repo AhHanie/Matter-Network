@@ -9,29 +9,24 @@ namespace SK_Matter_Network.Patches
 {
     public static class Patch_StoreUtility
     {
+        public static bool CalculateIsInValidBestStorage(Thing thing, DataNetwork network)
+        {
+            if (!network.AcceptsItem(thing) || network.Faction != Faction.OfPlayer)
+            {
+                return false;
+            }
+
+            return !StoreUtility.TryFindBestBetterStorageFor(thing, null, thing.MapHeld, network.StorageSettings.Priority, Faction.OfPlayer, out var _, out var _, needAccurateResult: false);
+        }
+
         [HarmonyPatch(typeof(StoreUtility), "IsInValidBestStorage")]
         public static class IsInValidBestStorage
         {
             public static bool Prefix(Thing t, ref bool __result)
             {
-                if (t.MapHeld == null)
+                if (NetworksStaticCache.TryGetIsInValidBestStorage(t, out bool isInValidBestStorage))
                 {
-                    return true;
-                }
-
-                NetworksMapComponent mapComp = t.MapHeld.GetComponent<NetworksMapComponent>();
-                if (mapComp.TryGetItemNetwork(t, out DataNetwork network))
-                {
-                    __result = true;
-                    if (!network.AcceptsItem(t) || network.Faction != Faction.OfPlayer)
-                    {
-                        __result = false;
-                        return false;
-                    }
-                    if (StoreUtility.TryFindBestBetterStorageFor(t, null, t.MapHeld, network.StorageSettings.Priority, Faction.OfPlayer, out var _, out var _, needAccurateResult: false))
-                    {
-                        __result = false;
-                    }
+                    __result = isInValidBestStorage;
                     return false;
                 }
                 return true;
@@ -173,7 +168,8 @@ namespace SK_Matter_Network.Patches
                 NetworksMapComponent mapComp = t.MapHeld.GetComponent<NetworksMapComponent>();
                 if (mapComp.TryGetItemNetwork(t, out DataNetwork network))
                 {
-                    if (!network.AcceptsItem(t) || (forced && network.Faction != Faction.OfPlayer)) {
+                    if (!network.AcceptsItem(t) || (forced && network.Faction != Faction.OfPlayer))
+                    {
                         __result = StoragePriority.Unstored;
                         return false;
                     }
