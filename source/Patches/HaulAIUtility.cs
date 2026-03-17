@@ -68,5 +68,62 @@ namespace SK_Matter_Network.Patches
                 }
             }
         }
+
+        [HarmonyPatch(typeof(HaulAIUtility), "PawnCanAutomaticallyHaulFast")]
+        public static class PawnCanAutomaticallyHaulFast
+        {
+            public static bool Prefix(Pawn p, Thing t, bool forced, ref bool __result)
+            {
+                NetworksMapComponent mapComp = p.Map.GetComponent<NetworksMapComponent>();
+                if (!mapComp.TryGetItemNetwork(t, out DataNetwork _))
+                {
+                    if (t.MapHeld == null)
+                    {
+                        Logger.Error($"Item not in network and map is null: {t.def} {t.thingIDNumber} {t.stackCount} {t.Position}");
+                    }
+                    return true;
+                }
+
+                if (!p.CanReserve(t, 1, -1, null, forced))
+                {
+                    __result = false;
+                }
+                if (!p.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                {
+                    __result = false;
+                }
+                UnfinishedThing unfinishedThing = t as UnfinishedThing;
+                if (unfinishedThing != null &&
+                    unfinishedThing.BoundBill != null &&
+                    unfinishedThing.BoundBill.billStack.FirstShouldDoNow == unfinishedThing.BoundBill)
+                {
+                    Building building = unfinishedThing.BoundBill.billStack.billGiver as Building;
+                    if (building == null || (building.Spawned && building.OccupiedRect().ExpandedBy(1).Contains(unfinishedThing.Position)))
+                    {
+                        __result = false;
+                    }
+                }
+                using (ProfilerBlock.Scope("CanReach"))
+                {
+                    if (!p.CanReach(t, PathEndMode.ClosestTouch, p.NormalMaxDanger()))
+                    {
+                        __result = false;
+                    }
+                }
+                if (t.def.IsNutritionGivingIngestible && t.def.ingestible.HumanEdible && !t.IsSociallyProper(p, forPrisoner: false, animalsCare: true))
+                {
+                    JobFailReason.Is(HaulAIUtility.ReservedForPrisonersTrans);
+                    __result = false;
+                }
+                if (t.IsBurning())
+                {
+                    JobFailReason.Is(HaulAIUtility.BurningLowerTrans);
+                    __result = false;
+                }
+                __result = true;
+
+                return false;
+            }
+        }
     }
 }

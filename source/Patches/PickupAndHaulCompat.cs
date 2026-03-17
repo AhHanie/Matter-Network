@@ -51,7 +51,8 @@ namespace SK_Matter_Network.Patches
             {
                 Pawn pawn = __instance.pawn;
                 Job job = __instance.job;
-                if (!IsNetworkContainerTarget(job.targetB))
+
+                if (!job.targetB.HasThing || !IsNetworkContainerTarget(job.targetB))
                 {
                     return true;
                 }

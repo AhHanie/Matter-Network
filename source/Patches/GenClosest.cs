@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using Verse;
 using Verse.AI;
@@ -122,7 +123,7 @@ namespace SK_Matter_Network.Patches
                 bool canLookInHaulableSources,
                 ref Thing __result)
             {
-                if (!canLookInHaulableSources)
+                if (searchSet is IList<Pawn> || searchSet is IList<Building>)
                 {
                     return;
                 }
@@ -134,68 +135,50 @@ namespace SK_Matter_Network.Patches
                 }
 
                 float maxDistanceSquared = maxDistance * maxDistance;
-                float currentBestDistSquared = (__result != null) ? (center - __result.Position).LengthHorizontalSquared : float.MaxValue;
+                float currentBestDistSquared = (__result != null) ? GetThingDistanceSquared(center, map, peMode, traverseParams, __result) : float.MaxValue;
                 float currentBestPrio = (priorityGetter != null && __result != null) ? priorityGetter(__result) : float.MinValue;
                 Thing bestNetworkThing = null;
                 float bestNetworkDistSquared = float.MaxValue;
                 float bestNetworkPrio = float.MinValue;
+                Dictionary<DataNetwork, float> reachableInterfaceDistanceByNetwork = new Dictionary<DataNetwork, float>();
 
-                foreach (DataNetwork network in mapComp.Networks)
+                foreach (Thing item in searchSet)
                 {
-                    NetworkBuildingNetworkInterface reachableInterface = null;
-                    float closestInterfaceDistSquared = float.MaxValue;
-                    PathEndMode interfacePeMode = GetInterfacePathEndMode(peMode);
-
-                    foreach (NetworkBuildingNetworkInterface interf in network.NetworkInterfaces)
-                    {
-                        if (map.reachability.CanReach(center, interf.InteractionCell, interfacePeMode, traverseParams))
-                        {
-                            float interfaceDistSquared = (center - interf.InteractionCell).LengthHorizontalSquared;
-                            if (interfaceDistSquared < closestInterfaceDistSquared)
-                            {
-                                reachableInterface = interf;
-                                closestInterfaceDistSquared = interfaceDistSquared;
-                            }
-                        }
-                    }
-
-                    if (reachableInterface == null)
+                    if (!mapComp.TryGetItemNetwork(item, out DataNetwork network))
                     {
                         continue;
                     }
 
-                    foreach (Thing item in network.StoredItems)
+                    if (!reachableInterfaceDistanceByNetwork.TryGetValue(network, out float distSquared))
                     {
-                        float distSquared = closestInterfaceDistSquared;
+                        distSquared = GetClosestReachableInterfaceDistanceSquared(center, map, peMode, traverseParams, network);
+                        reachableInterfaceDistanceByNetwork.Add(network, distSquared);
+                    }
 
-                        if (distSquared > maxDistanceSquared)
-                        {
-                            continue;
-                        }
+                    if (distSquared > maxDistanceSquared)
+                    {
+                        continue;
+                    }
 
-                        if (validator != null && !validator(item))
-                        {
-                            continue;
-                        }
+                    if (validator != null && !validator(item))
+                    {
+                        continue;
+                    }
 
-                        if (priorityGetter != null)
+                    if (priorityGetter != null)
+                    {
+                        float prio = priorityGetter(item);
+                        if (prio > bestNetworkPrio || (Mathf.Approximately(prio, bestNetworkPrio) && distSquared < bestNetworkDistSquared))
                         {
-                            float prio = priorityGetter(item);
-                            if (prio > bestNetworkPrio || (Mathf.Approximately(prio, bestNetworkPrio) && distSquared < bestNetworkDistSquared))
-                            {
-                                bestNetworkThing = item;
-                                bestNetworkDistSquared = distSquared;
-                                bestNetworkPrio = prio;
-                            }
+                            bestNetworkThing = item;
+                            bestNetworkDistSquared = distSquared;
+                            bestNetworkPrio = prio;
                         }
-                        else
-                        {
-                            if (distSquared < bestNetworkDistSquared)
-                            {
-                                bestNetworkThing = item;
-                                bestNetworkDistSquared = distSquared;
-                            }
-                        }
+                    }
+                    else if (distSquared < bestNetworkDistSquared)
+                    {
+                        bestNetworkThing = item;
+                        bestNetworkDistSquared = distSquared;
                     }
                 }
 
