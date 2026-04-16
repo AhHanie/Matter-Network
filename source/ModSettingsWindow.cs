@@ -18,6 +18,11 @@ namespace SK_Matter_Network
                 "MN_SettingsEnableLoggingLabel".Translate(),
                 ref ModSettings.EnableLogging,
                 "MN_SettingsEnableLoggingDescription".Translate());
+            listing.GapLine();
+            listing.CheckboxLabeled(
+                "MN_SettingsDisableNetworkItemsForWealthLabel".Translate(),
+                ref ModSettings.DisableNetworkItemsForWealth,
+                "MN_SettingsDisableNetworkItemsForWealthDescription".Translate());
             listing.End();
         }
     }

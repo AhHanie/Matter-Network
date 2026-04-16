@@ -9,6 +9,8 @@
     <MN_NetworkStorageDropLabel>Drop</MN_NetworkStorageDropLabel>
     <MN_SettingsEnableLoggingLabel>Enable message and warning logging</MN_SettingsEnableLoggingLabel>
     <MN_SettingsEnableLoggingDescription>When enabled, Matter Network will write message and warning logs. Errors and exceptions are always logged.</MN_SettingsEnableLoggingDescription>
+    <MN_SettingsDisableNetworkItemsForWealthLabel>Disable wealth for network items</MN_SettingsDisableNetworkItemsForWealthLabel>
+    <MN_SettingsDisableNetworkItemsForWealthDescription>When enabled, items stored inside Matter Network do not add to colony wealth. When disabled, network items are still counted once each instead of once per interface/controller path.</MN_SettingsDisableNetworkItemsForWealthDescription>
     <MN_LoadingLabel>Loading Matter Network ...</MN_LoadingLabel>
     <MN_SettingsTitle>Matter Network</MN_SettingsTitle>
     <MN_DiskDriveLockLabel>Lock disks</MN_DiskDriveLockLabel>

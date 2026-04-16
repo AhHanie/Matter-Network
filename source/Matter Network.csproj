@@ -43,6 +43,7 @@
     <Publicize Include="Assembly-CSharp:RimWorld.Dialog_SelectXenogerm.xenogerms" />
     <Publicize Include="Assembly-CSharp:RimWorld.ItemAvailability.map" />
     <Publicize Include="Assembly-CSharp:RimWorld.ResourceCounter.map" />
+    <Publicize Include="Assembly-CSharp:RimWorld.WealthWatcher.map" />
     <Publicize Include="Assembly-CSharp:Verse.AI.JobDriver.Map" />
     <Publicize Include="Assembly-CSharp:Verse.AI.JobDriver.TargetThingA" />
     <Publicize Include="Assembly-CSharp:Verse.AI.JobDriver.SetupToils" />
@@ -113,6 +114,7 @@
     <Compile Include="Patches\JobGiver_DyeHair.cs" />
     <Compile Include="Patches\JobGiver_BingeDrug.cs" />
     <Compile Include="Patches\PaintUtility.cs" />
+    <Compile Include="Patches\WealthWatcher.cs" />
     <Compile Include="Patches\WorkGiver_PaintBuilding.cs" />
     <Compile Include="Patches\WorkGiver_PaintFloor.cs" />
     <Compile Include="Patches\JobGiver_OptimizeApparel.cs" />
