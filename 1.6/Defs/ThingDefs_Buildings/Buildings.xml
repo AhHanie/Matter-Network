@@ -55,7 +55,6 @@
         <placeWorkers>
             <li>PlaceWorker_Conduit</li>
             <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
-            <li>PlaceWorker_InvalidOverSubstructure</li>
         </placeWorkers>
         <rotatable>false</rotatable>
         <selectable>true</selectable>
@@ -139,7 +138,6 @@
         <canOverlapZones>false</canOverlapZones>
         <placeWorkers>
             <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
-            <li>PlaceWorker_InvalidOverSubstructure</li>
         </placeWorkers>
         <researchPrerequisites>
             <li>MN_MatterNetwork</li>
@@ -229,7 +227,6 @@
         <canOverlapZones>false</canOverlapZones>
         <placeWorkers>
             <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
-            <li>PlaceWorker_InvalidOverSubstructure</li>
         </placeWorkers>
         <researchPrerequisites>
             <li>MN_MatterNetwork</li>
@@ -290,7 +287,6 @@
         </building>
         <placeWorkers>
             <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
-            <li>PlaceWorker_InvalidOverSubstructure</li>
         </placeWorkers>
         <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
         <researchPrerequisites>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+    <MN_NetworkStorageTab>Network</MN_NetworkStorageTab>
+    <MN_NetworkStorageHeaderTitle>Network Storage</MN_NetworkStorageHeaderTitle>
+    <MN_NetworkStorageHeaderNetworkId>Network ID: {0}</MN_NetworkStorageHeaderNetworkId>
+    <MN_NetworkStorageHeaderSummary>{0} / {1} bytes</MN_NetworkStorageHeaderSummary>
+    <MN_NetworkStorageSubTabOverview>Overview</MN_NetworkStorageSubTabOverview>
+    <MN_NetworkStorageSubTabByDef>Items By Def</MN_NetworkStorageSubTabByDef>
+    <MN_NetworkStorageSubTabByStack>Stored Stacks</MN_NetworkStorageSubTabByStack>
+    <MN_NetworkStorageSearchLabel>Search:</MN_NetworkStorageSearchLabel>
+    <MN_NetworkStorageNoNetwork>No network connected</MN_NetworkStorageNoNetwork>
+    <MN_NetworkStorageNoController>No active controller</MN_NetworkStorageNoController>
+    <MN_NetworkStorageNoItemsFiltered>No items match the current filter.</MN_NetworkStorageNoItemsFiltered>
+    <MN_NetworkStorageNoStoredItems>No stored items in this network.</MN_NetworkStorageNoStoredItems>
+    <MN_NetworkStorageNoStoredStacks>No stored stacks in this network.</MN_NetworkStorageNoStoredStacks>
+    <MN_NetworkStorageDropLabel>Drop</MN_NetworkStorageDropLabel>
+    <MN_NetworkStorageStatusOnline>Online</MN_NetworkStorageStatusOnline>
+    <MN_NetworkStorageStatusOvercommitted>Overcommitted</MN_NetworkStorageStatusOvercommitted>
+    <MN_NetworkStorageOverviewUsedBytes>Used Bytes</MN_NetworkStorageOverviewUsedBytes>
+    <MN_NetworkStorageOverviewCapacity>Capacity</MN_NetworkStorageOverviewCapacity>
+    <MN_NetworkStorageOverviewUtilization>Utilization</MN_NetworkStorageOverviewUtilization>
+    <MN_NetworkStorageOverviewStoredStacks>Stored Stacks</MN_NetworkStorageOverviewStoredStacks>
+    <MN_NetworkStorageOverviewUniqueDefs>Unique Defs</MN_NetworkStorageOverviewUniqueDefs>
+    <MN_NetworkStorageOverviewNetworkComposition>Network Composition</MN_NetworkStorageOverviewNetworkComposition>
+    <MN_NetworkStorageOverviewStatus>Status</MN_NetworkStorageOverviewStatus>
+    <MN_NetworkStorageOverviewControllers>Controllers</MN_NetworkStorageOverviewControllers>
+    <MN_NetworkStorageOverviewInterfaces>Interfaces</MN_NetworkStorageOverviewInterfaces>
+    <MN_NetworkStorageOverviewDiskDrives>Disk Drives</MN_NetworkStorageOverviewDiskDrives>
+    <MN_NetworkStorageOverviewBuildings>Buildings</MN_NetworkStorageOverviewBuildings>
+    <MN_NetworkStorageOverviewControllerState>Controller State</MN_NetworkStorageOverviewControllerState>
+    <MN_NetworkStorageOverviewExtraction>Extraction</MN_NetworkStorageOverviewExtraction>
+    <MN_NetworkStorageOverviewStoredUnits>Stored Units</MN_NetworkStorageOverviewStoredUnits>
+    <MN_NetworkStorageOverviewOvercommitted>Overcommitted</MN_NetworkStorageOverviewOvercommitted>
+    <MN_NetworkStorageOverviewExtractionAvailable>Available</MN_NetworkStorageOverviewExtractionAvailable>
+    <MN_NetworkStorageOverviewExtractionUnavailable>Unavailable</MN_NetworkStorageOverviewExtractionUnavailable>
+    <MN_NetworkStorageOverviewTopDefs>Top Stored Defs</MN_NetworkStorageOverviewTopDefs>
+    <MN_NetworkStorageOverviewTopDefsHeaderStacks>Stacks</MN_NetworkStorageOverviewTopDefsHeaderStacks>
+    <MN_NetworkStorageOverviewTopDefsHeaderTotal>Total</MN_NetworkStorageOverviewTopDefsHeaderTotal>
+    <MN_NetworkStorageByDefSummary>{0} defs | {1} total</MN_NetworkStorageByDefSummary>
+    <MN_NetworkStorageByStackSummary>{0} stored stacks</MN_NetworkStorageByStackSummary>
+    <MN_NetworkStorageTotalCount>Total: {0}</MN_NetworkStorageTotalCount>
+    <MN_NetworkStorageStackEntries>{0} stacks</MN_NetworkStorageStackEntries>
+    <MN_NetworkStorageDropByDefTooltip>Drop one chunk of {0}. This grouped entry covers {1} stored stacks for a total of {2}.</MN_NetworkStorageDropByDefTooltip>
+    <MN_NetworkStorageDropStackTooltip>Drop one chunk from this stored stack: {0} ({1}).</MN_NetworkStorageDropStackTooltip>
+    <MN_NetworkStorageMetadataStuff>Stuff: {0}</MN_NetworkStorageMetadataStuff>
+    <MN_NetworkStorageMetadataQuality>Quality: {0}</MN_NetworkStorageMetadataQuality>
+    <MN_NetworkStorageMetadataHitPoints>HP: {0}/{1}</MN_NetworkStorageMetadataHitPoints>
+    <MN_NetworkStorageMetadataGeneric>No extra metadata</MN_NetworkStorageMetadataGeneric>
+    <MN_CountSuffixK>k</MN_CountSuffixK>
+    <MN_CountSuffixMil>mil</MN_CountSuffixMil>
+</LanguageData>

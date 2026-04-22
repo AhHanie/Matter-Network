@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
     <!-- ITab labels -->
-    <MN_NetworkStorageTab>Network</MN_NetworkStorageTab>
-    <MN_NetworkStorageSearchLabel>Search:</MN_NetworkStorageSearchLabel>
-    <MN_NetworkStorageNoNetwork>No network connected</MN_NetworkStorageNoNetwork>
-    <MN_NetworkStorageNoController>No active controller</MN_NetworkStorageNoController>
-    <MN_NetworkStorageNoItemsFiltered>No items match the current filter.</MN_NetworkStorageNoItemsFiltered>
-    <MN_NetworkStorageDropLabel>Drop</MN_NetworkStorageDropLabel>
     <MN_SettingsEnableLoggingLabel>Enable message and warning logging</MN_SettingsEnableLoggingLabel>
     <MN_SettingsEnableLoggingDescription>When enabled, Matter Network will write message and warning logs. Errors and exceptions are always logged.</MN_SettingsEnableLoggingDescription>
     <MN_SettingsDisableNetworkItemsForWealthLabel>Disable wealth for network items</MN_SettingsDisableNetworkItemsForWealthLabel>
@@ -19,8 +13,6 @@
     <MN_DiskDriveLockedMessage>{0} locked.</MN_DiskDriveLockedMessage>
     <MN_DiskDriveUnlockedMessage>{0} unlocked.</MN_DiskDriveUnlockedMessage>
     <MN_DiskInspectCapacity>Capacity: {0} bytes</MN_DiskInspectCapacity>
-    <MN_CountSuffixK>k</MN_CountSuffixK>
-    <MN_CountSuffixMil>mil</MN_CountSuffixMil>
     <MN_NetworkInspectNetworkId>Network ID: {0} ({1} buildings)</MN_NetworkInspectNetworkId>
     <MN_DiskDriveInspectCapacity>Disk capacity: {0} bytes</MN_DiskDriveInspectCapacity>
     <MN_DiskDriveInspectDisks>Disks: {0}.</MN_DiskDriveInspectDisks>

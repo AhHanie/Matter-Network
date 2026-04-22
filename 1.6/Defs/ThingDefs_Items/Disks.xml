@@ -32,11 +32,16 @@
             <li>MN_MatterNetwork</li>
         </researchPrerequisites>
         <recipeMaker>
+            <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
+            <workSkill>Crafting</workSkill>
+            <effectWorking>Smith</effectWorking>
+            <soundWorking>Recipe_Smith</soundWorking>
             <unfinishedThingDef>UnfinishedTechArmor</unfinishedThingDef>
             <researchPrerequisite>MN_MatterNetwork</researchPrerequisite>
             <recipeUsers>
                 <li>FabricationBench</li>
             </recipeUsers>
+            <workAmount>18000</workAmount>
         </recipeMaker>
     </ThingDef>
 
@@ -61,7 +66,7 @@
         <costList>
             <Steel>50</Steel>
             <ComponentIndustrial>1</ComponentIndustrial>
-            <Gold>5</Gold>
+            <Gold>1</Gold>
         </costList>
     </ThingDef>
 
@@ -86,7 +91,7 @@
         <costList>
             <Steel>100</Steel>
             <ComponentIndustrial>2</ComponentIndustrial>
-            <Gold>10</Gold>
+            <Gold>1</Gold>
         </costList>
     </ThingDef>
 
@@ -111,7 +116,7 @@
         <costList>
             <Plasteel>50</Plasteel>
             <ComponentSpacer>1</ComponentSpacer>
-            <Gold>15</Gold>
+            <Gold>2</Gold>
         </costList>
     </ThingDef>
 
@@ -136,7 +141,7 @@
         <costList>
             <Plasteel>100</Plasteel>
             <ComponentSpacer>2</ComponentSpacer>
-            <Gold>20</Gold>
+            <Gold>2</Gold>
         </costList>
     </ThingDef>
 </Defs>

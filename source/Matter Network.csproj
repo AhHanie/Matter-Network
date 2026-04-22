@@ -113,12 +113,15 @@
     <Compile Include="Patches\JobDriver_Wear.cs" />
     <Compile Include="Patches\JobGiver_DyeHair.cs" />
     <Compile Include="Patches\JobGiver_BingeDrug.cs" />
+    <Compile Include="Patches\JobGiver_SatisfyChemicalNeed.cs" />
+    <Compile Include="Patches\JobGiver_SatifyChemicalDependency.cs" />
     <Compile Include="Patches\PaintUtility.cs" />
     <Compile Include="Patches\WealthWatcher.cs" />
     <Compile Include="Patches\WorkGiver_PaintBuilding.cs" />
     <Compile Include="Patches\WorkGiver_PaintFloor.cs" />
     <Compile Include="Patches\JobGiver_OptimizeApparel.cs" />
     <Compile Include="Patches\JobGiver_GetHemogen.cs" />
+    <Compile Include="Patches\JobDriver_Refuel.cs" />
     <Compile Include="Patches\JobDriver_TakeInventory.cs" />
     <Compile Include="Patches\GenClosest.cs" />
     <Compile Include="Patches\Designator_Build.cs" />
@@ -154,7 +157,15 @@
     <Compile Include="Comps\NetworksMapComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.cs" />
-    <Compile Include="UI\ITab_NetworkStorage.cs" />
+    <Compile Include="UI\NetworkStorage\ITab_NetworkStorage.cs" />
+    <Compile Include="UI\NetworkStorage\NetworkStorageChromeDrawer.cs" />
+    <Compile Include="UI\NetworkStorage\NetworkStorageItemsDrawer.cs" />
+    <Compile Include="UI\NetworkStorage\NetworkStorageModels.cs" />
+    <Compile Include="UI\NetworkStorage\NetworkStorageOverviewDrawer.cs" />
+    <Compile Include="UI\NetworkStorage\NetworkStorageTabActions.cs" />
+    <Compile Include="UI\NetworkStorage\NetworkStorageTabDataSource.cs" />
+    <Compile Include="UI\NetworkStorage\NetworkStorageTabState.cs" />
+    <Compile Include="UI\NetworkStorage\NetworkStorageUiConstants.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
