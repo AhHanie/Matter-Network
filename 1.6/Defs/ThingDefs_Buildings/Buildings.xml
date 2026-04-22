@@ -53,7 +53,6 @@
             <Steel>4</Steel>
         </costList>
         <placeWorkers>
-            <li>PlaceWorker_Conduit</li>
             <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
         </placeWorkers>
         <rotatable>false</rotatable>
@@ -68,9 +67,6 @@
         <uiOrder>2000</uiOrder>
         <constructEffect>ConstructMetal</constructEffect>
         <clearBuildingArea>false</clearBuildingArea>
-        <replaceTags>
-            <li>Conduit</li>
-        </replaceTags>
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
