@@ -83,7 +83,8 @@
   <ItemGroup>
     <Compile Include="BuildingDefOf.cs" />
     <!-- New core files -->
-    <Compile Include="Caching\ControllerItemOwner.cs" />
+    <Compile Include="ThingOwners\ControllerItemOwner.cs" />
+    <Compile Include="ThingOwners\DiskItemOwner.cs" />
     <Compile Include="Comps\CompDiskCapacity.cs" />
     <Compile Include="Buildings\NetworkBuildingController.cs" />
     <Compile Include="ModSettings.cs" />

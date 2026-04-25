@@ -17,8 +17,6 @@ namespace SK_Matter_Network
         private StorageSettings settings;
         private StorageGroup storageGroup;
 
-        private const int InfiniteSpace = 1_000_000_000;
-
         public IReadOnlyList<Thing> HeldItems
         {
             get
@@ -86,7 +84,7 @@ namespace SK_Matter_Network
         public int SpaceRemainingFor(ThingDef def)
         {
             if (ParentNetwork == null || !ParentNetwork.HasActiveController) return 0;
-            return ParentNetwork.TotalCapacityBytes > ParentNetwork.UsedBytes ? InfiniteSpace : 0;
+            return System.Math.Max(0, ParentNetwork.TotalCapacityBytes - ParentNetwork.UsedBytes);
         }
 
         public void Notify_SettingsChanged()

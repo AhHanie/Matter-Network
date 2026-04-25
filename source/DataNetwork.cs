@@ -65,6 +65,7 @@ namespace SK_Matter_Network
         private int cachedUsedBytes;
         private int cachedTotalCapacityBytes;
         private bool bytesDirty = true;
+        private int controllerCapacityAllowance;
 
         private ITab_NetworkStorage currentTab;
 
@@ -117,6 +118,8 @@ namespace SK_Matter_Network
         public int TotalCapacityBytes => cachedTotalCapacityBytes;
 
         public int OvercommittedBytes => System.Math.Max(0, cachedUsedBytes - cachedTotalCapacityBytes);
+
+        public int ControllerCapacityLimitForAdds => cachedTotalCapacityBytes + controllerCapacityAllowance;
 
         public DataNetwork()
         {
@@ -191,6 +194,12 @@ namespace SK_Matter_Network
 
         public bool ItemInNetwork(Thing item) => storedItems.Contains(item);
 
+        public bool WouldControllerAddExceedCapacity(Thing item)
+        {
+            if (item == null) return true;
+            return UsedBytes + item.stackCount > ControllerCapacityLimitForAdds;
+        }
+
         public void AddBuilding(NetworkBuilding building)
         {
             if (buildings.Contains(building)) return;
@@ -210,6 +219,7 @@ namespace SK_Matter_Network
             {
                 diskDrives.Add(drive);
                 RecalcTotalCapacityBytes();
+                RestoreArchivedItemsToController();
             }
             else if (building is NetworkBuildingNetworkInterface iface)
             {
@@ -278,6 +288,7 @@ namespace SK_Matter_Network
 
             RebuildStoredItemsFromController();
             RecalcTotalCapacityBytes();
+            RestoreArchivedItemsToController();
             MarkBytesDirty();
         }
 
@@ -295,6 +306,8 @@ namespace SK_Matter_Network
                     {
                         activeController = other;
                         RebuildStoredItemsFromController();
+                        RecalcTotalCapacityBytes();
+                        RestoreArchivedItemsToController();
                         break;
                     }
                 }
@@ -315,6 +328,361 @@ namespace SK_Matter_Network
                 if (t != null && !t.Destroyed)
                     storedItems.Add(t);
             }
+        }
+
+        public void NotifyDiskCapacityChanged()
+        {
+            RecalcTotalCapacityBytes();
+            ReconcileCapacityAfterDiskCapacityChanged();
+            RestoreArchivedItemsToController();
+            MarkBytesDirty();
+        }
+
+        public void NotifyDiskRemovedFromDrive(Thing removedDisk)
+        {
+            RecalcTotalCapacityBytes();
+
+            CompDiskCapacity removedDiskCapacity = removedDisk?.TryGetComp<CompDiskCapacity>();
+            if (removedDiskCapacity != null && HasActiveController && UsedBytes > TotalCapacityBytes)
+            {
+                int overflow = UsedBytes - TotalCapacityBytes;
+                ArchiveOverflowToDisk(removedDiskCapacity, overflow);
+            }
+
+            ReconcileCapacityAfterDiskCapacityChanged(recalculateFirst: false);
+            MarkBytesDirty();
+        }
+
+        public void NotifyDiskDriveWillBeUnavailable(NetworkBuildingDiskDrive unavailableDrive)
+        {
+            RecalcTotalCapacityBytes(excludedDrive: unavailableDrive);
+            ReconcileCapacityAfterDiskCapacityChanged(recalculateFirst: false);
+            MarkBytesDirty();
+        }
+
+        public void ArchiveAllControllerItemsToDisks(bool dropRemainder, IntVec3 fallbackCell, Map fallbackMap)
+        {
+            if (activeController?.innerContainer == null)
+                return;
+
+            List<Thing> activeItems = EnumerateActiveItemsDeterministic();
+            foreach (Thing item in activeItems)
+            {
+                if (item == null || item.Destroyed || item.stackCount <= 0)
+                    continue;
+
+                while (!item.Destroyed && item.stackCount > 0)
+                {
+                    int moved = TryMoveSomeToDisks(item, item.stackCount);
+                    if (moved <= 0)
+                        break;
+                }
+
+                if (!item.Destroyed && item.stackCount > 0 && dropRemainder)
+                    DropActiveItem(item, fallbackCell, fallbackMap, item.stackCount);
+            }
+
+            RebuildStoredItemsFromController();
+            RecalcTotalCapacityBytes();
+            MarkBytesDirty();
+        }
+
+        public void RestoreArchivedItemsToController()
+        {
+            if (!HasActiveController || activeController?.innerContainer == null)
+                return;
+
+            foreach (CompDiskCapacity disk in EnumerateInsertedDisksDeterministic())
+            {
+                if (disk == null || !disk.HasArchivedItems)
+                    continue;
+
+                int archivedBytes = disk.ArchivedUsedBytes;
+                if (archivedBytes <= 0)
+                    continue;
+
+                if (UsedBytes + archivedBytes > TotalCapacityBytes + disk.MaxBytes)
+                    continue;
+
+                controllerCapacityAllowance += disk.MaxBytes;
+                foreach (Thing archived in disk.ArchivedContainer.InnerListForReading.ToList())
+                {
+                    if (archived == null || archived.Destroyed)
+                        continue;
+
+                    while (!archived.Destroyed && archived.stackCount > 0)
+                    {
+                        int moved = SafeTransfer(archived, disk.ArchivedContainer, activeController.innerContainer, archived.stackCount);
+                        if (moved <= 0)
+                            break;
+                    }
+                }
+                controllerCapacityAllowance -= disk.MaxBytes;
+
+                if (!disk.HasArchivedItems)
+                {
+                    RecalcTotalCapacityBytes();
+                    RebuildStoredItemsFromController();
+                    MarkBytesDirty();
+                }
+            }
+        }
+
+        public void ReconcileCapacityAfterDiskCapacityChanged(bool recalculateFirst = true)
+        {
+            if (recalculateFirst)
+                RecalcTotalCapacityBytes();
+
+            while (HasActiveController && UsedBytes > TotalCapacityBytes)
+            {
+                int overflow = UsedBytes - TotalCapacityBytes;
+                int archived = ArchiveOverflowToDisks(overflow);
+                RecalcTotalCapacityBytes();
+
+                if (archived > 0)
+                    continue;
+
+                if (!TryGetDropTarget(out IntVec3 dropCell, out Map dropMap))
+                    break;
+
+                DropControllerItemsDeterministically(overflow, dropCell, dropMap);
+                RecalcTotalCapacityBytes();
+            }
+
+            RebuildStoredItemsFromController();
+            MarkBytesDirty();
+        }
+
+        private void RecalcTotalCapacityBytes(NetworkBuildingDiskDrive excludedDrive)
+        {
+            cachedTotalCapacityBytes = 0;
+            foreach (NetworkBuildingDiskDrive drive in diskDrives)
+            {
+                if (drive == null || drive == excludedDrive)
+                    continue;
+
+                cachedTotalCapacityBytes += drive.GetTotalCapacityBytes();
+            }
+        }
+
+        private int ArchiveOverflowToDisks(int requiredBytes)
+        {
+            int remaining = requiredBytes;
+            foreach (Thing item in EnumerateActiveItemsDeterministic())
+            {
+                if (remaining <= 0)
+                    break;
+
+                if (item == null || item.Destroyed || item.stackCount <= 0)
+                    continue;
+
+                int moved = TryMoveSomeToDisks(item, remaining);
+                remaining -= moved;
+            }
+
+            int archived = requiredBytes - remaining;
+            if (archived > 0)
+            {
+                RebuildStoredItemsFromController();
+                MarkBytesDirty();
+            }
+
+            return archived;
+        }
+
+        private int ArchiveOverflowToDisk(CompDiskCapacity disk, int requiredBytes)
+        {
+            if (disk == null || requiredBytes <= 0)
+                return 0;
+
+            int remaining = requiredBytes;
+            foreach (Thing item in EnumerateActiveItemsDeterministic())
+            {
+                if (remaining <= 0)
+                    break;
+
+                if (item == null || item.Destroyed || item.stackCount <= 0)
+                    continue;
+
+                int moved = TryMoveSomeToDisk(item, disk, remaining);
+                remaining -= moved;
+            }
+
+            int archived = requiredBytes - remaining;
+            if (archived > 0)
+            {
+                RebuildStoredItemsFromController();
+                MarkBytesDirty();
+            }
+
+            return archived;
+        }
+
+        private int TryMoveSomeToDisks(Thing item, int requestedBytes)
+        {
+            if (activeController?.innerContainer == null || item == null || item.Destroyed || requestedBytes <= 0)
+                return 0;
+
+            int movedTotal = 0;
+            foreach (CompDiskCapacity disk in EnumerateInsertedDisksDeterministic())
+            {
+                if (item.Destroyed || item.stackCount <= 0 || movedTotal >= requestedBytes)
+                    break;
+
+                int freeBytes = disk.ArchivedFreeBytes;
+                if (freeBytes <= 0)
+                    continue;
+
+                int count = System.Math.Min(requestedBytes - movedTotal, System.Math.Min(freeBytes, item.stackCount));
+                int moved = SafeTransfer(item, activeController.innerContainer, disk.ArchivedContainer, count);
+                if (moved <= 0)
+                    continue;
+
+                movedTotal += moved;
+            }
+
+            return movedTotal;
+        }
+
+        private int TryMoveSomeToDisk(Thing item, CompDiskCapacity disk, int requestedBytes)
+        {
+            if (activeController?.innerContainer == null || item == null || item.Destroyed || disk == null || requestedBytes <= 0)
+                return 0;
+
+            int freeBytes = disk.ArchivedFreeBytes;
+            if (freeBytes <= 0)
+                return 0;
+
+            int count = System.Math.Min(requestedBytes, System.Math.Min(freeBytes, item.stackCount));
+            return SafeTransfer(item, activeController.innerContainer, disk.ArchivedContainer, count);
+        }
+
+        private void DropControllerItemsDeterministically(int requiredBytes, IntVec3 dropCell, Map dropMap)
+        {
+            int remaining = requiredBytes;
+            foreach (Thing item in EnumerateActiveItemsDeterministic())
+            {
+                if (remaining <= 0)
+                    break;
+
+                if (item == null || item.Destroyed || item.stackCount <= 0)
+                    continue;
+
+                int count = System.Math.Min(remaining, item.stackCount);
+                DropActiveItem(item, dropCell, dropMap, count);
+                remaining -= count;
+            }
+        }
+
+        private void DropActiveItem(Thing item, IntVec3 dropCell, Map dropMap, int count)
+        {
+            if (activeController?.innerContainer == null)
+                return;
+
+            Thing toDrop;
+            if (count >= item.stackCount)
+            {
+                if (!activeController.innerContainer.Remove(item))
+                    return;
+
+                toDrop = item;
+            }
+            else
+            {
+                toDrop = item.SplitOff(count);
+            }
+
+            GenPlace.TryPlaceThing(toDrop, dropCell, dropMap, ThingPlaceMode.Near);
+            RebuildStoredItemsFromController();
+            MarkBytesDirty();
+        }
+
+        private static int SafeTransfer(Thing source, ThingOwner<Thing> from, ThingOwner<Thing> to, int requestedCount)
+        {
+            if (source == null || source.Destroyed || from == null || to == null || requestedCount <= 0)
+                return 0;
+
+            int count = System.Math.Min(requestedCount, source.stackCount);
+            Thing moving;
+
+            if (count >= source.stackCount)
+            {
+                if (!from.Remove(source))
+                    return 0;
+
+                moving = source;
+            }
+            else
+            {
+                moving = source.SplitOff(count);
+            }
+
+            if (to.TryAdd(moving, canMergeWithExistingStacks: true))
+                return count;
+
+            from.TryAdd(moving, canMergeWithExistingStacks: true);
+            return 0;
+        }
+
+        private List<CompDiskCapacity> EnumerateInsertedDisksDeterministic()
+        {
+            List<CompDiskCapacity> disks = new List<CompDiskCapacity>();
+            foreach (NetworkBuildingDiskDrive drive in diskDrives)
+            {
+                foreach (Thing diskThing in drive.HeldItems)
+                {
+                    CompDiskCapacity disk = diskThing?.TryGetComp<CompDiskCapacity>();
+                    if (disk != null)
+                        disks.Add(disk);
+                }
+            }
+
+            disks.Sort(CompareDisks);
+            return disks;
+        }
+
+        private static int CompareDisks(CompDiskCapacity a, CompDiskCapacity b)
+        {
+            int aId = a.parent.thingIDNumber;
+            int bId = b.parent.thingIDNumber;
+            return aId.CompareTo(bId);
+        }
+
+        private List<Thing> EnumerateActiveItemsDeterministic()
+        {
+            List<Thing> items = new List<Thing>();
+            if (activeController?.innerContainer == null)
+                return items;
+
+            foreach (Thing thing in activeController.innerContainer.InnerListForReading)
+            {
+                if (thing != null && !thing.Destroyed)
+                    items.Add(thing);
+            }
+
+            items.Sort((a, b) => a.thingIDNumber.CompareTo(b.thingIDNumber));
+            return items;
+        }
+
+        private bool TryGetDropTarget(out IntVec3 dropCell, out Map dropMap)
+        {
+            foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
+            {
+                dropCell = iface.Position;
+                dropMap = iface.Map;
+                return true;
+            }
+
+            if (activeController != null)
+            {
+                dropCell = activeController.Position;
+                dropMap = activeController.Map;
+                return true;
+            }
+
+            dropCell = IntVec3.Invalid;
+            dropMap = map;
+            return false;
         }
 
         public void Notify_SettingsChanged(StorageSettings interfaceSettings)

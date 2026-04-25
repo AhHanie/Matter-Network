@@ -1,17 +1,25 @@
-using System.Collections.Generic;
 using Verse;
 
 namespace SK_Matter_Network
 {
-    public class ControllerItemOwner : ThingOwner<Thing>
+    public class DiskItemOwner : ThingOwner<Thing>
     {
-        private NetworkBuildingController ctrl;
+        private CompDiskCapacity disk;
 
-        public ControllerItemOwner() { }
-
-        public ControllerItemOwner(NetworkBuildingController owner) : base(owner, oneStackOnly: false)
+        public DiskItemOwner()
         {
-            ctrl = owner;
+            dontTickContents = true;
+        }
+
+        public DiskItemOwner(CompDiskCapacity disk)
+        {
+            this.disk = disk;
+            dontTickContents = true;
+        }
+
+        public void SetDisk(CompDiskCapacity disk)
+        {
+            this.disk = disk;
             dontTickContents = true;
         }
 
@@ -19,8 +27,6 @@ namespace SK_Matter_Network
         {
             if (item == null || item.Destroyed)
                 return false;
-
-            DataNetwork network = ctrl?.ParentNetwork;
 
             if (canMergeWithExistingStacks)
             {
@@ -33,18 +39,11 @@ namespace SK_Matter_Network
                     int absorbed = item.stackCount;
                     existing.TryAbsorbStack(item, respectStackLimit: false);
                     NotifyAddedAndMergedWith(existing, absorbed);
-                    network?.MarkBytesDirty();
                     return true;
                 }
             }
 
-            bool result = base.TryAdd(item, canMergeWithExistingStacks: false);
-            if (result && !item.Destroyed && item.stackCount > 0)
-            {
-                network?.storedItems.Add(item);
-                network?.MarkBytesDirty();
-            }
-            return result;
+            return base.TryAdd(item, canMergeWithExistingStacks: false);
         }
     }
 }

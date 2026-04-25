@@ -88,14 +88,13 @@ namespace SK_Matter_Network
         public void Notify_ItemAdded(Thing disk)
         {
             base.MapHeld.listerHaulables.Notify_AddedThing(disk);
-            ParentNetwork?.RecalcTotalCapacityBytes();
+            ParentNetwork?.NotifyDiskCapacityChanged();
             Logger.Message($"Disk {disk.LabelShort} added to drive at {Position}. Recalculated capacity.");
         }
 
         public void Notify_ItemRemoved(Thing disk)
         {
-            ParentNetwork?.RecalcTotalCapacityBytes();
-            ParentNetwork?.MarkBytesDirty();
+            ParentNetwork?.NotifyDiskRemovedFromDrive(disk);
             Logger.Message($"Disk {disk.LabelShort} removed from drive at {Position}. Recalculated capacity.");
         }
 
@@ -105,7 +104,31 @@ namespace SK_Matter_Network
             foreach (Thing disk in HeldItems)
             {
                 CompDiskCapacity cap = disk.TryGetComp<CompDiskCapacity>();
-                if (cap != null) total += cap.MaxBytes;
+                if (cap != null && cap.CanContributeActiveCapacity) total += cap.MaxBytes;
+            }
+            return total;
+        }
+
+        public int GetArchivedDiskCount()
+        {
+            int count = 0;
+            foreach (Thing disk in HeldItems)
+            {
+                CompDiskCapacity cap = disk.TryGetComp<CompDiskCapacity>();
+                if (cap != null && cap.HasArchivedItems)
+                    count++;
+            }
+            return count;
+        }
+
+        public int GetArchivedBytes()
+        {
+            int total = 0;
+            foreach (Thing disk in HeldItems)
+            {
+                CompDiskCapacity cap = disk.TryGetComp<CompDiskCapacity>();
+                if (cap != null)
+                    total += cap.ArchivedUsedBytes;
             }
             return total;
         }
@@ -142,6 +165,9 @@ namespace SK_Matter_Network
 
         public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
         {
+            if (mode != DestroyMode.WillReplace)
+                ParentNetwork?.NotifyDiskDriveWillBeUnavailable(this);
+
             if (storageGroup != null)
             {
                 storageGroup.RemoveMember(this);
@@ -240,6 +266,13 @@ namespace SK_Matter_Network
                 {
                     sb.AppendLineIfNotEmpty();
                     sb.Append("MN_DiskDriveInspectDisks".Translate(HeldItems.Select(x => x.LabelShortCap).Distinct().ToCommaList()));
+                }
+
+                int archivedDiskCount = GetArchivedDiskCount();
+                if (archivedDiskCount > 0)
+                {
+                    sb.AppendLineIfNotEmpty();
+                    sb.Append("MN_DiskDriveInspectArchived".Translate(GetArchivedBytes(), archivedDiskCount));
                 }
             }
 

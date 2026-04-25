@@ -13,9 +13,11 @@
     <MN_DiskDriveLockedMessage>{0} locked.</MN_DiskDriveLockedMessage>
     <MN_DiskDriveUnlockedMessage>{0} unlocked.</MN_DiskDriveUnlockedMessage>
     <MN_DiskInspectCapacity>Capacity: {0} bytes</MN_DiskInspectCapacity>
+    <MN_DiskInspectArchived>Archived offline: {0} bytes in {1} stacks</MN_DiskInspectArchived>
     <MN_NetworkInspectNetworkId>Network ID: {0} ({1} buildings)</MN_NetworkInspectNetworkId>
     <MN_DiskDriveInspectCapacity>Disk capacity: {0} bytes</MN_DiskDriveInspectCapacity>
     <MN_DiskDriveInspectDisks>Disks: {0}.</MN_DiskDriveInspectDisks>
+    <MN_DiskDriveInspectArchived>Offline archived data: {0} bytes across {1} disks</MN_DiskDriveInspectArchived>
     <MN_ControllerInspectStorage>Storage: {0}/{1} bytes</MN_ControllerInspectStorage>
     <MN_ControllerInspectOvercommitted>Overcommitted: {0} bytes - add more disks or remove items</MN_ControllerInspectOvercommitted>
     <MN_ControllerInspectConflictDisabled>Controller conflict: disabled (another controller in same network has lower ID)</MN_ControllerInspectConflictDisabled>

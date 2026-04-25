@@ -13,8 +13,6 @@ namespace SK_Matter_Network
         private bool controllerConflictDisabled = false;
 
         private static readonly StringBuilder sb = new StringBuilder();
-        private const int InfiniteSpace = 1_000_000_000;
-
         public bool ControllerConflictDisabled
         {
             get => controllerConflictDisabled;
@@ -56,7 +54,7 @@ namespace SK_Matter_Network
         public int SpaceRemainingFor(ThingDef def)
         {
             if (ParentNetwork == null || !ParentNetwork.HasActiveController) return 0;
-            return ParentNetwork.TotalCapacityBytes > ParentNetwork.UsedBytes ? InfiniteSpace : 0;
+            return System.Math.Max(0, ParentNetwork.TotalCapacityBytes - ParentNetwork.UsedBytes);
         }
 
         public void GetChildHolders(List<IThingHolder> outChildren)
@@ -101,10 +99,6 @@ namespace SK_Matter_Network
 
         public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
         {
-            if (mode != DestroyMode.WillReplace)
-            {
-                innerContainer.ClearAndDestroyContents(mode);
-            }
             base.DeSpawn(mode);
         }
 
@@ -112,7 +106,10 @@ namespace SK_Matter_Network
         {
             if (mode != DestroyMode.WillReplace)
             {
-                innerContainer.ClearAndDestroyContents(mode);
+                ParentNetwork?.ArchiveAllControllerItemsToDisks(
+                    dropRemainder: true,
+                    fallbackCell: Position,
+                    fallbackMap: Map);
             }
             base.Destroy(mode);
         }

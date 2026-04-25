@@ -14,6 +14,8 @@ namespace SK_Matter_Network
             {
                 DataNetwork newNetwork = new DataNetwork(mapComp.map);
                 newNetwork.AddBuilding(building);
+                newNetwork.ValidateControllerConflicts();
+                newNetwork.NotifyDiskCapacityChanged();
                 mapComp.AddNetwork(newNetwork);
                 Logger.Message($"Created new network for building at {building.Position}");
             }
@@ -30,12 +32,16 @@ namespace SK_Matter_Network
                 {
                     DataNetwork newNetwork = new DataNetwork(mapComp.map);
                     newNetwork.AddBuilding(building);
+                    newNetwork.ValidateControllerConflicts();
+                    newNetwork.NotifyDiskCapacityChanged();
                     mapComp.AddNetwork(newNetwork);
                 }
                 else if (adjacentNetworks.Count == 1)
                 {
                     DataNetwork network = adjacentNetworks.First();
                     network.AddBuilding(building);
+                    network.ValidateControllerConflicts();
+                    network.NotifyDiskCapacityChanged();
                     Logger.Message($"Added building at {building.Position} to existing network {network.NetworkId}");
                 }
                 else
@@ -49,6 +55,7 @@ namespace SK_Matter_Network
                         MergeNetworks(primaryNetwork, toMerge, mapComp);
 
                     primaryNetwork.ValidateControllerConflicts();
+                    primaryNetwork.NotifyDiskCapacityChanged();
                     Logger.Message($"Merged {networksToMerge.Count + 1} networks into {primaryNetwork.NetworkId}");
                 }
             }
@@ -85,6 +92,7 @@ namespace SK_Matter_Network
                     network.RemoveBuilding(b);
 
                 network.ValidateControllerConflicts();
+                network.NotifyDiskCapacityChanged();
 
                 for (int i = 1; i < connectedGroups.Count; i++)
                 {
@@ -92,9 +100,15 @@ namespace SK_Matter_Network
                     foreach (NetworkBuilding b in connectedGroups[i])
                         newNetwork.AddBuilding(b);
                     newNetwork.ValidateControllerConflicts();
+                    newNetwork.NotifyDiskCapacityChanged();
                     mapComp.AddNetwork(newNetwork);
                     Logger.Message($"Created new network {newNetwork.NetworkId} with {newNetwork.BuildingCount} buildings after split");
                 }
+            }
+            else
+            {
+                network.ValidateControllerConflicts();
+                network.NotifyDiskCapacityChanged();
             }
         }
 
