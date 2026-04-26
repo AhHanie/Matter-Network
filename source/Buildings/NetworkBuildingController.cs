@@ -21,7 +21,7 @@ namespace SK_Matter_Network
 
         public bool HasValidStorage => !controllerConflictDisabled && ParentNetwork != null;
 
-        public bool HaulDestinationEnabled => true;
+        public bool HaulDestinationEnabled => false;
         public bool HaulSourceEnabled => HasValidStorage;
         public bool ApparelSourceEnabled => HasValidStorage;
 

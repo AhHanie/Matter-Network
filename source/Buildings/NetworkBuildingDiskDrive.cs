@@ -212,6 +212,28 @@ namespace SK_Matter_Network
             {
                 foreach (Gizmo g in StorageGroupUtility.StorageGroupMemberGizmos(this)) yield return g;
             }
+
+            if (Prefs.DevMode && HeldItems.Count > 0)
+            {
+                yield return new Command_Action
+                {
+                    defaultLabel = "Debug: drop random disk",
+                    defaultDesc = "Drop one random disk from this drive.",
+                    action = DropRandomDiskForDebug
+                };
+            }
+        }
+
+        private void DropRandomDiskForDebug()
+        {
+            if (!Spawned || HeldItems.Count == 0)
+                return;
+
+            Thing disk = HeldItems.RandomElement();
+            if (innerContainer.TryDrop(disk, Position, Map, ThingPlaceMode.Near, out Thing dropped))
+            {
+                Messages.Message($"Dropped {dropped.LabelShort} from {LabelShort}.", dropped, MessageTypeDefOf.NeutralEvent);
+            }
         }
 
         public override IEnumerable<FloatMenuOption> GetFloatMenuOptions(Pawn selPawn)
