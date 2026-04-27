@@ -33,6 +33,20 @@ namespace SK_Matter_Network.Patches
                     return true;
                 }
 
+                if (t.MapHeld == null)
+                {
+                    LogNullMapHeldItem(p, t);
+
+                    if (t.stackCount == 0 && !t.Destroyed)
+                    {
+                        Logger.Warning($"Destroying zero-stack mapless item {t.def?.defName ?? "nullDef"}{t.thingIDNumber}.");
+                        t.Destroy(DestroyMode.Vanish);
+                    }
+
+                    __result = false;
+                    return false;
+                }
+
                 NetworksMapComponent mapComp = p.Map.GetComponent<NetworksMapComponent>();
                 if (mapComp.TryGetItemNetwork(t, out _))
                 {
@@ -41,6 +55,25 @@ namespace SK_Matter_Network.Patches
                 }
 
                 return true;
+            }
+
+            private static void LogNullMapHeldItem(Pawn pawn, Thing item)
+            {
+                Logger.Error(
+                    "PawnCanAutomaticallyHaulFast saw an item with null MapHeld during TryOpportunisticJob.\n" +
+                    $"Pawn: {DescribePawn(pawn)}\n" +
+                    $"Item: {Patch_Pawn_JobTracker.DescribeThingForDebug(item, pawn)}\n" +
+                    Patch_Pawn_JobTracker.GetLastStartedJobsReport());
+            }
+
+            private static string DescribePawn(Pawn pawn)
+            {
+                if (pawn == null)
+                {
+                    return "null";
+                }
+
+                return $"{pawn.LabelCap} def={pawn.def?.defName ?? "nullDef"} id={pawn.thingIDNumber} spawned={pawn.Spawned} position={pawn.Position} mapHeld={(pawn.MapHeld == null ? "null" : $"index={pawn.MapHeld.Index} uniqueID={pawn.MapHeld.uniqueID}")}";
             }
         }
     }

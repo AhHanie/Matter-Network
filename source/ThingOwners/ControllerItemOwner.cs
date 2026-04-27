@@ -32,7 +32,7 @@ namespace SK_Matter_Network
                 for (int i = 0; i < InnerListForReading.Count; i++)
                 {
                     Thing existing = InnerListForReading[i];
-                    if (!existing.CanStackWith(item))
+                    if (!CanMergeIntoNetworkStack(existing, item))
                         continue;
 
                     int absorbed = item.stackCount;
@@ -50,6 +50,17 @@ namespace SK_Matter_Network
                 network?.MarkBytesDirty();
             }
             return result;
+        }
+
+        private static bool CanMergeIntoNetworkStack(Thing existing, Thing item)
+        {
+            if (existing?.def == null || item?.def == null)
+                return false;
+
+            if (existing.def.stackLimit <= 1 || item.def.stackLimit <= 1)
+                return false;
+
+            return existing.CanStackWith(item);
         }
 
         private void DropRejectedItem(Thing item, DataNetwork network)
