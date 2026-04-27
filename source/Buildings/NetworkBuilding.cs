@@ -9,9 +9,19 @@ namespace SK_Matter_Network
 
         public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
         {
-            NetworksMapComponent mapComp = Map.GetComponent<NetworksMapComponent>();
-            mapComp.RemoveBuilding(this);
+            bool beingTransportedOnGravship = BeingTransportedOnGravship;
+            Map oldMap = Map;
+            DataNetwork network = parentNetwork;
+            NetworksMapComponent mapComp = oldMap.GetComponent<NetworksMapComponent>();
+            if (!beingTransportedOnGravship)
+            {
+                mapComp.RemoveBuilding(this);
+            }
             base.DeSpawn(mode);
+            if (beingTransportedOnGravship && network != null && !network.HasSpawnedBuildingOnMap(oldMap))
+            {
+                mapComp.RemoveNetwork(network);
+            }
             Logger.Message($"Removing building from map comp, {Position}");
         }
 
@@ -23,8 +33,33 @@ namespace SK_Matter_Network
                 return;
             }
             NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
+            if (BeingTransportedOnGravship && parentNetwork != null)
+            {
+                parentNetwork.SetMap(map);
+                mapComp.AddNetwork(parentNetwork);
+                Logger.Message($"Reattaching transported network building to map comp, {Position} {parentNetwork != null}");
+                return;
+            }
+
             mapComp.AddBuilding(this);
             Logger.Message($"Adding building to map comp, {Position} {parentNetwork != null}");
+        }
+
+        public override void PostSwapMap()
+        {
+            DataNetwork network = parentNetwork;
+            base.PostSwapMap();
+
+            if (Spawned && network != null)
+            {
+                NetworksMapComponent mapComp = Map.GetComponent<NetworksMapComponent>();
+                network.SetMap(Map);
+                mapComp.AddNetwork(network);
+                network.RebuildNetworkBuildingCells();
+                network.ValidateControllerConflicts();
+                network.NotifyDiskCapacityChanged();
+                network.ValidateNetwork();
+            }
         }
 
         public override string GetInspectString()

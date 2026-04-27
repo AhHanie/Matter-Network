@@ -145,11 +145,6 @@ namespace SK_Matter_Network
         {
             foreach (Gizmo g in base.GetGizmos()) yield return g;
             foreach (Gizmo g in StorageSettingsClipboard.CopyPasteGizmosFor(GetStoreSettings())) yield return g;
-
-            if (StorageTabVisible && base.MapHeld != null)
-            {
-                foreach (Gizmo g in StorageGroupUtility.StorageGroupMemberGizmos(this)) yield return g;
-            }
         }
 
         public override IEnumerable<FloatMenuOption> GetFloatMenuOptions(Pawn selPawn)

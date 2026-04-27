@@ -145,6 +145,36 @@ namespace SK_Matter_Network
             RefreshUI();
         }
 
+        public void SetMap(Map map)
+        {
+            this.map = map;
+        }
+
+        public bool HasSpawnedBuildingOnMap(Map map)
+        {
+            foreach (NetworkBuilding building in buildings)
+            {
+                if (building != null && building.Spawned && building.Map == map)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public void RebuildNetworkBuildingCells()
+        {
+            networkBuildingsCells.Clear();
+            foreach (NetworkBuilding building in buildings)
+            {
+                if (building != null && !building.Destroyed)
+                {
+                    networkBuildingsCells.Add(building.Position);
+                }
+            }
+        }
+
         private void RecomputeCaches()
         {
             SyncStoredItemsWithController(logChanges: false);

@@ -106,6 +106,7 @@
     <Compile Include="Patches\CaravanFormingUtility.cs" />
     <Compile Include="Patches\FoodUtility.cs" />
     <Compile Include="Patches\HealthAIUtility.cs" />
+    <Compile Include="Patches\HaulAIUtility.cs" />
     <Compile Include="Patches\HealthCardUtility.cs" />
     <Compile Include="Patches\NetworkItemSearchUtility.cs" />
     <Compile Include="Patches\JoyGiver_TakeDrug.cs" />
