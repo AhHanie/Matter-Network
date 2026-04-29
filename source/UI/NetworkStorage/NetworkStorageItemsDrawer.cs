@@ -44,6 +44,12 @@ namespace SK_Matter_Network
                 return;
             }
 
+            if (!network.IsOperational)
+            {
+                chromeDrawer.DrawCenteredMessage(innerRect, "MN_NetworkStorageOffline".Translate(network.PowerModeLabel), GameFont.Small, NetworkStorageUiConstants.WarningColor);
+                return;
+            }
+
             if (filteredItems.Count == 0)
             {
                 chromeDrawer.DrawCenteredMessage(innerRect, string.IsNullOrWhiteSpace(state.ByDefSearchText) ? "MN_NetworkStorageNoStoredItems".Translate() : "MN_NetworkStorageNoItemsFiltered".Translate(), GameFont.Small, NetworkStorageUiConstants.SecondaryTextColor);
@@ -87,6 +93,12 @@ namespace SK_Matter_Network
             if (!network.HasActiveController)
             {
                 chromeDrawer.DrawCenteredMessage(innerRect, "MN_NetworkStorageNoController".Translate(), GameFont.Small, NetworkStorageUiConstants.SecondaryTextColor);
+                return;
+            }
+
+            if (!network.IsOperational)
+            {
+                chromeDrawer.DrawCenteredMessage(innerRect, "MN_NetworkStorageOffline".Translate(network.PowerModeLabel), GameFont.Small, NetworkStorageUiConstants.WarningColor);
                 return;
             }
 

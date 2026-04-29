@@ -10,6 +10,9 @@
             <li>AdvancedFabrication</li>
         </prerequisites>
         <requiredResearchBuilding>HiTechResearchBench</requiredResearchBuilding>
+        <requiredResearchFacilities>
+            <li>MultiAnalyzer</li>
+        </requiredResearchFacilities>
         <researchViewX>19.00</researchViewX>
         <researchViewY>0.50</researchViewY>
         <generalRules>
@@ -19,6 +22,31 @@
                 <li>subject_story->developed stable matter-to-data conversion</li>
                 <li>subject_story->linked storage devices into a unified logistics network</li>
                 <li>subject_gerund->constructing matter network infrastructure</li>
+            </rulesStrings>
+        </generalRules>
+    </ResearchProjectDef>
+
+    <ResearchProjectDef>
+        <defName>MN_NetworkPowerStorage</defName>
+        <label>network power storage</label>
+        <description>By adapting high-density capacitors for encoded matter networks, colonists can build reserve cells that keep network storage available during grid outages, solar flares, and temporary power shortages.</description>
+        <baseCost>3000</baseCost>
+        <techLevel>Spacer</techLevel>
+        <prerequisites>
+            <li>MN_MatterNetwork</li>
+        </prerequisites>
+        <requiredResearchBuilding>HiTechResearchBench</requiredResearchBuilding>
+        <requiredResearchFacilities>
+            <li>MultiAnalyzer</li>
+        </requiredResearchFacilities>
+        <researchViewX>20.00</researchViewX>
+        <researchViewY>0.50</researchViewY>
+        <generalRules>
+            <rulesStrings>
+                <li>subject->network power storage</li>
+                <li>subject_story->buffered a matter network against power failure</li>
+                <li>subject_story->built reserve cells for digitized storage</li>
+                <li>subject_gerund->building network reserve capacitors</li>
             </rulesStrings>
         </generalRules>
     </ResearchProjectDef>

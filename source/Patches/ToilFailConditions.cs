@@ -21,7 +21,7 @@ namespace SK_Matter_Network.Patches
                 NetworksMapComponent mapComp = thing.MapHeld.GetComponent<NetworksMapComponent>();
                 if (mapComp.TryGetItemNetwork(thing, out DataNetwork network))
                 {
-                    __result = false;
+                    __result = !network.IsOperational;
                     return false;
                 }
 

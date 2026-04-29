@@ -21,7 +21,7 @@ namespace SK_Matter_Network
         {
             get
             {
-                if (ParentNetwork?.ActiveController?.innerContainer != null)
+                if (ParentNetwork?.IsOperational == true && ParentNetwork.ActiveController?.innerContainer != null)
                     return ParentNetwork.ActiveController.innerContainer.InnerListForReading;
                 return fallbackContainer.InnerListForReading;
             }
@@ -31,9 +31,9 @@ namespace SK_Matter_Network
 
         public bool StorageTabVisible => true;
 
-        public bool HaulSourceEnabled => true;
+        public bool HaulSourceEnabled => ParentNetwork?.IsOperational == true;
 
-        public bool HaulDestinationEnabled => ParentNetwork?.HasActiveController ?? false;
+        public bool HaulDestinationEnabled => ParentNetwork?.IsOperational ?? false;
 
         StorageGroup IStorageGroupMember.Group
         {
@@ -60,7 +60,7 @@ namespace SK_Matter_Network
         }
         public ThingOwner GetDirectlyHeldThings()
         {
-            if (ParentNetwork?.ActiveController?.innerContainer != null && ParentNetwork.ActiveController.Spawned)
+            if (ParentNetwork?.IsOperational == true && ParentNetwork.ActiveController?.innerContainer != null && ParentNetwork.ActiveController.Spawned)
                 return ParentNetwork.ActiveController.innerContainer;
             return fallbackContainer;
         }
@@ -77,13 +77,13 @@ namespace SK_Matter_Network
 
         public bool Accepts(Thing t)
         {
-            if (ParentNetwork == null || !ParentNetwork.HasActiveController) return false;
+            if (ParentNetwork == null || !ParentNetwork.IsOperational) return false;
             return ParentNetwork.CanAccept(t);
         }
 
         public int SpaceRemainingFor(ThingDef def)
         {
-            if (ParentNetwork == null || !ParentNetwork.HasActiveController) return 0;
+            if (ParentNetwork == null || !ParentNetwork.IsOperational) return 0;
             return System.Math.Max(0, ParentNetwork.TotalCapacityBytes - ParentNetwork.UsedBytes);
         }
 
@@ -189,12 +189,17 @@ namespace SK_Matter_Network
                         : $"({"OneBuilding".Translate()})");
                 }
 
-                if (ParentNetwork?.HasActiveController == true)
+                if (ParentNetwork?.IsOperational == true)
                 {
                     int used = ParentNetwork.UsedBytes;
                     int total = ParentNetwork.TotalCapacityBytes;
                     sb.AppendLineIfNotEmpty();
                     sb.Append("MN_NetworkInterfaceInspectStorage".Translate(used, total, HeldItems.Count));
+                }
+                else if (ParentNetwork?.HasActiveController == true)
+                {
+                    sb.AppendLineIfNotEmpty();
+                    sb.Append("MN_NetworkInterfaceInspectOffline".Translate(ParentNetwork.PowerModeLabel));
                 }
                 else if (ParentNetwork != null)
                 {

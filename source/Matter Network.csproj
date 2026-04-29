@@ -17,8 +17,8 @@
     </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>false</DebugSymbols>
-    <DebugType>none</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>..\1.6\Assemblies\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
@@ -86,6 +86,11 @@
     <Compile Include="ThingOwners\ControllerItemOwner.cs" />
     <Compile Include="ThingOwners\DiskItemOwner.cs" />
     <Compile Include="Comps\CompDiskCapacity.cs" />
+    <Compile Include="Comps\CompNetworkBuilding.cs" />
+    <Compile Include="Comps\CompNetworkPowerController.cs" />
+    <Compile Include="Comps\CompNetworkPowerStorage.cs" />
+    <Compile Include="Networking\NetworkPowerMode.cs" />
+    <Compile Include="Networking\NetworkPowerState.cs" />
     <Compile Include="Buildings\NetworkBuildingController.cs" />
     <Compile Include="ModSettings.cs" />
     <Compile Include="ModSettingsWindow.cs" />
@@ -146,6 +151,7 @@
     <Compile Include="Patches\ResourceCounter.cs" />
     <Compile Include="Patches\Reachability.cs" />
     <Compile Include="Patches\StorageSettings.cs" />
+    <Compile Include="Patches\ThingDef.cs" />
     <Compile Include="Patches\Toils_Haul.cs" />
     <Compile Include="Patches\WorkGiver_CookFillHopper.cs" />
     <Compile Include="Patches\WorkGiver_EmptyWasteContainer.cs" />
@@ -159,11 +165,13 @@
     <Compile Include="Comps\NetworksMapComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.cs" />
+    <Compile Include="UI\NetworkStorage\ITab_DiskDriveSlots.cs" />
     <Compile Include="UI\NetworkStorage\ITab_NetworkStorage.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageChromeDrawer.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageItemsDrawer.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageModels.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageOverviewDrawer.cs" />
+    <Compile Include="UI\NetworkStorage\NetworkStoragePowerDrawer.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageTabActions.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageTabDataSource.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageTabState.cs" />

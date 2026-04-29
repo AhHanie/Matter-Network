@@ -22,6 +22,12 @@ namespace SK_Matter_Network.Patches
                     return true;
                 }
 
+                if (!network.IsOperational)
+                {
+                    __result = false;
+                    return false;
+                }
+
                 List<NetworkBuildingNetworkInterface> interfaces = network.NetworkInterfaces;
                 PathEndMode interfacePeMode = GetInterfacePathEndMode(peMode);
                 foreach (NetworkBuildingNetworkInterface interf in interfaces)

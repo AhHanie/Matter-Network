@@ -347,6 +347,11 @@ namespace SK_Matter_Network.Patches
 
         private static float GetClosestInterfaceDistanceSquared(IntVec3 center, DataNetwork network)
         {
+            if (!network.IsOperational)
+            {
+                return float.MaxValue;
+            }
+
             float closestDistSquared = float.MaxValue;
 
             foreach (NetworkBuildingNetworkInterface interf in network.NetworkInterfaces)
@@ -363,6 +368,11 @@ namespace SK_Matter_Network.Patches
 
         private static float GetClosestReachableInterfaceDistanceSquared(IntVec3 center, Map map, PathEndMode peMode, TraverseParms traverseParams, DataNetwork network)
         {
+            if (!network.IsOperational)
+            {
+                return float.MaxValue;
+            }
+
             float closestDistSquared = float.MaxValue;
             PathEndMode interfacePeMode = GetInterfacePathEndMode(peMode);
 
@@ -393,6 +403,11 @@ namespace SK_Matter_Network.Patches
             NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
             if (mapComp.TryGetItemNetwork(thing, out DataNetwork network))
             {
+                if (!network.IsOperational)
+                {
+                    return float.MaxValue;
+                }
+
                 return GetClosestReachableInterfaceDistanceSquared(center, map, peMode, traverseParams, network);
             }
 

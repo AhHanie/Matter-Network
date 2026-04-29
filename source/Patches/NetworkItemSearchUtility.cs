@@ -96,6 +96,11 @@ namespace SK_Matter_Network.Patches
             NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
             if (mapComp.TryGetItemNetwork(thing, out DataNetwork network))
             {
+                if (!network.IsOperational)
+                {
+                    return float.MaxValue;
+                }
+
                 return GetClosestReachableInterfaceDistanceSquared(pawn.Position, pawn, network);
             }
 
@@ -110,11 +115,21 @@ namespace SK_Matter_Network.Patches
                 return float.MaxValue;
             }
 
+            if (!network.IsOperational)
+            {
+                return float.MaxValue;
+            }
+
             return GetClosestReachableInterfaceDistanceSquared(pawn.Position, pawn, network);
         }
 
         public static float GetClosestReachableInterfaceDistanceSquared(IntVec3 root, Pawn pawn, DataNetwork network)
         {
+            if (!network.IsOperational)
+            {
+                return float.MaxValue;
+            }
+
             float closestDistanceSquared = float.MaxValue;
 
             foreach (NetworkBuildingNetworkInterface networkInterface in network.NetworkInterfaces)

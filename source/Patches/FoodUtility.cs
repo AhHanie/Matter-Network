@@ -95,6 +95,11 @@ namespace SK_Matter_Network.Patches
             NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
             if (mapComp.TryGetItemNetwork(thing, out DataNetwork network))
             {
+                if (!network.IsOperational)
+                {
+                    return float.MaxValue;
+                }
+
                 return GetClosestReachableInterfaceDistance(root, map, peMode, traverseParams, network);
             }
 
@@ -103,6 +108,11 @@ namespace SK_Matter_Network.Patches
 
         private static float GetClosestReachableInterfaceDistance(IntVec3 root, Map map, PathEndMode peMode, TraverseParms traverseParams, DataNetwork network)
         {
+            if (!network.IsOperational)
+            {
+                return float.MaxValue;
+            }
+
             float closestDistance = float.MaxValue;
             PathEndMode interfacePeMode = peMode == PathEndMode.InteractionCell ? PathEndMode.OnCell : peMode;
 

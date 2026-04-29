@@ -17,6 +17,13 @@ namespace SK_Matter_Network.Patches
                     return true;
                 }
 
+                if (!network.IsOperational)
+                {
+                    pawn.jobs.EndCurrentJob(JobCondition.Incompletable);
+                    __result = true;
+                    return false;
+                }
+
                 if (haulThing.stackCount == 0)
                 {
                     Log.Message(pawn?.ToString() + " tried to start carry " + haulThing?.ToString() + " which had stackcount 0.");

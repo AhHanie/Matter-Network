@@ -11,12 +11,14 @@ namespace SK_Matter_Network
         private readonly NetworkStorageTabActions actions = new NetworkStorageTabActions();
         private readonly NetworkStorageChromeDrawer chromeDrawer;
         private readonly NetworkStorageOverviewDrawer overviewDrawer;
+        private readonly NetworkStoragePowerDrawer powerDrawer;
         private readonly NetworkStorageItemsDrawer itemsDrawer;
 
-        private NetworkBuildingNetworkInterface oldSelected;
+        private NetworkBuilding oldSelected;
         private bool snapshotDirty = true;
         private NetworkStorageTabDataSnapshot snapshot = NetworkStorageTabDataSnapshot.Empty;
 
+        private NetworkBuilding SelectedNetworkBuilding => SelThing as NetworkBuilding;
         private NetworkBuildingNetworkInterface SelectedInterface => SelThing as NetworkBuildingNetworkInterface;
 
         public bool ItemsCached
@@ -32,12 +34,13 @@ namespace SK_Matter_Network
 
             chromeDrawer = new NetworkStorageChromeDrawer();
             overviewDrawer = new NetworkStorageOverviewDrawer(chromeDrawer, dataSource);
+            powerDrawer = new NetworkStoragePowerDrawer(chromeDrawer, dataSource);
             itemsDrawer = new NetworkStorageItemsDrawer(chromeDrawer, dataSource, actions);
         }
 
         protected override void FillTab()
         {
-            DataNetwork network = SelectedInterface?.ParentNetwork;
+            DataNetwork network = SelectedNetworkBuilding?.ParentNetwork;
             Rect outerRect = new Rect(0f, 0f, size.x, size.y).ContractedBy(NetworkStorageUiConstants.OuterPadding);
 
             if (network == null)
@@ -46,11 +49,11 @@ namespace SK_Matter_Network
                 return;
             }
 
-            if (oldSelected != SelectedInterface)
+            if (oldSelected != SelectedNetworkBuilding)
             {
                 state.Reset();
                 snapshotDirty = true;
-                oldSelected = SelectedInterface;
+                oldSelected = SelectedNetworkBuilding;
             }
 
             EnsureSnapshot(network);
@@ -75,6 +78,9 @@ namespace SK_Matter_Network
                 case NetworkStorageSubTab.Overview:
                     overviewDrawer.Draw(tabContentRect, network, snapshot, state);
                     break;
+                case NetworkStorageSubTab.Power:
+                    powerDrawer.Draw(tabContentRect, network);
+                    break;
                 case NetworkStorageSubTab.ByDef:
                     itemsDrawer.DrawByDefTab(tabContentRect, network, snapshot, state, SelectedInterface);
                     break;
@@ -92,9 +98,9 @@ namespace SK_Matter_Network
 
         protected override void CloseTab()
         {
-            if (SelectedInterface?.ParentNetwork != null)
+            if (SelectedNetworkBuilding?.ParentNetwork != null)
             {
-                SelectedInterface.ParentNetwork.CurrentTab = null;
+                SelectedNetworkBuilding.ParentNetwork.CurrentTab = null;
             }
 
             oldSelected = null;
@@ -105,19 +111,19 @@ namespace SK_Matter_Network
         {
             state.Reset();
             snapshotDirty = true;
-            if (SelectedInterface?.ParentNetwork != null)
+            if (SelectedNetworkBuilding?.ParentNetwork != null)
             {
-                SelectedInterface.ParentNetwork.CurrentTab = this;
+                SelectedNetworkBuilding.ParentNetwork.CurrentTab = this;
             }
 
-            oldSelected = SelectedInterface;
+            oldSelected = SelectedNetworkBuilding;
         }
 
         public override void Notify_ClickOutsideWindow()
         {
-            if (SelectedInterface?.ParentNetwork != null)
+            if (SelectedNetworkBuilding?.ParentNetwork != null)
             {
-                SelectedInterface.ParentNetwork.CurrentTab = null;
+                SelectedNetworkBuilding.ParentNetwork.CurrentTab = null;
             }
 
             oldSelected = null;

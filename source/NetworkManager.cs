@@ -85,6 +85,7 @@ namespace SK_Matter_Network
             {
                 Logger.Message($"Network {network.NetworkId} split into {connectedGroups.Count} groups");
 
+                float reserveEnergyBeforeSplit = network.StoredReserveEnergyWd;
                 List<NetworkBuilding> firstGroup = connectedGroups[0];
                 List<NetworkBuilding> buildingsToMove = network.Buildings.Where(b => !firstGroup.Contains(b)).ToList();
 
@@ -94,6 +95,7 @@ namespace SK_Matter_Network
                 network.ValidateControllerConflicts();
                 network.NotifyDiskCapacityChanged();
 
+                List<DataNetwork> splitNetworks = new List<DataNetwork> { network };
                 for (int i = 1; i < connectedGroups.Count; i++)
                 {
                     DataNetwork newNetwork = new DataNetwork(mapComp.map);
@@ -102,8 +104,11 @@ namespace SK_Matter_Network
                     newNetwork.ValidateControllerConflicts();
                     newNetwork.NotifyDiskCapacityChanged();
                     mapComp.AddNetwork(newNetwork);
+                    splitNetworks.Add(newNetwork);
                     Logger.Message($"Created new network {newNetwork.NetworkId} with {newNetwork.BuildingCount} buildings after split");
                 }
+
+                DistributeReserveAfterSplit(splitNetworks, reserveEnergyBeforeSplit);
             }
             else
             {
@@ -114,13 +119,51 @@ namespace SK_Matter_Network
 
         private static void MergeNetworks(DataNetwork primary, DataNetwork toMerge, NetworksMapComponent mapComp)
         {
+            float reserveEnergyToTransfer = toMerge.StoredReserveEnergyWd;
             List<NetworkBuilding> toTransfer = toMerge.Buildings.ToList();
             foreach (NetworkBuilding b in toTransfer)
             {
                 toMerge.RemoveBuilding(b);
                 primary.AddBuilding(b);
             }
+            primary.AddReserveEnergy(reserveEnergyToTransfer);
             mapComp.RemoveNetwork(toMerge);
+        }
+
+        private static void DistributeReserveAfterSplit(List<DataNetwork> networks, float reserveEnergy)
+        {
+            if (networks == null || networks.Count == 0)
+            {
+                return;
+            }
+
+            float totalCapacity = 0f;
+            for (int i = 0; i < networks.Count; i++)
+            {
+                networks[i].RebuildPowerCaches();
+                totalCapacity += networks[i].MaxReserveEnergyWd;
+            }
+
+            if (totalCapacity <= 0f || reserveEnergy <= 0f)
+            {
+                for (int i = 0; i < networks.Count; i++)
+                {
+                    networks[i].SetReserveEnergy(0f);
+                }
+                return;
+            }
+
+            float remaining = reserveEnergy;
+            for (int i = 0; i < networks.Count; i++)
+            {
+                DataNetwork network = networks[i];
+                float allocation = i == networks.Count - 1
+                    ? remaining
+                    : reserveEnergy * (network.MaxReserveEnergyWd / totalCapacity);
+                allocation = System.Math.Min(allocation, network.MaxReserveEnergyWd);
+                network.SetReserveEnergy(allocation);
+                remaining -= allocation;
+            }
         }
 
         private static List<List<NetworkBuilding>> FindConnectedGroups(List<NetworkBuilding> buildings, Map map)

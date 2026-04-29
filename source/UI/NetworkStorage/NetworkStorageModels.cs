@@ -6,6 +6,7 @@ namespace SK_Matter_Network
     internal enum NetworkStorageSubTab
     {
         Overview,
+        Power,
         ByDef,
         ByStack
     }

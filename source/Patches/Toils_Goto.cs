@@ -36,6 +36,12 @@ namespace SK_Matter_Network.Patches
                         return;
                     }
 
+                    if (!network.IsOperational)
+                    {
+                        actor.jobs.EndCurrentJob(JobCondition.Incompletable);
+                        return;
+                    }
+
                     originalToil.debugName = "GotoCell";
                     NetworkBuildingNetworkInterface closestInterface = FindClosestReachableInterface(actor, network);
 
@@ -64,6 +70,11 @@ namespace SK_Matter_Network.Patches
 
             public static NetworkBuildingNetworkInterface FindClosestReachableInterface(Pawn pawn, DataNetwork network)
             {
+                if (!network.IsOperational)
+                {
+                    return null;
+                }
+
                 List<NetworkBuildingNetworkInterface> interfaces = network.NetworkInterfaces;
                 NetworkBuildingNetworkInterface closestInterface = null;
                 float closestDistSquared = float.MaxValue;

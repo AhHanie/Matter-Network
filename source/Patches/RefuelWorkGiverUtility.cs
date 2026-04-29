@@ -156,11 +156,21 @@ namespace SK_Matter_Network.Patches
                 return float.MaxValue;
             }
 
+            if (!network.IsOperational)
+            {
+                return float.MaxValue;
+            }
+
             return GetClosestReachableInterfaceDistanceSquared(pawn, root, network);
         }
 
         private static float GetClosestReachableInterfaceDistanceSquared(Pawn pawn, IntVec3 root, DataNetwork network)
         {
+            if (!network.IsOperational)
+            {
+                return float.MaxValue;
+            }
+
             float closestDistanceSquared = float.MaxValue;
             TraverseParms traverseParams = TraverseParms.For(pawn);
 
@@ -194,9 +204,14 @@ namespace SK_Matter_Network.Patches
 
         private static int GetEffectiveFuelCount(Pawn pawn, Thing fuel, NetworksMapComponent mapComp)
         {
-            if (!mapComp.TryGetItemNetwork(fuel, out _))
+            if (!mapComp.TryGetItemNetwork(fuel, out DataNetwork network))
             {
                 return fuel.stackCount;
+            }
+
+            if (!network.IsOperational)
+            {
+                return 0;
             }
 
             return GetReservableFuelCount(pawn, fuel, fuel.stackCount);

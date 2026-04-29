@@ -83,5 +83,16 @@ namespace SK_Matter_Network
             }
             return false;
         }
+
+        public override void MapComponentTick()
+        {
+            base.MapComponentTick();
+
+            int currentTick = Find.TickManager.TicksGame;
+            for (int i = 0; i < networks.Count; i++)
+            {
+                networks[i].UpdatePowerIfDue(currentTick);
+            }
+        }
     }
 }

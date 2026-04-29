@@ -5,6 +5,7 @@
     <MN_NetworkStorageHeaderNetworkId>Network ID: {0}</MN_NetworkStorageHeaderNetworkId>
     <MN_NetworkStorageHeaderSummary>{0} / {1} bytes</MN_NetworkStorageHeaderSummary>
     <MN_NetworkStorageSubTabOverview>Overview</MN_NetworkStorageSubTabOverview>
+    <MN_NetworkStorageSubTabPower>Power</MN_NetworkStorageSubTabPower>
     <MN_NetworkStorageSubTabByDef>Items By Def</MN_NetworkStorageSubTabByDef>
     <MN_NetworkStorageSubTabByStack>Stored Stacks</MN_NetworkStorageSubTabByStack>
     <MN_NetworkStorageSearchLabel>Search:</MN_NetworkStorageSearchLabel>
@@ -15,7 +16,10 @@
     <MN_NetworkStorageNoStoredStacks>No stored stacks in this network.</MN_NetworkStorageNoStoredStacks>
     <MN_NetworkStorageDropLabel>Drop</MN_NetworkStorageDropLabel>
     <MN_NetworkStorageStatusOnline>Online</MN_NetworkStorageStatusOnline>
+    <MN_NetworkStorageStatusReserve>Reserve</MN_NetworkStorageStatusReserve>
+    <MN_NetworkStorageStatusOffline>Offline</MN_NetworkStorageStatusOffline>
     <MN_NetworkStorageStatusOvercommitted>Overcommitted</MN_NetworkStorageStatusOvercommitted>
+    <MN_NetworkStorageOffline>Network offline: {0}</MN_NetworkStorageOffline>
     <MN_NetworkStorageOverviewUsedBytes>Used Bytes</MN_NetworkStorageOverviewUsedBytes>
     <MN_NetworkStorageOverviewCapacity>Capacity</MN_NetworkStorageOverviewCapacity>
     <MN_NetworkStorageOverviewUtilization>Utilization</MN_NetworkStorageOverviewUtilization>
@@ -31,6 +35,9 @@
     <MN_NetworkStorageOverviewExtraction>Extraction</MN_NetworkStorageOverviewExtraction>
     <MN_NetworkStorageOverviewStoredUnits>Stored Units</MN_NetworkStorageOverviewStoredUnits>
     <MN_NetworkStorageOverviewOvercommitted>Overcommitted</MN_NetworkStorageOverviewOvercommitted>
+    <MN_NetworkStorageOverviewPowerState>Power State</MN_NetworkStorageOverviewPowerState>
+    <MN_NetworkStorageOverviewPowerDraw>Power Draw</MN_NetworkStorageOverviewPowerDraw>
+    <MN_NetworkStorageOverviewReserve>Reserve</MN_NetworkStorageOverviewReserve>
     <MN_NetworkStorageOverviewExtractionAvailable>Available</MN_NetworkStorageOverviewExtractionAvailable>
     <MN_NetworkStorageOverviewExtractionUnavailable>Unavailable</MN_NetworkStorageOverviewExtractionUnavailable>
     <MN_NetworkStorageOverviewTopDefs>Top Stored Defs</MN_NetworkStorageOverviewTopDefs>
@@ -46,6 +53,33 @@
     <MN_NetworkStorageMetadataQuality>Quality: {0}</MN_NetworkStorageMetadataQuality>
     <MN_NetworkStorageMetadataHitPoints>HP: {0}/{1}</MN_NetworkStorageMetadataHitPoints>
     <MN_NetworkStorageMetadataGeneric>No extra metadata</MN_NetworkStorageMetadataGeneric>
+    <MN_NetworkStoragePowerRequiredDraw>Required draw</MN_NetworkStoragePowerRequiredDraw>
+    <MN_NetworkStoragePowerDetails>Power details</MN_NetworkStoragePowerDetails>
+    <MN_NetworkStoragePowerBuildingDraw>Building draw</MN_NetworkStoragePowerBuildingDraw>
+    <MN_NetworkStoragePowerStoredItemDraw>Stored item draw</MN_NetworkStoragePowerStoredItemDraw>
+    <MN_NetworkStoragePowerStoredItemDrawDisabled>Disabled</MN_NetworkStoragePowerStoredItemDrawDisabled>
+    <MN_NetworkStoragePowerStoredItemDrawValue>{0} W ({1} W / 100 bytes)</MN_NetworkStoragePowerStoredItemDrawValue>
+    <MN_NetworkStoragePowerChargingDraw>Reserve charging</MN_NetworkStoragePowerChargingDraw>
+    <MN_NetworkStoragePowerConfiguredCharging>Charging target</MN_NetworkStoragePowerConfiguredCharging>
+    <MN_NetworkStoragePowerReserve>Reserve</MN_NetworkStoragePowerReserve>
+    <MN_NetworkStoragePowerRuntime>Runtime</MN_NetworkStoragePowerRuntime>
+    <MN_NetworkStoragePowerRuntimeIndefinite>Indefinite</MN_NetworkStoragePowerRuntimeIndefinite>
+    <MN_NetworkStoragePowerRuntimeEmpty>Empty</MN_NetworkStoragePowerRuntimeEmpty>
+    <MN_NetworkStoragePowerStatus>Power Status</MN_NetworkStoragePowerStatus>
+    <MN_NetworkStoragePowerChargeMinus>-</MN_NetworkStoragePowerChargeMinus>
+    <MN_NetworkStoragePowerChargePlus>+</MN_NetworkStoragePowerChargePlus>
+    <MN_NetworkStoragePowerFillReserve>DEV: Fill reserve</MN_NetworkStoragePowerFillReserve>
+    <MN_NetworkStoragePowerEmptyReserve>DEV: Empty reserve</MN_NetworkStoragePowerEmptyReserve>
+    <MN_DiskDriveSlotsTab>Disks</MN_DiskDriveSlotsTab>
+    <MN_DiskDriveSlotsHeaderTitle>Disk Drive</MN_DiskDriveSlotsHeaderTitle>
+    <MN_DiskDriveSlotsHeaderSummary>{0}/{1} slots used</MN_DiskDriveSlotsHeaderSummary>
+    <MN_DiskDriveSlotsLocked>Locked</MN_DiskDriveSlotsLocked>
+    <MN_DiskDriveSlotsAccepting>Accepting disks</MN_DiskDriveSlotsAccepting>
+    <MN_DiskDriveSlotsNoDrive>No disk drive selected</MN_DiskDriveSlotsNoDrive>
+    <MN_DiskDriveSlotsSlotNumber>Slot {0}</MN_DiskDriveSlotsSlotNumber>
+    <MN_DiskDriveSlotsEmpty>Empty slot</MN_DiskDriveSlotsEmpty>
+    <MN_DiskDriveSlotsDiskDetailsActive>{0} bytes capacity</MN_DiskDriveSlotsDiskDetailsActive>
+    <MN_DiskDriveSlotsDiskDetailsArchived>{0} bytes capacity | {1} archived in {2} stacks</MN_DiskDriveSlotsDiskDetailsArchived>
     <MN_CountSuffixK>k</MN_CountSuffixK>
     <MN_CountSuffixMil>mil</MN_CountSuffixMil>
 </LanguageData>

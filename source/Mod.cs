@@ -16,6 +16,8 @@ namespace SK_Matter_Network
         private void Init()
         {
             GetSettings<ModSettings>();
+            ModSettings.InitializeNetworkBuildingPowerDefaults();
+            ModSettings.ApplyNetworkBuildingPowerUsageOverrides();
             new Harmony("rimworld.sk.matternetwork").PatchAll();
         }
 
@@ -28,6 +30,13 @@ namespace SK_Matter_Network
         {
             ModSettingsWindow.Draw(inRect);
             base.DoSettingsWindowContents(inRect);
+        }
+
+        public override void WriteSettings()
+        {
+            ModSettings.NotifyStoredItemPowerDrawSettingsChanged();
+            ModSettings.ApplyNetworkBuildingPowerUsageOverrides();
+            base.WriteSettings();
         }
     }
 }

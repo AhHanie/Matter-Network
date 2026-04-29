@@ -7,6 +7,11 @@
         <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
         <category>Building</category>
         <noRightClickDraftAttack>true</noRightClickDraftAttack>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>0</powerUsage>
+            </li>
+        </comps>
         <graphicData>
             <texPath>Things/Building/Linked/PowerConduit_Atlas</texPath>
             <graphicClass>Graphic_Single</graphicClass>
@@ -90,6 +95,11 @@
             <Beauty>-1</Beauty>
         </statBases>
         <thingClass>SK_Matter_Network.NetworkBuildingDiskDrive</thingClass>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>200</powerUsage>
+            </li>
+        </comps>
         <costList>
             <Steel>200</Steel>
             <ComponentIndustrial>2</ComponentIndustrial>
@@ -129,6 +139,7 @@
         <pathCost>50</pathCost>
         <inspectorTabs>
             <li>ITab_Storage</li>
+            <li>SK_Matter_Network.ITab_DiskDriveSlots</li>
         </inspectorTabs>
         <surfaceType>None</surfaceType>
         <canOverlapZones>false</canOverlapZones>
@@ -168,6 +179,11 @@
             <Beauty>-1</Beauty>
         </statBases>
         <thingClass>SK_Matter_Network.NetworkBuildingNetworkInterface</thingClass>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>400</powerUsage>
+            </li>
+        </comps>
         <costList>
             <Steel>400</Steel>
             <ComponentSpacer>2</ComponentSpacer>
@@ -241,6 +257,19 @@
         <label>network controller</label>
         <description>The central hub of a data network. Stores all items digitally. A network can have only one active controller.</description>
         <thingClass>SK_Matter_Network.NetworkBuildingController</thingClass>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>500</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkPowerController">
+                <basePowerConsumption>500</basePowerConsumption>
+                <updateIntervalTicks>60</updateIntervalTicks>
+                <chargeEfficiency>1</chargeEfficiency>
+                <chargingSurplusBufferWatts>50</chargingSurplusBufferWatts>
+            </li>
+            <li Class="CompProperties_Flickable"/>
+            <li Class="CompProperties_Breakdownable"/>
+        </comps>
         <graphicData>
             <texPath>Things/Building/SpacerProps/PersonalConsole/PersonalConsole</texPath>
             <graphicClass>Graphic_Multi</graphicClass>
@@ -284,6 +313,9 @@
         <placeWorkers>
             <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
         </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
         <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
         <researchPrerequisites>
             <li>MN_MatterNetwork</li>
@@ -291,5 +323,117 @@
         <designationCategory>Misc</designationCategory>
         <defaultPlacingRot>South</defaultPlacingRot>
         <uiIconScale>1</uiIconScale>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkPowerStorage</defName>
+        <label>network capacitor</label>
+        <description>A compact capacitor bank that stores backup power for a connected network. Its stored energy is shared across the network, keeping digitized storage online through brief outages and unstable grids.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <graphicData>
+            <texPath>Things/Building/Spaceships/HoloEmitters/BasicHolodeck</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <category>Building</category>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>0</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkPowerStorage">
+                <capacity>1000</capacity>
+            </li>
+        </comps>
+        <statBases>
+            <MaxHitPoints>150</MaxHitPoints>
+            <WorkToBuild>700</WorkToBuild>
+            <Mass>5</Mass>
+            <Flammability>0.5</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>100</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+        </costList>
+        <altitudeLayer>BuildingOnTop</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.2</fillPercent>
+        <pathCost>14</pathCost>
+        <building>
+            <isInert>true</isInert>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <researchPrerequisites>
+            <li>MN_NetworkPowerStorage</li>
+        </researchPrerequisites>
+        <designationCategory>Misc</designationCategory>
+        <defaultPlacingRot>North</defaultPlacingRot>
+        <rotatable>false</rotatable>
+        <uiIconScale>1</uiIconScale>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_AdvancedNetworkPowerStorage</defName>
+        <label>network reserve cell</label>
+        <description>A high-density reserve cell for network infrastructure. It stores a large shared charge for long outages, solar flares, and other disruptions that would otherwise cut access to digitized matter.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <graphicData>
+            <texPath>Things/Building/Spaceships/HoloEmitters/HologramRepeater</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <category>Building</category>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>0</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkPowerStorage">
+                <capacity>2000</capacity>
+            </li>
+        </comps>
+        <statBases>
+            <MaxHitPoints>200</MaxHitPoints>
+            <WorkToBuild>1200</WorkToBuild>
+            <Mass>8</Mass>
+            <Flammability>0.35</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>150</Steel>
+            <Plasteel>50</Plasteel>
+            <ComponentSpacer>2</ComponentSpacer>
+            <Gold>10</Gold>
+        </costList>
+        <altitudeLayer>BuildingOnTop</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.25</fillPercent>
+        <pathCost>20</pathCost>
+        <building>
+            <isInert>true</isInert>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <researchPrerequisites>
+            <li>MN_NetworkPowerStorage</li>
+        </researchPrerequisites>
+        <designationCategory>Misc</designationCategory>
+        <defaultPlacingRot>North</defaultPlacingRot>
+        <rotatable>false</rotatable>
+        <uiIconScale>1</uiIconScale>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
     </ThingDef>
 </Defs>

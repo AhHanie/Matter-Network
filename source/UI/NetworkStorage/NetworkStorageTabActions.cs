@@ -8,7 +8,7 @@ namespace SK_Matter_Network
     {
         internal void DropItemByDef(NetworkBuildingNetworkInterface selectedInterface, ThingDef thingDef)
         {
-            if (selectedInterface?.ParentNetwork == null)
+            if (selectedInterface?.ParentNetwork == null || !selectedInterface.ParentNetwork.IsOperational)
             {
                 return;
             }
@@ -33,7 +33,7 @@ namespace SK_Matter_Network
 
         internal void DropStoredThing(NetworkBuildingNetworkInterface selectedInterface, Thing thing)
         {
-            if (selectedInterface?.ParentNetwork == null || thing == null || thing.Destroyed)
+            if (selectedInterface?.ParentNetwork == null || !selectedInterface.ParentNetwork.IsOperational || thing == null || thing.Destroyed)
             {
                 return;
             }

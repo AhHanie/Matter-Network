@@ -5,6 +5,18 @@
     <MN_SettingsEnableLoggingDescription>When enabled, Matter Network will write message and warning logs. Errors and exceptions are always logged.</MN_SettingsEnableLoggingDescription>
     <MN_SettingsDisableNetworkItemsForWealthLabel>Disable wealth for network items</MN_SettingsDisableNetworkItemsForWealthLabel>
     <MN_SettingsDisableNetworkItemsForWealthDescription>When enabled, items stored inside Matter Network do not add to colony wealth. When disabled, network items are still counted once each instead of once per interface/controller path.</MN_SettingsDisableNetworkItemsForWealthDescription>
+    <MN_SettingsEnableStoredItemPowerDrawLabel>Require power for stored items</MN_SettingsEnableStoredItemPowerDrawLabel>
+    <MN_SettingsEnableStoredItemPowerDrawDescription>When enabled, networks draw extra power based on the amount of stored matter. The configured value is charged once per started 100 bytes.</MN_SettingsEnableStoredItemPowerDrawDescription>
+    <MN_SettingsStoredItemPowerDrawPer100Bytes>Stored item draw per 100 bytes</MN_SettingsStoredItemPowerDrawPer100Bytes>
+    <MN_SettingsNetworkPowerUsageTitle>Network building power usage</MN_SettingsNetworkPowerUsageTitle>
+    <MN_SettingsNetworkPowerUsageDescription>Override the power draw each Matter Network building contributes to its connected network. Values are in watts and are applied to all matching defs.</MN_SettingsNetworkPowerUsageDescription>
+    <MN_SettingsNetworkPowerUsageBuilding>Building</MN_SettingsNetworkPowerUsageBuilding>
+    <MN_SettingsNetworkPowerUsageDefault>Default</MN_SettingsNetworkPowerUsageDefault>
+    <MN_SettingsNetworkPowerUsageCurrent>Current</MN_SettingsNetworkPowerUsageCurrent>
+    <MN_SettingsNetworkPowerUsageReset>Reset</MN_SettingsNetworkPowerUsageReset>
+    <MN_SettingsNetworkPowerUsageSet>Set</MN_SettingsNetworkPowerUsageSet>
+    <MN_SettingsNetworkPowerUsageRemove>Remove</MN_SettingsNetworkPowerUsageRemove>
+    <MN_SettingsNetworkPowerUsageMissingDef>Missing def: {0}</MN_SettingsNetworkPowerUsageMissingDef>
     <MN_LoadingLabel>Loading Matter Network ...</MN_LoadingLabel>
     <MN_SettingsTitle>Matter Network</MN_SettingsTitle>
     <MN_DiskDriveLockLabel>Lock disks</MN_DiskDriveLockLabel>
@@ -22,6 +34,17 @@
     <MN_ControllerInspectOvercommitted>Overcommitted: {0} bytes - add more disks or remove items</MN_ControllerInspectOvercommitted>
     <MN_ControllerInspectConflictDisabled>Controller conflict: disabled (another controller in same network has lower ID)</MN_ControllerInspectConflictDisabled>
     <MN_ControllerInspectNoNetwork>No network connected</MN_ControllerInspectNoNetwork>
+    <MN_ControllerInspectPower>Power: {0}; draw {1} W; reserve {2}/{3} Wd</MN_ControllerInspectPower>
+    <MN_ControllerPowerInspect>Network power: {0}; required {1} W; charging {2} W; reserve {3}/{4} Wd</MN_ControllerPowerInspect>
     <MN_NetworkInterfaceInspectStorage>Network storage: {0}/{1} bytes ({2} stacks)</MN_NetworkInterfaceInspectStorage>
+    <MN_NetworkInterfaceInspectOffline>Network offline: {0}</MN_NetworkInterfaceInspectOffline>
     <MN_NetworkInterfaceInspectNoController>No active controller</MN_NetworkInterfaceInspectNoController>
+    <MN_NetworkBuildingPowerUsage>Network power usage: {0} W</MN_NetworkBuildingPowerUsage>
+    <MN_NetworkPowerStorageInspectCapacity>Reserve capacity: {0} Wd</MN_NetworkPowerStorageInspectCapacity>
+    <MN_NetworkPowerStorageInspectNetworkReserve>Network reserve: {0}/{1} Wd; this unit: {2} Wd</MN_NetworkPowerStorageInspectNetworkReserve>
+    <MN_PowerModeGridPowered>Grid powered</MN_PowerModeGridPowered>
+    <MN_PowerModeReservePowered>Reserve powered</MN_PowerModeReservePowered>
+    <MN_PowerModeControllerDisabled>Controller disabled</MN_PowerModeControllerDisabled>
+    <MN_PowerModeOffline>Offline</MN_PowerModeOffline>
+    <MN_PowerModeNoController>No controller</MN_PowerModeNoController>
 </LanguageData>

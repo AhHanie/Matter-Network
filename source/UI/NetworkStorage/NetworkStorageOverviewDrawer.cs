@@ -18,7 +18,7 @@ namespace SK_Matter_Network
 
         internal void Draw(Rect rect, DataNetwork network, NetworkStorageTabDataSnapshot snapshot, NetworkStorageTabState state)
         {
-            const float infoPanelHeight = 134f;
+            const float infoPanelHeight = 178f;
             const float topDefsHeaderOffset = 28f;
             const float topDefsRowsOffset = 48f;
 
@@ -26,8 +26,14 @@ namespace SK_Matter_Network
             int interfaceCount = network.Buildings.OfType<NetworkBuildingNetworkInterface>().Count();
             int diskDriveCount = network.Buildings.OfType<NetworkBuildingDiskDrive>().Count();
             float usagePercent = network.TotalCapacityBytes > 0 ? (float)network.UsedBytes / network.TotalCapacityBytes : 0f;
+            int topDefRows = Mathf.Min(6, snapshot.GroupedEntries.Count);
+            float sectionY = NetworkStorageUiConstants.SummaryCardHeight + 14f;
+            float highlightsY = sectionY + infoPanelHeight + NetworkStorageUiConstants.PanelGap;
+            float highlightsHeight = Mathf.Max(
+                150f,
+                NetworkStorageUiConstants.SectionPadding + topDefsRowsOffset + (topDefRows * 30f) + NetworkStorageUiConstants.SectionPadding);
+            float contentHeight = highlightsY + highlightsHeight;
 
-            float contentHeight = 300f + Mathf.Max(0, Mathf.Min(6, snapshot.GroupedEntries.Count) * 30f);
             Rect outRect = rect;
             Rect viewRect = new Rect(0f, 0f, rect.width - 16f, Mathf.Max(rect.height, contentHeight));
             Widgets.BeginScrollView(outRect, ref state.OverviewScrollPosition, viewRect);
@@ -39,13 +45,12 @@ namespace SK_Matter_Network
             chromeDrawer.DrawSummaryCard(new Rect((cardWidth + NetworkStorageUiConstants.SummaryGap) * 3f, 0f, cardWidth, NetworkStorageUiConstants.SummaryCardHeight), "MN_NetworkStorageOverviewStoredStacks".Translate(), snapshot.StoredStackCount.ToString(), NetworkStorageUiConstants.SecondaryTextColor, null);
             chromeDrawer.DrawSummaryCard(new Rect((cardWidth + NetworkStorageUiConstants.SummaryGap) * 4f, 0f, cardWidth, NetworkStorageUiConstants.SummaryCardHeight), "MN_NetworkStorageOverviewUniqueDefs".Translate(), snapshot.UniqueDefCount.ToString(), NetworkStorageUiConstants.SecondaryTextColor, null);
 
-            float sectionY = NetworkStorageUiConstants.SummaryCardHeight + 14f;
             float leftWidth = (viewRect.width - NetworkStorageUiConstants.PanelGap) * 0.52f;
             float rightWidth = viewRect.width - leftWidth - NetworkStorageUiConstants.PanelGap;
 
             Rect compositionRect = new Rect(0f, sectionY, leftWidth, infoPanelHeight);
             Rect statusRect = new Rect(compositionRect.xMax + NetworkStorageUiConstants.PanelGap, sectionY, rightWidth, infoPanelHeight);
-            Rect highlightsRect = new Rect(0f, compositionRect.yMax + NetworkStorageUiConstants.PanelGap, viewRect.width, viewRect.height - compositionRect.yMax - NetworkStorageUiConstants.PanelGap);
+            Rect highlightsRect = new Rect(0f, highlightsY, viewRect.width, highlightsHeight);
 
             chromeDrawer.DrawLabeledSection(compositionRect, "MN_NetworkStorageOverviewNetworkComposition".Translate());
             Rect compositionInner = compositionRect.ContractedBy(NetworkStorageUiConstants.SectionPadding);
@@ -62,6 +67,8 @@ namespace SK_Matter_Network
             chromeDrawer.DrawKeyValueRow(new Rect(statusInner.x, statusInner.y + 48f, statusInner.width, 22f), "MN_NetworkStorageOverviewExtraction".Translate(), extractionStatus, network.CanExtractItems ? NetworkStorageUiConstants.OkColor : NetworkStorageUiConstants.MutedTextColor);
             chromeDrawer.DrawKeyValueRow(new Rect(statusInner.x, statusInner.y + 70f, statusInner.width, 22f), "MN_NetworkStorageOverviewStoredUnits".Translate(), dataSource.FormatItemCount(snapshot.TotalUnits));
             chromeDrawer.DrawKeyValueRow(new Rect(statusInner.x, statusInner.y + 92f, statusInner.width, 22f), "MN_NetworkStorageOverviewOvercommitted".Translate(), network.OvercommittedBytes > 0 ? dataSource.FormatItemCount(network.OvercommittedBytes) : "0", network.OvercommittedBytes > 0 ? NetworkStorageUiConstants.ErrorColor : NetworkStorageUiConstants.SecondaryTextColor);
+            chromeDrawer.DrawKeyValueRow(new Rect(statusInner.x, statusInner.y + 114f, statusInner.width, 22f), "MN_NetworkStorageOverviewPowerState".Translate(), network.PowerModeLabel, network.IsOperational ? NetworkStorageUiConstants.OkColor : NetworkStorageUiConstants.WarningColor);
+            chromeDrawer.DrawKeyValueRow(new Rect(statusInner.x, statusInner.y + 136f, statusInner.width, 22f), "MN_NetworkStorageOverviewPowerDraw".Translate(), network.RequiredPowerDrawWatts + " W");
 
             chromeDrawer.DrawLabeledSection(highlightsRect, "MN_NetworkStorageOverviewTopDefs".Translate());
             Rect highlightsInner = highlightsRect.ContractedBy(NetworkStorageUiConstants.SectionPadding);
@@ -76,8 +83,7 @@ namespace SK_Matter_Network
             else
             {
                 DrawTopDefHeaders(new Rect(highlightsInner.x, highlightsInner.y + topDefsHeaderOffset, highlightsInner.width, 18f));
-                int rows = Mathf.Min(6, snapshot.GroupedEntries.Count);
-                for (int i = 0; i < rows; i++)
+                for (int i = 0; i < topDefRows; i++)
                 {
                     DrawTopDefRow(new Rect(highlightsInner.x, highlightsInner.y + topDefsRowsOffset + (i * 30f), highlightsInner.width, 24f), snapshot.GroupedEntries[i]);
                 }

@@ -19,7 +19,7 @@ namespace SK_Matter_Network
             set => controllerConflictDisabled = value;
         }
 
-        public bool HasValidStorage => !controllerConflictDisabled && ParentNetwork != null;
+        public bool HasValidStorage => !controllerConflictDisabled && ParentNetwork?.IsOperational == true;
 
         public bool HaulDestinationEnabled => false;
         public bool HaulSourceEnabled => HasValidStorage;
@@ -53,7 +53,7 @@ namespace SK_Matter_Network
 
         public int SpaceRemainingFor(ThingDef def)
         {
-            if (ParentNetwork == null || !ParentNetwork.HasActiveController) return 0;
+            if (ParentNetwork == null || !ParentNetwork.IsOperational) return 0;
             return System.Math.Max(0, ParentNetwork.TotalCapacityBytes - ParentNetwork.UsedBytes);
         }
 
@@ -71,11 +71,16 @@ namespace SK_Matter_Network
 
         public void Notify_ItemAdded(Thing item)
         {
-            // Handled by ControllerItemOwner.TryAdd override. No-op here.
+            if (!item.Destroyed)
+            {
+                MapHeld.listerHaulables.Notify_AddedThing(item);
+            }
         }
 
         public void Notify_ItemRemoved(Thing item)
         {
+            MapHeld.listerHaulables.Notify_DeSpawned(item);
+
             DataNetwork network = ParentNetwork;
             if (network != null)
             {
@@ -152,6 +157,13 @@ namespace SK_Matter_Network
                     sb.AppendLineIfNotEmpty();
                     sb.Append("MN_ControllerInspectConflictDisabled".Translate());
                 }
+
+                sb.AppendLineIfNotEmpty();
+                sb.Append("MN_ControllerInspectPower".Translate(
+                    ParentNetwork.PowerModeLabel,
+                    ParentNetwork.RequiredPowerDrawWatts,
+                    ParentNetwork.StoredReserveEnergyWd.ToString("F0"),
+                    ParentNetwork.MaxReserveEnergyWd.ToString("F0")));
             }
             else if (Spawned)
             {

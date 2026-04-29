@@ -68,6 +68,8 @@ namespace SK_Matter_Network
         private int controllerCapacityAllowance;
 
         private ITab_NetworkStorage currentTab;
+        private NetworkPowerState power;
+        private int lastPowerUpdateTick = -1;
 
         public List<NetworkBuilding> Buildings => buildings;
         public string NetworkId => networkId;
@@ -77,8 +79,50 @@ namespace SK_Matter_Network
         public List<NetworkBuildingNetworkInterface> NetworkInterfaces => networkInterfaces;
         public NetworkBuildingController ActiveController => activeController;
         public bool HasActiveController => activeController != null && !activeController.ControllerConflictDisabled && !activeController.Destroyed;
-        public bool CanExtractItems => HasActiveController && networkInterfaces.Count > 0;
+        public bool IsOperational => HasActiveController && power != null && power.IsOperational;
+        public bool CanExtractItems => IsOperational && networkInterfaces.Count > 0;
         public Faction Faction => buildings.Count > 0 ? buildings[0].Faction : null;
+        public NetworkPowerState Power => power;
+        public NetworkPowerMode PowerMode => power.Mode;
+        public int RequiredPowerDrawWatts => power.RequiredPowerDrawWatts;
+        public int BuildingPowerDrawWatts => power.BuildingPowerDrawWatts;
+        public int StoredItemPowerDrawWatts => power.StoredItemPowerDrawWatts;
+        public int ReserveChargingDrawWatts => power.ReserveChargingDrawWatts;
+        public int CurrentRequestedChargingDrawWatts => power.CurrentRequestedChargingDrawWatts;
+        public float StoredReserveEnergyWd => power.StoredEnergyWd;
+        public float MaxReserveEnergyWd => power.MaxEnergyWd;
+        public float ReserveFillPercent => power.ReserveFillPercent;
+        public int MaxReserveChargingDraw => power.MaxReserveChargingDraw;
+        public int ReserveChargeStep => power.ReserveChargeStep;
+        public int PowerUpdateIntervalTicks
+        {
+            get
+            {
+                CompNetworkPowerController comp = activeController?.GetComp<CompNetworkPowerController>();
+                int interval = comp?.NetworkPowerProps?.updateIntervalTicks ?? 60;
+                return System.Math.Max(1, interval);
+            }
+        }
+
+        public string PowerModeLabel
+        {
+            get
+            {
+                switch (PowerMode)
+                {
+                    case NetworkPowerMode.GridPowered:
+                        return "MN_PowerModeGridPowered".Translate();
+                    case NetworkPowerMode.ReservePowered:
+                        return "MN_PowerModeReservePowered".Translate();
+                    case NetworkPowerMode.ControllerDisabled:
+                        return "MN_PowerModeControllerDisabled".Translate();
+                    case NetworkPowerMode.Offline:
+                        return "MN_PowerModeOffline".Translate();
+                    default:
+                        return "MN_PowerModeNoController".Translate();
+                }
+            }
+        }
 
         public ITab_NetworkStorage CurrentTab
         {
@@ -131,6 +175,8 @@ namespace SK_Matter_Network
             storageSettings = new StorageSettings(storageSettingsOwner);
             storedItems = new HashSet<Thing>();
             itemCountByDef = new Dictionary<ThingDef, int>();
+            power = new NetworkPowerState();
+            power.Initialize(this);
         }
 
         public DataNetwork(Map map) : this()
@@ -142,12 +188,92 @@ namespace SK_Matter_Network
         public void MarkBytesDirty()
         {
             bytesDirty = true;
+            power.RefreshControllerPowerOutput();
             RefreshUI();
         }
 
         public void SetMap(Map map)
         {
             this.map = map;
+        }
+
+        public void UpdatePower(int deltaTicks)
+        {
+            EnsurePowerState();
+            power.Update(deltaTicks);
+        }
+
+        public void UpdatePowerIfDue(int currentTick)
+        {
+            int interval = PowerUpdateIntervalTicks;
+            if (lastPowerUpdateTick < 0)
+            {
+                lastPowerUpdateTick = currentTick;
+                UpdatePower(interval);
+                return;
+            }
+
+            int deltaTicks = currentTick - lastPowerUpdateTick;
+            if (deltaTicks < interval)
+            {
+                return;
+            }
+
+            lastPowerUpdateTick = currentTick;
+            UpdatePower(deltaTicks);
+        }
+
+        public void RebuildPowerCaches()
+        {
+            EnsurePowerState();
+            power.RecalculatePowerDemand();
+            power.RecalculateReserveCapacity();
+            power.RefreshControllerPowerOutput();
+            RefreshUI();
+        }
+
+        public void NotifyPowerControllerStateChanged()
+        {
+            EnsurePowerState();
+            power.RefreshControllerPowerOutput();
+            RefreshUI();
+        }
+
+        public void NotifyPowerModeChanged(NetworkPowerMode oldMode, NetworkPowerMode newMode)
+        {
+            RefreshHaulRegistrations();
+            RefreshUI();
+        }
+
+        public void RefreshUIForPower()
+        {
+            RefreshUI();
+        }
+
+        public void SetReserveChargingDrawWatts(int watts)
+        {
+            EnsurePowerState();
+            power.SetReserveChargingDrawWatts(watts);
+        }
+
+        public int EstimatedReserveRuntimeTicks()
+        {
+            EnsurePowerState();
+            return power.EstimateReserveRuntimeTicks();
+        }
+
+        public void AddReserveEnergy(float amount)
+        {
+            EnsurePowerState();
+            power.SetStoredEnergy(StoredReserveEnergyWd + amount);
+            power.RefreshControllerPowerOutput();
+        }
+
+        public void SetReserveEnergy(float amount)
+        {
+            EnsurePowerState();
+            power.SetStoredEnergy(amount);
+            power.RefreshControllerPowerOutput();
         }
 
         public bool HasSpawnedBuildingOnMap(Map map)
@@ -208,14 +334,14 @@ namespace SK_Matter_Network
 
         public bool CanAccept(Thing item)
         {
-            if (!HasActiveController) return false;
+            if (!IsOperational) return false;
             if (!storageSettings.AllowedToAccept(item)) return false;
             return UsedBytes + item.stackCount <= cachedTotalCapacityBytes;
         }
 
         public int CanAcceptCount(Thing item)
         {
-            if (!HasActiveController) return 0;
+            if (!IsOperational) return 0;
             if (!storageSettings.AllowedToAccept(item)) return 0;
             return System.Math.Max(0, cachedTotalCapacityBytes - UsedBytes);
         }
@@ -262,6 +388,8 @@ namespace SK_Matter_Network
             }
 
             Logger.Message($"Added {building.def.defName} at {building.Position} to network {networkId}. Count: {buildings.Count}");
+            EnsurePowerState();
+            power.NotifyBuildingAdded(building);
             isAddingBuilding = false;
         }
 
@@ -295,6 +423,8 @@ namespace SK_Matter_Network
             }
 
             Logger.Message($"Removed {building.def.defName} at {building.Position} from network {networkId}. Count: {buildings.Count}");
+            EnsurePowerState();
+            power.NotifyBuildingRemoved(building);
         }
 
         private void SetController(NetworkBuildingController ctrl)
@@ -320,6 +450,8 @@ namespace SK_Matter_Network
             RecalcTotalCapacityBytes();
             RestoreArchivedItemsToController();
             MarkBytesDirty();
+            EnsurePowerState();
+            power.RefreshControllerPowerOutput();
         }
 
         private void RemoveController(NetworkBuildingController ctrl)
@@ -338,6 +470,8 @@ namespace SK_Matter_Network
                         RebuildStoredItemsFromController();
                         RecalcTotalCapacityBytes();
                         RestoreArchivedItemsToController();
+                        EnsurePowerState();
+                        power.RefreshControllerPowerOutput();
                         break;
                     }
                 }
@@ -346,6 +480,21 @@ namespace SK_Matter_Network
             {
                 ctrl.ControllerConflictDisabled = false;
             }
+
+            EnsurePowerState();
+            power.RefreshControllerPowerOutput();
+        }
+
+        public void AbsorbPowerFrom(DataNetwork other)
+        {
+            if (other == null || other == this)
+            {
+                return;
+            }
+
+            EnsurePowerState();
+            other.EnsurePowerState();
+            power.AbsorbFrom(other.power);
         }
 
         private void RebuildStoredItemsFromController()
@@ -737,6 +886,7 @@ namespace SK_Matter_Network
             Scribe_Collections.Look(ref diskDrives, "diskDrives", LookMode.Reference);
             Scribe_Collections.Look(ref networkInterfaces, "networkInterfaces", LookMode.Reference);
             Scribe_Deep.Look(ref storageSettings, "storageSettings");
+            Scribe_Deep.Look(ref power, "power");
             Scribe_References.Look(ref map, "map");
 
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
@@ -747,6 +897,7 @@ namespace SK_Matter_Network
                 if (diskDrives == null) diskDrives = new List<NetworkBuildingDiskDrive>();
                 if (storedItems == null) storedItems = new HashSet<Thing>();
                 if (itemCountByDef == null) itemCountByDef = new Dictionary<ThingDef, int>();
+                EnsurePowerState();
 
                 PostLoadInit();
             }
@@ -763,6 +914,8 @@ namespace SK_Matter_Network
 
             RebuildStoredItemsFromController();
             RecalcTotalCapacityBytes();
+            EnsurePowerState();
+            power.RebuildAfterLoad();
             MarkBytesDirty();
 
             ValidateControllerConflicts();
@@ -797,6 +950,8 @@ namespace SK_Matter_Network
                 controllers[i].ControllerConflictDisabled = true;
 
             RebuildStoredItemsFromController();
+            EnsurePowerState();
+            power.RefreshControllerPowerOutput();
             Logger.Warning($"Network {networkId}: Multiple controllers detected. Primary: {activeController.thingIDNumber}. Others disabled.");
         }
 
@@ -873,6 +1028,61 @@ namespace SK_Matter_Network
         {
             if (currentTab != null)
                 currentTab.ItemsCached = false;
+        }
+
+        private void EnsurePowerState()
+        {
+            if (power == null)
+            {
+                power = new NetworkPowerState();
+                power.Initialize(this);
+            }
+        }
+
+        private void RefreshHaulRegistrations()
+        {
+            for (int i = 0; i < networkInterfaces.Count; i++)
+            {
+                RefreshHaulRegistration(networkInterfaces[i]);
+            }
+
+            if (activeController != null)
+            {
+                RefreshHaulRegistration(activeController);
+            }
+        }
+
+        private static void RefreshHaulRegistration(NetworkBuilding building)
+        {
+            if (building is IHaulDestination haulDestination)
+            {
+                bool registered = building.Map.haulDestinationManager.AllHaulDestinationsListForReading.Contains(haulDestination);
+                if (haulDestination.HaulDestinationEnabled && !registered)
+                {
+                    building.Map.haulDestinationManager.AddHaulDestination(haulDestination);
+                }
+                else if (!haulDestination.HaulDestinationEnabled && registered)
+                {
+                    building.Map.haulDestinationManager.RemoveHaulDestination(haulDestination);
+                }
+            }
+
+            if (building is IHaulSource haulSource)
+            {
+                bool registered = building.Map.haulDestinationManager.AllHaulSourcesListForReading.Contains(haulSource);
+                if (haulSource.HaulSourceEnabled && !registered)
+                {
+                    building.Map.haulDestinationManager.AddHaulSource(haulSource);
+                }
+                else if (!haulSource.HaulSourceEnabled && registered)
+                {
+                    building.Map.haulDestinationManager.RemoveHaulSource(haulSource);
+                }
+                else
+                {
+                    building.Map.listerHaulables.Notify_HaulSourceChanged(haulSource);
+                }
+            }
         }
 
         private void EnsureStorageSettingsOwner()

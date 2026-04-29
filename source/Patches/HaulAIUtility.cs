@@ -33,11 +33,17 @@ namespace SK_Matter_Network.Patches
                     return true;
                 }
 
-                if (t.MapHeld == null)
+                Map pawnMap = p.Map;
+                Map itemMap = t.MapHeld;
+                if (itemMap == null || !t.PositionHeld.IsValid)
                 {
-                    LogNullMapHeldItem(p, t);
+                    if (ModSettings.EnableLogging)
+                    {
+                        LogStaleHaulableItem(p, t);
+                    }
+                    TryRemoveFromHaulables(pawnMap, t);
 
-                    if (t.stackCount == 0 && !t.Destroyed)
+                    if (itemMap == null && t.stackCount == 0 && !t.Destroyed)
                     {
                         Logger.Warning($"Destroying zero-stack mapless item {t.def?.defName ?? "nullDef"}{t.thingIDNumber}.");
                         t.Destroy(DestroyMode.Vanish);
@@ -57,10 +63,15 @@ namespace SK_Matter_Network.Patches
                 return true;
             }
 
-            private static void LogNullMapHeldItem(Pawn pawn, Thing item)
+            private static void TryRemoveFromHaulables(Map map, Thing item)
+            {
+                map.listerHaulables.Notify_DeSpawned(item);
+            }
+
+            private static void LogStaleHaulableItem(Pawn pawn, Thing item)
             {
                 Logger.Error(
-                    "PawnCanAutomaticallyHaulFast saw an item with null MapHeld during TryOpportunisticJob.\n" +
+                    "PawnCanAutomaticallyHaulFast rejected a stale haulable during TryOpportunisticJob.\n" +
                     $"Pawn: {DescribePawn(pawn)}\n" +
                     $"Item: {Patch_Pawn_JobTracker.DescribeThingForDebug(item, pawn)}\n" +
                     Patch_Pawn_JobTracker.GetLastStartedJobsReport());

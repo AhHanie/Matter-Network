@@ -42,6 +42,7 @@ namespace SK_Matter_Network
             List<TabRecord> tabs = new List<TabRecord>
             {
                 new TabRecord("MN_NetworkStorageSubTabOverview".Translate(), delegate { currentTab = NetworkStorageSubTab.Overview; }, selectedSubTab == NetworkStorageSubTab.Overview),
+                new TabRecord("MN_NetworkStorageSubTabPower".Translate(), delegate { currentTab = NetworkStorageSubTab.Power; }, selectedSubTab == NetworkStorageSubTab.Power),
                 new TabRecord("MN_NetworkStorageSubTabByDef".Translate(), delegate { currentTab = NetworkStorageSubTab.ByDef; }, selectedSubTab == NetworkStorageSubTab.ByDef),
                 new TabRecord("MN_NetworkStorageSubTabByStack".Translate(), delegate { currentTab = NetworkStorageSubTab.ByStack; }, selectedSubTab == NetworkStorageSubTab.ByStack)
             };
@@ -190,6 +191,16 @@ namespace SK_Matter_Network
             {
                 pillColor = NetworkStorageUiConstants.ErrorColor;
                 label = "MN_NetworkStorageStatusOvercommitted".Translate();
+            }
+            else if (network.PowerMode == NetworkPowerMode.Offline || network.PowerMode == NetworkPowerMode.ControllerDisabled)
+            {
+                pillColor = NetworkStorageUiConstants.ErrorColor;
+                label = "MN_NetworkStorageStatusOffline".Translate();
+            }
+            else if (network.PowerMode == NetworkPowerMode.ReservePowered)
+            {
+                pillColor = NetworkStorageUiConstants.WarningColor;
+                label = "MN_NetworkStorageStatusReserve".Translate();
             }
             else
             {
