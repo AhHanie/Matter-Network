@@ -1035,8 +1035,9 @@ namespace SK_Matter_Network
             if (power == null)
             {
                 power = new NetworkPowerState();
-                power.Initialize(this);
             }
+
+            power.Initialize(this);
         }
 
         private void RefreshHaulRegistrations()
