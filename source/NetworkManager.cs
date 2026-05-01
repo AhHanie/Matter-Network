@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Verse;
@@ -46,8 +47,11 @@ namespace SK_Matter_Network
                 }
                 else
                 {
-                    DataNetwork primaryNetwork = adjacentNetworks.First();
-                    List<DataNetwork> networksToMerge = adjacentNetworks.Skip(1).ToList();
+                    DataNetwork primaryNetwork = SelectPrimaryNetwork(adjacentNetworks);
+                    List<DataNetwork> networksToMerge = adjacentNetworks
+                        .Where(network => network != primaryNetwork)
+                        .OrderBy(network => network.NetworkId, StringComparer.Ordinal)
+                        .ToList();
 
                     primaryNetwork.AddBuilding(building);
 
@@ -59,6 +63,17 @@ namespace SK_Matter_Network
                     Logger.Message($"Merged {networksToMerge.Count + 1} networks into {primaryNetwork.NetworkId}");
                 }
             }
+        }
+
+        private static DataNetwork SelectPrimaryNetwork(IEnumerable<DataNetwork> networks)
+        {
+            return networks
+                .OrderByDescending(network => network.HasSeededStorageSettings)
+                .ThenByDescending(network => network.NetworkInterfaces.Count > 0)
+                .ThenByDescending(network => network.HasActiveController)
+                .ThenByDescending(network => network.BuildingCount)
+                .ThenBy(network => network.NetworkId, StringComparer.Ordinal)
+                .First();
         }
 
         public static void HandleBuildingRemoved(NetworkBuilding building, NetworksMapComponent mapComp)

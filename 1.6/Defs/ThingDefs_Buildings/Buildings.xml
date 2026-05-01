@@ -196,8 +196,8 @@
                         <li>Root</li>
                     </categories>
                     <disallowedCategories>
-                        <li>Corpses</li>
                         <li>Animals</li>
+                        <li>Plants</li>
                     </disallowedCategories>
                     <disallowedThingDefs>
                         <li>MN_Disk1k</li>

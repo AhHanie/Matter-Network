@@ -57,6 +57,7 @@ namespace SK_Matter_Network
 
         private StorageSettings storageSettings;
         private NetworkStorageSettingsParent storageSettingsOwner;
+        private bool storageSettingsSeeded = false;
         private bool isBroadcastingSettingsChange = false;
         private bool isAddingBuilding = false;
 
@@ -75,6 +76,7 @@ namespace SK_Matter_Network
         public string NetworkId => networkId;
         public int BuildingCount => buildings.Count;
         public StorageSettings StorageSettings => storageSettings;
+        public bool HasSeededStorageSettings => storageSettingsSeeded;
         public bool IsBroadcastingSettingsChange => isBroadcastingSettingsChange;
         public List<NetworkBuildingNetworkInterface> NetworkInterfaces => networkInterfaces;
         public NetworkBuildingController ActiveController => activeController;
@@ -381,10 +383,15 @@ namespace SK_Matter_Network
             {
                 networkInterfaces.Add(iface);
 
-                if (networkInterfaces.Count == 1)
+                if (!storageSettingsSeeded && networkInterfaces.Count == 1)
+                {
                     storageSettings.CopyFrom(iface.GetStandaloneSettings());
+                    storageSettingsSeeded = true;
+                }
                 else
+                {
                     iface.NotifyNetworkSettingsChanged();
+                }
             }
 
             Logger.Message($"Added {building.def.defName} at {building.Position} to network {networkId}. Count: {buildings.Count}");
@@ -870,6 +877,7 @@ namespace SK_Matter_Network
 
             isBroadcastingSettingsChange = true;
             storageSettings.CopyFrom(interfaceSettings);
+            storageSettingsSeeded = true;
 
             foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
                 iface.NotifyNetworkSettingsChanged();
@@ -886,6 +894,7 @@ namespace SK_Matter_Network
             Scribe_Collections.Look(ref diskDrives, "diskDrives", LookMode.Reference);
             Scribe_Collections.Look(ref networkInterfaces, "networkInterfaces", LookMode.Reference);
             Scribe_Deep.Look(ref storageSettings, "storageSettings");
+            Scribe_Values.Look(ref storageSettingsSeeded, "storageSettingsSeeded", false);
             Scribe_Deep.Look(ref power, "power");
             Scribe_References.Look(ref map, "map");
 
@@ -906,6 +915,7 @@ namespace SK_Matter_Network
         private void PostLoadInit()
         {
             EnsureStorageSettingsOwner();
+            storageSettingsSeeded = true;
 
             foreach (NetworkBuilding b in buildings)
             {
