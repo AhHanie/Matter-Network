@@ -42,6 +42,8 @@
     <MN_NetworkBuildingPowerUsage>Network power usage: {0} W</MN_NetworkBuildingPowerUsage>
     <MN_NetworkPowerStorageInspectCapacity>Reserve capacity: {0} Wd</MN_NetworkPowerStorageInspectCapacity>
     <MN_NetworkPowerStorageInspectNetworkReserve>Network reserve: {0}/{1} Wd; this unit: {2} Wd</MN_NetworkPowerStorageInspectNetworkReserve>
+    <MN_NetworkRefuelerTab>Fuel relay</MN_NetworkRefuelerTab>
+    <MN_NetworkRefuelerInterval>Interval: {0} ticks ({1} seconds)</MN_NetworkRefuelerInterval>
     <MN_PowerModeGridPowered>Grid powered</MN_PowerModeGridPowered>
     <MN_PowerModeReservePowered>Reserve powered</MN_PowerModeReservePowered>
     <MN_PowerModeControllerDisabled>Controller disabled</MN_PowerModeControllerDisabled>

@@ -225,6 +225,15 @@ namespace SK_Matter_Network
             UpdatePower(deltaTicks);
         }
 
+        public void NetworkTick(int currentTick)
+        {
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                NetworkBuilding building = buildings[i];
+                building.NetworkTick(currentTick);
+            }
+        }
+
         public void RebuildPowerCaches()
         {
             EnsurePowerState();
@@ -351,6 +360,59 @@ namespace SK_Matter_Network
         public bool AcceptsItem(Thing item) => storageSettings.AllowedToAccept(item);
 
         public bool ItemInNetwork(Thing item) => storedItems.Contains(item);
+
+        public bool TryTakeItems(ThingFilter filter, int requestedCount, out List<Thing> takenThings)
+        {
+            takenThings = new List<Thing>();
+
+            if (requestedCount <= 0 || filter == null || !IsOperational || activeController?.innerContainer == null)
+            {
+                return false;
+            }
+
+            int remaining = requestedCount;
+            List<Thing> contents = activeController.innerContainer.InnerListForReading;
+            for (int i = contents.Count - 1; i >= 0 && remaining > 0; i--)
+            {
+                Thing item = contents[i];
+                if (!filter.Allows(item))
+                {
+                    continue;
+                }
+
+                int takeCount = System.Math.Min(remaining, item.stackCount);
+                Thing takenItem;
+                if (takeCount >= item.stackCount)
+                {
+                    if (!activeController.innerContainer.Remove(item))
+                    {
+                        continue;
+                    }
+
+                    takenItem = item;
+                }
+                else
+                {
+                    takenItem = item.SplitOff(takeCount);
+                }
+
+                if (takenItem == null || takenItem.Destroyed || takenItem.stackCount <= 0)
+                {
+                    continue;
+                }
+
+                takenThings.Add(takenItem);
+                remaining -= takenItem.stackCount;
+            }
+
+            if (takenThings.Count == 0)
+            {
+                return false;
+            }
+
+            MarkBytesDirty();
+            return true;
+        }
 
         public bool WouldControllerAddExceedCapacity(Thing item)
         {

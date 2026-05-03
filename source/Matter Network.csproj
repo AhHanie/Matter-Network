@@ -89,6 +89,8 @@
     <Compile Include="Comps\CompNetworkBuilding.cs" />
     <Compile Include="Comps\CompNetworkPowerController.cs" />
     <Compile Include="Comps\CompNetworkPowerStorage.cs" />
+    <Compile Include="Comps\CompNetworkRefueler.cs" />
+    <Compile Include="Networking\INetworkTickable.cs" />
     <Compile Include="Networking\NetworkPowerMode.cs" />
     <Compile Include="Networking\NetworkPowerState.cs" />
     <Compile Include="Buildings\NetworkBuildingController.cs" />
@@ -167,6 +169,7 @@
     <Compile Include="Resources.cs" />
     <Compile Include="UI\NetworkStorage\ITab_DiskDriveSlots.cs" />
     <Compile Include="UI\NetworkStorage\ITab_NetworkStorage.cs" />
+    <Compile Include="UI\NetworkRefueler\ITab_NetworkRefueler.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageChromeDrawer.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageItemsDrawer.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageModels.cs" />

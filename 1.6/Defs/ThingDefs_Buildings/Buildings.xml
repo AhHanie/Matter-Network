@@ -348,7 +348,7 @@
             <MaxHitPoints>150</MaxHitPoints>
             <WorkToBuild>700</WorkToBuild>
             <Mass>5</Mass>
-            <Flammability>0.5</Flammability>
+            <Flammability>0.35</Flammability>
             <Beauty>-1</Beauty>
         </statBases>
         <size>(1,1)</size>
@@ -435,5 +435,128 @@
         <rotatable>false</rotatable>
         <uiIconScale>1</uiIconScale>
         <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkRefueler</defName>
+        <label>fuel relay</label>
+        <description>Draws suitable fuel from a connected network and distributes it to nearby machines that need refueling. Forbidding this building disables automatic refueling.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/Refueler</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+            <shadowData>
+                <volume>(0.35,0.30,0.35)</volume>
+            </shadowData>
+        </graphicData>
+        <category>Building</category>
+        <comps>
+            <li Class="CompProperties_Forbiddable"/>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>150</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkRefueler">
+                <radius>5.9</radius>
+                <defaultTickInterval>3600</defaultTickInterval>
+            </li>
+        </comps>
+        <statBases>
+            <MaxHitPoints>100</MaxHitPoints>
+            <WorkToBuild>300</WorkToBuild>
+            <Mass>6</Mass>
+            <Flammability>0</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>100</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+        </costList>
+        <altitudeLayer>Building</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.25</fillPercent>
+        <pathCost>20</pathCost>
+        <building>
+            <ai_chillDestination>false</ai_chillDestination>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkRefueler</li>
+        </inspectorTabs>
+        <researchPrerequisites>
+            <li>MN_NetworkRefueling</li>
+        </researchPrerequisites>
+        <designationCategory>Misc</designationCategory>
+        <defaultPlacingRot>North</defaultPlacingRot>
+        <rotatable>false</rotatable>
+        <uiIconScale>1</uiIconScale>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+        <specialDisplayRadius>5.9</specialDisplayRadius>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_AdvancedNetworkRefueler</defName>
+        <label>advanced fuel relay</label>
+        <description>Draws suitable fuel from a connected network and distributes it to machines that need refueling over a wider area. Forbidding this building disables automatic refueling.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/AdvancedRefueler</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+            <shadowData>
+                <volume>(0.35,0.35,0.40)</volume>
+            </shadowData>
+        </graphicData>
+        <category>Building</category>
+        <comps>
+            <li Class="CompProperties_Forbiddable"/>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>250</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkRefueler">
+                <radius>7.9</radius>
+                <defaultTickInterval>3600</defaultTickInterval>
+            </li>
+        </comps>
+        <statBases>
+            <MaxHitPoints>200</MaxHitPoints>
+            <WorkToBuild>500</WorkToBuild>
+            <Mass>8</Mass>
+            <Flammability>0</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>150</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+            <Gold>10</Gold>
+        </costList>
+        <altitudeLayer>Building</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.25</fillPercent>
+        <pathCost>20</pathCost>
+        <building>
+            <ai_chillDestination>false</ai_chillDestination>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkRefueler</li>
+        </inspectorTabs>
+        <researchPrerequisites>
+            <li>MN_NetworkRefueling</li>
+        </researchPrerequisites>
+        <designationCategory>Misc</designationCategory>
+        <defaultPlacingRot>North</defaultPlacingRot>
+        <rotatable>false</rotatable>
+        <uiIconScale>1</uiIconScale>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+        <specialDisplayRadius>7.9</specialDisplayRadius>
     </ThingDef>
 </Defs>

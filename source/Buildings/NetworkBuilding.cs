@@ -78,6 +78,22 @@ namespace SK_Matter_Network
             return baseString;
         }
 
+        public virtual void NetworkTick(int currentTick)
+        {
+            if (AllComps == null)
+            {
+                return;
+            }
+
+            for (int i = 0; i < AllComps.Count; i++)
+            {
+                if (AllComps[i] is INetworkTickable tickable)
+                {
+                    tickable.NetworkTick(currentTick);
+                }
+            }
+        }
+
         public override void ExposeData()
         {
             base.ExposeData();

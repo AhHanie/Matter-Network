@@ -92,6 +92,7 @@ namespace SK_Matter_Network
             for (int i = 0; i < networks.Count; i++)
             {
                 networks[i].UpdatePowerIfDue(currentTick);
+                networks[i].NetworkTick(currentTick);
             }
         }
     }
