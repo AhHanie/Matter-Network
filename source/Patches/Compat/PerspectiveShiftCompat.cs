@@ -29,6 +29,8 @@ namespace SK_Matter_Network.Patches
         private static Pawn pendingClickPawn;
         private static bool pendingClickHadCarriedItem;
         private static float pendingClickStartTime;
+        private static Effecter pendingClickEffecter;
+        private static int pendingClickEffectTick = -1;
 
         private static bool IsAvailable()
         {
@@ -125,6 +127,8 @@ namespace SK_Matter_Network.Patches
         {
             if (current.type != EventType.MouseUp)
             {
+                TickPendingClickEffect(pawn, pendingClickInterface);
+
                 if (Time.realtimeSinceStartup - pendingClickStartTime >= HoldToOpenSeconds)
                 {
                     Find.WindowStack.Add(new Dialog_PerspectiveShiftNetworkStorage(pendingClickInterface, pawn));
@@ -149,9 +153,29 @@ namespace SK_Matter_Network.Patches
 
         private static void ClearPendingClick()
         {
+            pendingClickEffecter?.Cleanup();
+            pendingClickEffecter = null;
+            pendingClickEffectTick = -1;
             pendingClickInterface = null;
             pendingClickPawn = null;
             pendingClickHadCarriedItem = false;
+        }
+
+        private static void TickPendingClickEffect(Pawn pawn, NetworkBuildingNetworkInterface networkInterface)
+        {
+            int ticksGame = Find.TickManager.TicksGame;
+            if (pendingClickEffectTick == ticksGame)
+            {
+                return;
+            }
+
+            pendingClickEffectTick = ticksGame;
+            if (pendingClickEffecter == null)
+            {
+                pendingClickEffecter = EffecterDefOf.Hacking.Spawn();
+            }
+
+            pendingClickEffecter.EffectTick(pawn, networkInterface);
         }
 
         private static void UseIfUsable(Event current)

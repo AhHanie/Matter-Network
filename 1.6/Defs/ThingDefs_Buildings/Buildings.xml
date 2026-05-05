@@ -113,6 +113,8 @@
                         <li>MN_Disk2k</li>
                         <li>MN_Disk4k</li>
                         <li>MN_Disk8k</li>
+                        <li>MN_Disk16k</li>
+                        <li>MN_Disk32k</li>
                     </thingDefs>
                 </filter>
             </fixedStorageSettings>
@@ -124,6 +126,8 @@
                         <li>MN_Disk2k</li>
                         <li>MN_Disk4k</li>
                         <li>MN_Disk8k</li>
+                        <li>MN_Disk16k</li>
+                        <li>MN_Disk32k</li>
                     </thingDefs>
                 </filter>
             </defaultStorageSettings>

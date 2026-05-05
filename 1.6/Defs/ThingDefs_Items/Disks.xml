@@ -144,4 +144,54 @@
             <Gold>2</Gold>
         </costList>
     </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk16k</defName>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/disk_16k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <label>16k disk</label>
+        <description>A data storage disk that can hold up to 16384 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
+                <maxBytes>16384</maxBytes>
+            </li>
+        </comps>
+        <recipeMaker>
+            <skillRequirements>
+                <Crafting>14</Crafting>
+            </skillRequirements>
+        </recipeMaker>
+        <costList>
+            <Plasteel>150</Plasteel>
+            <ComponentSpacer>3</ComponentSpacer>
+            <Gold>2</Gold>
+        </costList>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk32k</defName>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/disk_32k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <label>32k disk</label>
+        <description>A data storage disk that can hold up to 32768 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
+                <maxBytes>32768</maxBytes>
+            </li>
+        </comps>
+        <recipeMaker>
+            <skillRequirements>
+                <Crafting>15</Crafting>
+            </skillRequirements>
+        </recipeMaker>
+        <costList>
+            <Plasteel>200</Plasteel>
+            <ComponentSpacer>4</ComponentSpacer>
+            <Gold>2</Gold>
+        </costList>
+    </ThingDef>
 </Defs>

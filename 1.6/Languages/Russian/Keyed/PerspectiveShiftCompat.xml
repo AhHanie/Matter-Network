@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
     <MN_PSNetworkStorageTitle>МЭ-интерфейс</MN_PSNetworkStorageTitle>
-    <MN_PSNetworkStorageKeep>Оставить</MN_PSNetworkStorageKeep>
+    <MN_PSNetworkStorageKeep>Забрать</MN_PSNetworkStorageKeep>
     <MN_PSNetworkStorageHold>Взять в руки</MN_PSNetworkStorageHold>
     <MN_PSNetworkStorageEquip>Экипировать</MN_PSNetworkStorageEquip>
     <MN_PSNetworkStorageWear>Надеть</MN_PSNetworkStorageWear>

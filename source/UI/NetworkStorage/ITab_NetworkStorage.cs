@@ -56,6 +56,11 @@ namespace SK_Matter_Network
                 oldSelected = SelectedNetworkBuilding;
             }
 
+            if (network.CurrentTab != this)
+            {
+                network.CurrentTab = this;
+            }
+
             EnsureSnapshot(network);
 
             Rect headerRect = new Rect(outerRect.x, outerRect.y, outerRect.width, NetworkStorageUiConstants.HeaderHeight);
@@ -117,16 +122,6 @@ namespace SK_Matter_Network
             }
 
             oldSelected = SelectedNetworkBuilding;
-        }
-
-        public override void Notify_ClickOutsideWindow()
-        {
-            if (SelectedNetworkBuilding?.ParentNetwork != null)
-            {
-                SelectedNetworkBuilding.ParentNetwork.CurrentTab = null;
-            }
-
-            oldSelected = null;
         }
 
         private void EnsureSnapshot(DataNetwork network)

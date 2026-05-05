@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+    <MN_MatterNetwork.label>Оцифровка материи</MN_MatterNetwork.label>
+    <MN_MatterNetwork.description>Сводя физическую материю к стабильным цифровым шаблонам, поселенцы могут архивировать предметы в блоки данных кодированного хранилища и извлекать их по мере необходимости. То, что некогда было логистическим кошмаром, становится единой сетью, с идеальным контролем.</MN_MatterNetwork.description>
+
+    <MN_NetworkPowerStorage.label>Cетевой накопитель энергии</MN_NetworkPowerStorage.label>
+    <MN_NetworkPowerStorage.description>Адаптировав высокоплотные конденсаторы для сетей оцифрованной материи, поселенцы могут создавать резервные ячейки, которые поддерживают работу сетевого хранилища при отключениях энергии, солнечных вспышках и временных перебоях питания.</MN_NetworkPowerStorage.description>
+
+    <MN_NetworkRefueling.label>Топливные ретрансляторы</MN_NetworkRefueling.label>
+    <MN_NetworkRefueling.description>Автоматическая маршрутизация материи позволяет подключённым ретрансляторам забирать топливо из сетевого хранилища и пополнять ближайшие механизмы без участия поселенцев.</MN_NetworkRefueling.description>
+</LanguageData>

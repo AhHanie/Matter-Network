@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LanguageData>
+    <MN_NetworkCable.label>Сетевой кабель</MN_NetworkCable.label>
+    <MN_NetworkCable.description>Сетевой кабель для передачи данных. Можно прокладывать под стенами и другими постройками.</MN_NetworkCable.description>
+
+    <MN_DiskDrive.label>Дисковод</MN_DiskDrive.label>
+    <MN_DiskDrive.description>Хранит диски материи, которые предоставляют объем памяти для подключённой сети. Вмещает до 6 дисков. Добавьте больше дисководов или диски большего объёма, чтобы увеличить вместимость сети.</MN_DiskDrive.description>
+
+    <MN_NetworkInterface.label>Сетевой интерфейс</MN_NetworkInterface.label>
+    <MN_NetworkInterface.description>Точка доступа к хранилищу сети передачи данных. Поселенцы могут загружать и извлекать разрешённые предметы, когда в сети есть активный контроллер. Выбранный фильтр хранения используется всей сетью.</MN_NetworkInterface.description>
+
+    <MN_NetworkController.label>Сетевой контроллер</MN_NetworkController.label>
+    <MN_NetworkController.description>Центральный узел сети передачи данных. Хранит все предметы в цифровом виде. В сети может быть только один активный контроллер.</MN_NetworkController.description>
+
+    <MN_NetworkPowerStorage.label>Сетевой конденсатор</MN_NetworkPowerStorage.label>
+    <MN_NetworkPowerStorage.description>Компактная батарея конденсаторов, хранящая резервное питание для подключённой сети. Накопленная энергия распределяется по всей сети, поддерживая работу оцифрованного хранилища при кратковременных отключениях и нестабильности энергосети.</MN_NetworkPowerStorage.description>
+
+    <MN_AdvancedNetworkPowerStorage.label>Сетевая резервная ячейка</MN_AdvancedNetworkPowerStorage.label>
+    <MN_AdvancedNetworkPowerStorage.description>Высокоплотная резервная ячейка для сетевой инфраструктуры. Хранит большой общий заряд на случай длительных отключений, солнечных вспышек и прочих нарушений, которые иначе прервали бы доступ к оцифрованной материи.</MN_AdvancedNetworkPowerStorage.description>
+
+    <MN_NetworkRefueler.label>Топливный ретранслятор</MN_NetworkRefueler.label>
+    <MN_NetworkRefueler.description>Забирает подходящее топливо из подключённой сети и распределяет его по ближайшим механизмам, нуждающимся в заправке. Запрет этого устройства отключает автоматическую заправку.</MN_NetworkRefueler.description>
+
+    <MN_AdvancedNetworkRefueler.label>Продвинутый топливный ретранслятор</MN_AdvancedNetworkRefueler.label>
+    <MN_AdvancedNetworkRefueler.description>Забирает подходящее топливо из подключённой сети и распределяет его по механизмам, нуждающимся в заправке, в увеличенном радиусе. Запрет этого устройства отключает автоматическую заправку.</MN_AdvancedNetworkRefueler.description>
+</LanguageData>

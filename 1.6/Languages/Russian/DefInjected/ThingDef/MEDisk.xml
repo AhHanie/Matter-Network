@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LanguageData>
+    <MN_Disk1k.label>Диск 1к байт</MN_Disk1k.label>
+    <MN_Disk1k.description>Диск хранения данных, способный вместить до 1024 байт информации. Каждая единица хранимого предмета занимает 1 байт.</MN_Disk1k.description>
+
+    <MN_Disk2k.label>Диск 2к байт</MN_Disk2k.label>
+    <MN_Disk2k.description>Диск хранения данных, способный вместить до 2048 байт информации. Каждая единица хранимого предмета занимает 1 байт.</MN_Disk2k.description>
+
+    <MN_Disk4k.label>Диск 4к байт</MN_Disk4k.label>
+    <MN_Disk4k.description>Диск хранения данных, способный вместить до 4096 байт информации. Каждая единица хранимого предмета занимает 1 байт.</MN_Disk4k.description>
+
+    <MN_Disk8k.label>Диск 8к байт</MN_Disk8k.label>
+    <MN_Disk8k.description>Диск хранения данных, способный вместить до 8192 байт информации. Каждая единица хранимого предмета занимает 1 байт.</MN_Disk8k.description>
+
+    <MN_Disk16k.label>Диск 16к байт</MN_Disk16k.label>
+    <MN_Disk16k.description>Диск хранения данных, способный вместить до 16384 байт информации. Каждая единица хранимого предмета занимает 1 байт.</MN_Disk16k.description>
+
+    <MN_Disk32k.label>Диск 32к байт</MN_Disk32k.label>
+    <MN_Disk32k.description>Диск хранения данных, способный вместить до 32768 байт информации. Каждая единица хранимого предмета занимает 1 байт.</MN_Disk32k.description>
+</LanguageData>

@@ -10,6 +10,7 @@ namespace SK_Matter_Network
         private const float SlotHeight = 82f;
         private const float SlotGap = 8f;
         private const float SlotIconSize = 44f;
+        private const float DropButtonSize = 24f;
 
         private readonly NetworkStorageChromeDrawer chromeDrawer = new NetworkStorageChromeDrawer();
         private Vector2 scrollPosition;
@@ -118,12 +119,12 @@ namespace SK_Matter_Network
                     slotWidth,
                     SlotHeight);
                 Thing disk = i < drive.HeldItems.Count ? drive.HeldItems[i] : null;
-                DrawSlot(slotRect, i + 1, disk);
+                DrawSlot(slotRect, i + 1, disk, drive);
             }
             Widgets.EndScrollView();
         }
 
-        private void DrawSlot(Rect rect, int slotNumber, Thing disk)
+        private void DrawSlot(Rect rect, int slotNumber, Thing disk, NetworkBuildingDiskDrive drive)
         {
             Widgets.DrawBoxSolid(rect, NetworkStorageUiConstants.StrongSectionFillColor);
             Widgets.DrawBoxSolidWithOutline(rect, Color.clear, NetworkStorageUiConstants.OutlineColor);
@@ -136,7 +137,8 @@ namespace SK_Matter_Network
             Widgets.Label(numberRect, "MN_DiskDriveSlotsSlotNumber".Translate(slotNumber));
 
             Rect iconRect = new Rect(rect.x + 10f, rect.y + 28f, SlotIconSize, SlotIconSize);
-            Rect labelRect = new Rect(iconRect.xMax + 10f, rect.y + 22f, rect.width - SlotIconSize - 30f, 26f);
+            Rect dropButtonRect = new Rect(rect.xMax - DropButtonSize - 8f, rect.y + 29f, DropButtonSize, DropButtonSize);
+            Rect labelRect = new Rect(iconRect.xMax + 10f, rect.y + 22f, dropButtonRect.x - iconRect.xMax - 18f, 26f);
             Rect detailsRect = new Rect(labelRect.x, labelRect.yMax, labelRect.width, 38f);
 
             if (disk == null)
@@ -159,6 +161,13 @@ namespace SK_Matter_Network
             GUI.color = NetworkStorageUiConstants.SecondaryTextColor;
             Widgets.Label(detailsRect, FormatDiskDetails(capacity));
             GUI.color = Color.white;
+
+            if (Widgets.ButtonImage(dropButtonRect, TexButton.Drop))
+            {
+                DropDisk(drive, disk);
+            }
+
+            TooltipHandler.TipRegion(dropButtonRect, "MN_NetworkStorageDropLabel".Translate());
         }
 
         private void DrawEmptySlot(Rect iconRect, Rect labelRect)
@@ -188,6 +197,11 @@ namespace SK_Matter_Network
             }
 
             return "MN_DiskDriveSlotsDiskDetailsActive".Translate(capacity.MaxBytes);
+        }
+
+        private void DropDisk(NetworkBuildingDiskDrive drive, Thing disk)
+        {
+            drive.GetDirectlyHeldThings().TryDrop(disk, drive.Position, drive.Map, ThingPlaceMode.Near, out Thing _);
         }
     }
 }
