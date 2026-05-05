@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+    <MN_PSNetworkStorageTitle>МЭ-интерфейс</MN_PSNetworkStorageTitle>
+    <MN_PSNetworkStorageKeep>Оставить</MN_PSNetworkStorageKeep>
+    <MN_PSNetworkStorageHold>Взять в руки</MN_PSNetworkStorageHold>
+    <MN_PSNetworkStorageEquip>Экипировать</MN_PSNetworkStorageEquip>
+    <MN_PSNetworkStorageWear>Надеть</MN_PSNetworkStorageWear>
+    <MN_PSNetworkStorageDepositCarried>Положить</MN_PSNetworkStorageDepositCarried>
+    <MN_PSNetworkStorageDepositHere>Положить сюда</MN_PSNetworkStorageDepositHere>
+    <MN_PSNetworkStorageOffline>Сеть отключена.</MN_PSNetworkStorageOffline>
+    <MN_PSNetworkStorageCannotCarryMore>Нельзя нести больше веса.</MN_PSNetworkStorageCannotCarryMore>
+    <MN_PSNetworkStorageDoesNotAccept>Сеть не принимает: {0}.</MN_PSNetworkStorageDoesNotAccept>
+    <MN_PSNetworkStorageNoCapacity>В сети нет места для: {0}.</MN_PSNetworkStorageNoCapacity>
+    <MN_PSNetworkStorageAlreadyHolding>Уже держит предмет в руках.</MN_PSNetworkStorageAlreadyHolding>
+</LanguageData>

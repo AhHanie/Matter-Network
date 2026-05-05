@@ -24,7 +24,7 @@ namespace SK_Matter_Network
         private readonly NetworkStorageTabDataSource dataSource = new NetworkStorageTabDataSource();
         private readonly NetworkStorageChromeDrawer chromeDrawer = new NetworkStorageChromeDrawer();
 
-        private Thing cursorItem;
+        private Thing selectedItem;
         private Vector2 scrollPosition;
         private string searchText = string.Empty;
 
@@ -41,12 +41,6 @@ namespace SK_Matter_Network
             doCloseX = true;
             absorbInputAroundWindow = false;
             forcePause = true;
-        }
-
-        public override void PreClose()
-        {
-            base.PreClose();
-            DropCursorNearPawn();
         }
 
         public override void DoWindowContents(Rect inRect)
@@ -69,14 +63,12 @@ namespace SK_Matter_Network
                         : "MN_NetworkStorageNoController".Translate().ToString();
                 chromeDrawer.DrawCenteredMessage(gridRect.ContractedBy(10f), message, GameFont.Medium, NetworkStorageUiConstants.WarningColor);
                 DrawActionBar(bottomRect);
-                DrawCursorItem();
                 return;
             }
 
             DrawSearchToolbar(toolbarRect, network);
             DrawItemGrid(gridRect, network);
             DrawActionBar(bottomRect);
-            DrawCursorItem();
         }
 
         private void DrawHeader(Rect rect, DataNetwork network)
@@ -181,7 +173,7 @@ namespace SK_Matter_Network
             chromeDrawer.DrawPanel(rect, strong: false);
             Rect innerRect = rect.ContractedBy(10f);
             List<Thing> items = BuildFilteredItems(network);
-            int tileCount = items.Count + (cursorItem != null ? 1 : 0);
+            int tileCount = items.Count;
 
             if (tileCount == 0)
             {
@@ -202,8 +194,7 @@ namespace SK_Matter_Network
                 int row = i / columns;
                 int column = i % columns;
                 Rect cellRect = new Rect(column * (CellSize + CellSpacing), row * (CellSize + CellSpacing), CellSize, CellSize);
-                Thing item = i < items.Count ? items[i] : null;
-                DrawItemCell(cellRect, item);
+                DrawItemCell(cellRect, items[i]);
             }
             Widgets.EndScrollView();
         }
@@ -212,37 +203,29 @@ namespace SK_Matter_Network
         {
             chromeDrawer.DrawPanel(rect, strong: false);
             Widgets.DrawHighlightIfMouseover(rect);
-
-            if (item != null)
+            if (selectedItem == item)
             {
-                Rect iconRect = new Rect(rect.x + IconPadding, rect.y + IconPadding, rect.width - (IconPadding * 2f), rect.height - (IconPadding * 2f));
-                Widgets.ThingIcon(iconRect, item);
-
-                if (item.stackCount > 1 || item.def.stackLimit > 1)
-                {
-                    Text.Font = GameFont.Small;
-                    Text.Anchor = TextAnchor.LowerRight;
-                    GUI.color = NetworkStorageUiConstants.PrimaryTextColor;
-                    Widgets.Label(new Rect(rect.x, rect.y, rect.width - 4f, rect.height - 3f), item.stackCount.ToString());
-                    Text.Anchor = TextAnchor.UpperLeft;
-                    GUI.color = Color.white;
-                }
-
-                TooltipHandler.TipRegion(rect, item.LabelCap + "\n" + dataSource.BuildThingMetadata(item));
+                Widgets.DrawBoxSolidWithOutline(rect, Color.clear, NetworkStorageUiConstants.AccentColor);
             }
-            else
+
+            Rect iconRect = new Rect(rect.x + IconPadding, rect.y + IconPadding, rect.width - (IconPadding * 2f), rect.height - (IconPadding * 2f));
+            Widgets.ThingIcon(iconRect, item);
+
+            if (item.stackCount > 1 || item.def.stackLimit > 1)
             {
-                Text.Font = GameFont.Tiny;
-                Text.Anchor = TextAnchor.MiddleCenter;
-                GUI.color = NetworkStorageUiConstants.MutedTextColor;
-                Widgets.Label(rect.ContractedBy(8f), "MN_PSNetworkStorageDepositHere".Translate());
+                Text.Font = GameFont.Small;
+                Text.Anchor = TextAnchor.LowerRight;
+                GUI.color = NetworkStorageUiConstants.PrimaryTextColor;
+                Widgets.Label(new Rect(rect.x, rect.y, rect.width - 4f, rect.height - 3f), item.stackCount.ToString());
                 Text.Anchor = TextAnchor.UpperLeft;
                 GUI.color = Color.white;
             }
 
+            TooltipHandler.TipRegion(rect, item.LabelCap + "\n" + dataSource.BuildThingMetadata(item));
+
             if (Mouse.IsOver(rect) && Event.current.type == EventType.MouseDown && (Event.current.button == 0 || Event.current.button == 1))
             {
-                HandleItemCellClick(item, Event.current.button);
+                selectedItem = item;
                 Event.current.Use();
             }
         }
@@ -256,22 +239,22 @@ namespace SK_Matter_Network
             Rect equipRect = new Rect(holdRect.xMax + spacing, rect.y, buttonWidth, rect.height);
             Rect depositRect = new Rect(equipRect.xMax + spacing, rect.y, buttonWidth, rect.height);
 
-            bool hasCursor = cursorItem != null && !cursorItem.Destroyed;
-            bool canEquip = hasCursor && IsWearOrEquipItem(cursorItem);
-            string equipLabel = hasCursor && cursorItem is Apparel
+            bool hasSelection = HasSelectedItem();
+            bool canEquip = hasSelection && IsWearOrEquipItem(selectedItem);
+            string equipLabel = hasSelection && selectedItem is Apparel
                 ? "MN_PSNetworkStorageWear".Translate().ToString()
                 : "MN_PSNetworkStorageEquip".Translate().ToString();
 
-            DrawTextActionButton(keepRect, "MN_PSNetworkStorageKeep".Translate(), hasCursor, delegate(int button)
+            DrawTextActionButton(keepRect, "MN_PSNetworkStorageKeep".Translate(), hasSelection, delegate(int button)
             {
-                int count = button == 1 ? 1 : cursorItem.stackCount;
-                TryMoveCursorToInventory(count);
+                int count = button == 1 ? 1 : selectedItem.stackCount;
+                TryMoveSelectedToInventory(count);
             });
 
-            DrawTextActionButton(holdRect, "MN_PSNetworkStorageHold".Translate(), hasCursor, delegate(int button)
+            DrawTextActionButton(holdRect, "MN_PSNetworkStorageHold".Translate(), hasSelection, delegate(int button)
             {
-                int count = button == 1 ? 1 : cursorItem.stackCount;
-                if (TryMoveCursorToCarryTracker(count))
+                int count = button == 1 ? 1 : selectedItem.stackCount;
+                if (TryMoveSelectedToCarryTracker(count))
                 {
                     Close();
                 }
@@ -279,7 +262,7 @@ namespace SK_Matter_Network
 
             DrawTextActionButton(equipRect, equipLabel, canEquip, delegate(int button)
             {
-                TryWearOrEquipCursorItem();
+                TryWearOrEquipSelectedItem();
             });
 
             DrawTextActionButton(depositRect, "MN_PSNetworkStorageDepositCarried".Translate(), CanDepositCarriedItem(), delegate(int button)
@@ -362,39 +345,10 @@ namespace SK_Matter_Network
             return value.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private void HandleItemCellClick(Thing clickedItem, int button)
+        private bool HasSelectedItem()
         {
-            if (cursorItem == null || cursorItem.Destroyed)
-            {
-                if (clickedItem == null)
-                {
-                    return;
-                }
-
-                int stackCount = MaxPickupStackCount(clickedItem);
-                int count = button == 1 ? Mathf.CeilToInt(stackCount / 2f) : stackCount;
-                cursorItem = RemoveFromNetwork(clickedItem, count);
-                return;
-            }
-
-            if (clickedItem == null)
-            {
-                int count = button == 1 ? 1 : cursorItem.stackCount;
-                TryInsertCursorIntoNetwork(count);
-                return;
-            }
-
-            if (clickedItem.CanStackWith(cursorItem))
-            {
-                int count = button == 1 ? 1 : cursorItem.stackCount;
-                TryInsertCursorIntoNetwork(count);
-                return;
-            }
-
-            if (button == 0)
-            {
-                TrySwapCursorWithNetworkItem(clickedItem);
-            }
+            DataNetwork network = Network;
+            return selectedItem != null && !selectedItem.Destroyed && IsUsableNetwork(network) && network.ActiveController.innerContainer.Contains(selectedItem);
         }
 
         private static int MaxPickupStackCount(Thing item)
@@ -435,65 +389,6 @@ namespace SK_Matter_Network
             ClearItemReservations(removed);
             removed.def.soundPickup?.PlayOneShot(pawn);
             return removed;
-        }
-
-        private bool TryInsertCursorIntoNetwork(int requestedCount)
-        {
-            if (cursorItem == null || cursorItem.Destroyed)
-            {
-                return false;
-            }
-
-            if (!CanInsertIntoNetwork(cursorItem, requestedCount, out int acceptedCount))
-            {
-                return false;
-            }
-
-            bool tookAll = acceptedCount >= cursorItem.stackCount;
-            Thing toInsert = tookAll ? cursorItem : cursorItem.SplitOff(acceptedCount);
-            if (TryAddToNetwork(toInsert))
-            {
-                if (tookAll)
-                {
-                    cursorItem = null;
-                }
-
-                toInsert.def.soundDrop?.PlayOneShot(pawn);
-                return true;
-            }
-
-            if (!tookAll && !toInsert.Destroyed)
-            {
-                cursorItem.TryAbsorbStack(toInsert, true);
-            }
-
-            return false;
-        }
-
-        private bool TrySwapCursorWithNetworkItem(Thing clickedItem)
-        {
-            if (cursorItem == null || clickedItem.Destroyed)
-            {
-                return false;
-            }
-
-            Thing oldCursor = cursorItem;
-            Thing removed = RemoveFromNetwork(clickedItem, clickedItem.stackCount);
-            if (removed == null)
-            {
-                return false;
-            }
-
-            cursorItem = oldCursor;
-            if (TryInsertCursorIntoNetwork(cursorItem.stackCount))
-            {
-                cursorItem = removed;
-                return true;
-            }
-
-            TryAddToNetwork(removed);
-            cursorItem = oldCursor;
-            return false;
         }
 
         private bool TryAddToNetwork(Thing item)
@@ -540,15 +435,15 @@ namespace SK_Matter_Network
             return true;
         }
 
-        private bool TryMoveCursorToInventory(int requestedCount)
+        private bool TryMoveSelectedToInventory(int requestedCount)
         {
-            if (cursorItem == null || cursorItem.Destroyed)
+            if (!HasSelectedItem())
             {
                 return false;
             }
 
-            int count = Math.Min(requestedCount, cursorItem.stackCount);
-            int maxCount = MassUtility.CountToPickUpUntilOverEncumbered(pawn, cursorItem);
+            int count = Math.Min(requestedCount, MaxPickupStackCount(selectedItem));
+            int maxCount = MassUtility.CountToPickUpUntilOverEncumbered(pawn, selectedItem);
             count = Math.Min(count, maxCount);
             if (count <= 0)
             {
@@ -556,30 +451,31 @@ namespace SK_Matter_Network
                 return false;
             }
 
-            bool tookAll = count >= cursorItem.stackCount;
-            Thing toAdd = tookAll ? cursorItem : cursorItem.SplitOff(count);
+            bool tookAll = count >= selectedItem.stackCount;
+            Thing toAdd = RemoveFromNetwork(selectedItem, count);
+            if (toAdd == null)
+            {
+                return false;
+            }
+
             if (pawn.inventory.innerContainer.TryAdd(toAdd, true))
             {
                 if (tookAll)
                 {
-                    cursorItem = null;
+                    selectedItem = null;
                 }
 
                 toAdd.def.soundDrop?.PlayOneShot(pawn);
                 return true;
             }
 
-            if (!tookAll && !toAdd.Destroyed)
-            {
-                cursorItem.TryAbsorbStack(toAdd, true);
-            }
-
+            TryAddToNetwork(toAdd);
             return false;
         }
 
-        private bool TryMoveCursorToCarryTracker(int requestedCount)
+        private bool TryMoveSelectedToCarryTracker(int requestedCount)
         {
-            if (cursorItem == null || cursorItem.Destroyed)
+            if (!HasSelectedItem())
             {
                 return false;
             }
@@ -590,63 +486,69 @@ namespace SK_Matter_Network
                 return false;
             }
 
-            int count = MaxCarryCountForCursor(requestedCount);
+            int count = MaxCarryCountForSelected(requestedCount);
             if (count <= 0)
             {
                 Messages.Message("MN_PSNetworkStorageCannotCarryMore".Translate(), MessageTypeDefOf.RejectInput, false);
                 return false;
             }
 
-            bool tookAll = count >= cursorItem.stackCount;
-            Thing toCarry = tookAll ? cursorItem : cursorItem.SplitOff(count);
-            int originalCount = toCarry.stackCount;
-            int carried = pawn.carryTracker.TryStartCarry(toCarry, originalCount, reserve: false);
-            if (carried > 0)
-            {
-                if (tookAll)
-                {
-                    cursorItem = null;
-                }
-
-                toCarry.def.soundDrop?.PlayOneShot(pawn);
-                return ReturnCursorRemainderToNetwork();
-            }
-
-            if (!tookAll && !toCarry.Destroyed)
-            {
-                cursorItem.TryAbsorbStack(toCarry, true);
-            }
-
-            return false;
-        }
-
-        private int MaxCarryCountForCursor(int requestedCount)
-        {
-            int maxStackCount = cursorItem.def.stackLimit > 0 ? cursorItem.def.stackLimit : cursorItem.stackCount;
-            int maxMassCount = MassUtility.CountToPickUpUntilOverEncumbered(pawn, cursorItem);
-            return Math.Min(Math.Min(requestedCount, cursorItem.stackCount), Math.Min(maxStackCount, maxMassCount));
-        }
-
-        private bool ReturnCursorRemainderToNetwork()
-        {
-            if (cursorItem == null || cursorItem.Destroyed)
-            {
-                return true;
-            }
-
-            TryInsertCursorIntoNetwork(cursorItem.stackCount);
-            return cursorItem == null || cursorItem.Destroyed;
-        }
-
-        private bool TryWearOrEquipCursorItem()
-        {
-            if (cursorItem == null || cursorItem.Destroyed || !IsWearOrEquipItem(cursorItem))
+            bool tookAll = count >= selectedItem.stackCount;
+            Thing toCarry = RemoveFromNetwork(selectedItem, count);
+            if (toCarry == null)
             {
                 return false;
             }
 
-            Thing item = cursorItem;
-            cursorItem = null;
+            int originalCount = toCarry.stackCount;
+            int carried = pawn.carryTracker.TryStartCarry(toCarry, originalCount, reserve: false);
+            if (carried > 0)
+            {
+                if (carried < originalCount && !toCarry.Destroyed)
+                {
+                    TryAddToNetwork(toCarry);
+                    selectedItem = toCarry;
+                }
+                else if (tookAll)
+                {
+                    selectedItem = null;
+                }
+
+                toCarry.def.soundDrop?.PlayOneShot(pawn);
+                return true;
+            }
+
+            TryAddToNetwork(toCarry);
+            return false;
+        }
+
+        private int MaxCarryCountForSelected(int requestedCount)
+        {
+            int maxStackCount = selectedItem.def.stackLimit > 0 ? selectedItem.def.stackLimit : selectedItem.stackCount;
+            int maxMassCount = MassUtility.CountToPickUpUntilOverEncumbered(pawn, selectedItem);
+            return Math.Min(Math.Min(requestedCount, selectedItem.stackCount), Math.Min(maxStackCount, maxMassCount));
+        }
+
+        private bool TryWearOrEquipSelectedItem()
+        {
+            if (!HasSelectedItem() || !IsWearOrEquipItem(selectedItem))
+            {
+                return false;
+            }
+
+            Job unusedJob;
+            if (!TryMakeWearOrEquipJob(pawn, selectedItem, out unusedJob))
+            {
+                return false;
+            }
+
+            Thing item = RemoveFromNetwork(selectedItem, selectedItem.stackCount);
+            if (item == null)
+            {
+                return false;
+            }
+
+            selectedItem = null;
             if (!item.Spawned)
             {
                 GenSpawn.Spawn(item, pawn.Position, pawn.Map, WipeMode.Vanish);
@@ -707,48 +609,6 @@ namespace SK_Matter_Network
 
             pawn.Map.reservationManager.ReleaseAllForTarget(item);
             pawn.Map.physicalInteractionReservationManager.ReleaseAllForTarget(item);
-        }
-
-        private void DropCursorNearPawn()
-        {
-            if (cursorItem == null || cursorItem.Destroyed)
-            {
-                return;
-            }
-
-            if (pawn.Spawned)
-            {
-                GenPlace.TryPlaceThing(cursorItem, pawn.Position, pawn.Map, ThingPlaceMode.Near);
-            }
-            else if (selectedInterface.Spawned)
-            {
-                GenPlace.TryPlaceThing(cursorItem, selectedInterface.Position, selectedInterface.Map, ThingPlaceMode.Near);
-            }
-
-            cursorItem = null;
-        }
-
-        private void DrawCursorItem()
-        {
-            if (cursorItem == null || cursorItem.Destroyed)
-            {
-                return;
-            }
-
-            const float size = 70f;
-            Rect mouseRect = new Rect(UI.MousePositionOnUIInverted.x - (size / 2f), UI.MousePositionOnUIInverted.y - (size / 2f), size, size);
-            Rect iconRect = mouseRect.ContractedBy(8f);
-            Widgets.ThingIcon(iconRect, cursorItem);
-
-            if (cursorItem.stackCount > 1 || cursorItem.def.stackLimit > 1)
-            {
-                Text.Font = GameFont.Small;
-                Text.Anchor = TextAnchor.LowerRight;
-                GUI.color = NetworkStorageUiConstants.PrimaryTextColor;
-                Widgets.Label(mouseRect, cursorItem.stackCount.ToString());
-                Text.Anchor = TextAnchor.UpperLeft;
-                GUI.color = Color.white;
-            }
         }
 
         private static bool IsUsableNetwork(DataNetwork network)

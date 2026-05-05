@@ -4,6 +4,7 @@ using System;
 using System.Reflection;
 using UnityEngine;
 using Verse;
+using Verse.Sound;
 
 namespace SK_Matter_Network.Patches
 {
@@ -21,8 +22,13 @@ namespace SK_Matter_Network.Patches
         private static readonly FieldInfo avatarPawnField = AccessTools.Field(avatarType, "pawn");
         private static readonly PropertyInfo stateIsActiveProperty = AccessTools.Property(stateType, "IsActive");
         private static readonly FieldInfo modSettingsField = AccessTools.Field(modType, "settings");
+        private const float HoldToOpenSeconds = 0.6f;
         private static FieldInfo grabRangeField;
         private static bool warnedMissingApi;
+        private static NetworkBuildingNetworkInterface pendingClickInterface;
+        private static Pawn pendingClickPawn;
+        private static bool pendingClickHadCarriedItem;
+        private static float pendingClickStartTime;
 
         private static bool IsAvailable()
         {
@@ -63,7 +69,7 @@ namespace SK_Matter_Network.Patches
                 }
 
                 Event current = Event.current;
-                if (current == null || current.type != EventType.MouseDown || current.button != 0)
+                if (current == null)
                 {
                     return true;
                 }
@@ -75,6 +81,16 @@ namespace SK_Matter_Network.Patches
                 }
 
                 if (Find.TickManager.Paused || Find.Targeter.IsTargeting || MouseOverBlockingUI())
+                {
+                    return true;
+                }
+
+                if (pendingClickInterface != null && pendingClickPawn == pawn)
+                {
+                    return ContinuePendingClick(current, pawn, ref __result);
+                }
+
+                if (current.type != EventType.MouseDown || current.button != 0)
                 {
                     return true;
                 }
@@ -92,17 +108,96 @@ namespace SK_Matter_Network.Patches
                 DataNetwork network = networkInterface.ParentNetwork;
                 if (network == null || !network.IsOperational)
                 {
-                    Messages.Message("MN_PSNetworkStorageOffline".Translate(), networkInterface, MessageTypeDefOf.RejectInput, false);
-                    current.Use();
-                    __result = true;
-                    return false;
+                    return RejectClick(current, ref __result, networkInterface);
                 }
 
-                Find.WindowStack.Add(new Dialog_PerspectiveShiftNetworkStorage(networkInterface, pawn));
+                pendingClickInterface = networkInterface;
+                pendingClickPawn = pawn;
+                pendingClickHadCarriedItem = pawn.carryTracker.CarriedThing != null;
+                pendingClickStartTime = Time.realtimeSinceStartup;
                 current.Use();
                 __result = true;
                 return false;
             }
+        }
+
+        private static bool ContinuePendingClick(Event current, Pawn pawn, ref bool result)
+        {
+            if (current.type != EventType.MouseUp)
+            {
+                if (Time.realtimeSinceStartup - pendingClickStartTime >= HoldToOpenSeconds)
+                {
+                    Find.WindowStack.Add(new Dialog_PerspectiveShiftNetworkStorage(pendingClickInterface, pawn));
+                    ClearPendingClick();
+                }
+
+                UseIfUsable(current);
+                result = true;
+                return false;
+            }
+
+            if (pendingClickHadCarriedItem && pawn.carryTracker.CarriedThing != null)
+            {
+                TryDepositCarriedItem(pawn, pendingClickInterface);
+            }
+
+            ClearPendingClick();
+            UseIfUsable(current);
+            result = true;
+            return false;
+        }
+
+        private static void ClearPendingClick()
+        {
+            pendingClickInterface = null;
+            pendingClickPawn = null;
+            pendingClickHadCarriedItem = false;
+        }
+
+        private static void UseIfUsable(Event current)
+        {
+            if (current.type != EventType.Layout && current.type != EventType.Repaint)
+            {
+                current.Use();
+            }
+        }
+
+        private static bool TryDepositCarriedItem(Pawn pawn, NetworkBuildingNetworkInterface networkInterface)
+        {
+            Thing carried = pawn.carryTracker.CarriedThing;
+            DataNetwork network = networkInterface.ParentNetwork;
+
+            if (!network.AcceptsItem(carried))
+            {
+                Messages.Message("MN_PSNetworkStorageDoesNotAccept".Translate(carried.LabelCap), MessageTypeDefOf.RejectInput, false);
+                return false;
+            }
+
+            int available = Math.Max(0, network.TotalCapacityBytes - network.UsedBytes);
+            int count = Math.Min(carried.stackCount, available);
+            if (count <= 0)
+            {
+                Messages.Message("MN_PSNetworkStorageNoCapacity".Translate(carried.LabelCap), MessageTypeDefOf.RejectInput, false);
+                return false;
+            }
+
+            int moved = pawn.carryTracker.innerContainer.TryTransferToContainer(carried, network.ActiveController.innerContainer, count);
+            if (moved <= 0)
+            {
+                return false;
+            }
+
+            network.MarkBytesDirty();
+            carried.def.soundDrop?.PlayOneShot(pawn);
+            return true;
+        }
+
+        private static bool RejectClick(Event current, ref bool result, NetworkBuildingNetworkInterface networkInterface)
+        {
+            Messages.Message("MN_PSNetworkStorageOffline".Translate(), networkInterface, MessageTypeDefOf.RejectInput, false);
+            current.Use();
+            result = true;
+            return false;
         }
 
         private static bool IsActive()

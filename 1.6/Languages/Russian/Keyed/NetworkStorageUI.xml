@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+    <MN_NetworkStorageTab>Сеть</MN_NetworkStorageTab>
+    <MN_NetworkStorageHeaderTitle>Сетевое хранилище</MN_NetworkStorageHeaderTitle>
+    <MN_NetworkStorageHeaderNetworkId>ID сети: {0}</MN_NetworkStorageHeaderNetworkId>
+    <MN_NetworkStorageHeaderSummary>{0} / {1} байт</MN_NetworkStorageHeaderSummary>
+    <MN_NetworkStorageSubTabOverview>Обзор</MN_NetworkStorageSubTabOverview>
+    <MN_NetworkStorageSubTabPower>Питание</MN_NetworkStorageSubTabPower>
+    <MN_NetworkStorageSubTabByDef>По типам</MN_NetworkStorageSubTabByDef>
+    <MN_NetworkStorageSubTabByStack>По стопкам</MN_NetworkStorageSubTabByStack>
+    <MN_NetworkStorageSearchLabel>Поиск:</MN_NetworkStorageSearchLabel>
+    <MN_NetworkStorageNoNetwork>Нет подключения к сети</MN_NetworkStorageNoNetwork>
+    <MN_NetworkStorageNoController>Нет активного контроллера</MN_NetworkStorageNoController>
+    <MN_NetworkStorageNoItemsFiltered>Нет предметов, соответствующих фильтру.</MN_NetworkStorageNoItemsFiltered>
+    <MN_NetworkStorageNoStoredItems>В сети нет хранимых предметов.</MN_NetworkStorageNoStoredItems>
+    <MN_NetworkStorageNoStoredStacks>В сети нет хранимых стопок.</MN_NetworkStorageNoStoredStacks>
+    <MN_NetworkStorageDropLabel>Выбросить</MN_NetworkStorageDropLabel>
+    <MN_NetworkStorageStatusOnline>В сети</MN_NetworkStorageStatusOnline>
+    <MN_NetworkStorageStatusReserve>Резерв</MN_NetworkStorageStatusReserve>
+    <MN_NetworkStorageStatusOffline>Нет сети</MN_NetworkStorageStatusOffline>
+    <MN_NetworkStorageStatusOvercommitted>Перерасход</MN_NetworkStorageStatusOvercommitted>
+    <MN_NetworkStorageOffline>Сеть отключена: {0}</MN_NetworkStorageOffline>
+    <MN_NetworkStorageOverviewUsedBytes>Занято байт</MN_NetworkStorageOverviewUsedBytes>
+    <MN_NetworkStorageOverviewCapacity>Ёмкость</MN_NetworkStorageOverviewCapacity>
+    <MN_NetworkStorageOverviewUtilization>Заполнение</MN_NetworkStorageOverviewUtilization>
+    <MN_NetworkStorageOverviewStoredStacks>Хранимых стопок</MN_NetworkStorageOverviewStoredStacks>
+    <MN_NetworkStorageOverviewUniqueDefs>Уник. типов</MN_NetworkStorageOverviewUniqueDefs>
+    <MN_NetworkStorageOverviewNetworkComposition>Состав сети</MN_NetworkStorageOverviewNetworkComposition>
+    <MN_NetworkStorageOverviewStatus>Состояние</MN_NetworkStorageOverviewStatus>
+    <MN_NetworkStorageOverviewControllers>Контроллеры</MN_NetworkStorageOverviewControllers>
+    <MN_NetworkStorageOverviewInterfaces>Интерфейсы</MN_NetworkStorageOverviewInterfaces>
+    <MN_NetworkStorageOverviewDiskDrives>Накопители</MN_NetworkStorageOverviewDiskDrives>
+    <MN_NetworkStorageOverviewBuildings>Устройства</MN_NetworkStorageOverviewBuildings>
+    <MN_NetworkStorageOverviewControllerState>Состояние контроллера</MN_NetworkStorageOverviewControllerState>
+    <MN_NetworkStorageOverviewExtraction>Выдача</MN_NetworkStorageOverviewExtraction>
+    <MN_NetworkStorageOverviewStoredUnits>Хранимых единиц</MN_NetworkStorageOverviewStoredUnits>
+    <MN_NetworkStorageOverviewOvercommitted>Перерасход</MN_NetworkStorageOverviewOvercommitted>
+    <MN_NetworkStorageOverviewPowerState>Питание</MN_NetworkStorageOverviewPowerState>
+    <MN_NetworkStorageOverviewPowerDraw>Потребление</MN_NetworkStorageOverviewPowerDraw>
+    <MN_NetworkStorageOverviewReserve>Резерв</MN_NetworkStorageOverviewReserve>
+    <MN_NetworkStorageOverviewExtractionAvailable>Доступна</MN_NetworkStorageOverviewExtractionAvailable>
+    <MN_NetworkStorageOverviewExtractionUnavailable>Недоступна</MN_NetworkStorageOverviewExtractionUnavailable>
+    <MN_NetworkStorageOverviewTopDefs>Топ хранимых типов</MN_NetworkStorageOverviewTopDefs>
+    <MN_NetworkStorageOverviewTopDefsHeaderStacks>Стопок</MN_NetworkStorageOverviewTopDefsHeaderStacks>
+    <MN_NetworkStorageOverviewTopDefsHeaderTotal>Всего</MN_NetworkStorageOverviewTopDefsHeaderTotal>
+    <MN_NetworkStorageByDefSummary>{0} типов | {1} всего</MN_NetworkStorageByDefSummary>
+    <MN_NetworkStorageByStackSummary>{0} хранимых стопок</MN_NetworkStorageByStackSummary>
+    <MN_NetworkStorageTotalCount>Всего: {0}</MN_NetworkStorageTotalCount>
+    <MN_NetworkStorageStackEntries>Стопок: {0}</MN_NetworkStorageStackEntries>
+    <MN_NetworkStorageDropByDefTooltip>Выбросить одну порцию {0}. Эта группа содержит {1} хранимых стопок, всего {2} шт.</MN_NetworkStorageDropByDefTooltip>
+    <MN_NetworkStorageDropStackTooltip>Выбросить одну порцию из стопки: {0} ({1}).</MN_NetworkStorageDropStackTooltip>
+    <MN_NetworkStorageMetadataStuff>Материал: {0}</MN_NetworkStorageMetadataStuff>
+    <MN_NetworkStorageMetadataQuality>Качество: {0}</MN_NetworkStorageMetadataQuality>
+    <MN_NetworkStorageMetadataHitPoints>ПЗ: {0}/{1}</MN_NetworkStorageMetadataHitPoints>
+    <MN_NetworkStorageMetadataGeneric>Нет доп. данных</MN_NetworkStorageMetadataGeneric>
+    <MN_NetworkStoragePowerRequiredDraw>Требуемое потребление</MN_NetworkStoragePowerRequiredDraw>
+    <MN_NetworkStoragePowerDetails>Сведения о питании</MN_NetworkStoragePowerDetails>
+    <MN_NetworkStoragePowerBuildingDraw>Потребление устройств</MN_NetworkStoragePowerBuildingDraw>
+    <MN_NetworkStoragePowerStoredItemDraw>Потребление за хранение</MN_NetworkStoragePowerStoredItemDraw>
+    <MN_NetworkStoragePowerStoredItemDrawDisabled>Отключено</MN_NetworkStoragePowerStoredItemDrawDisabled>
+    <MN_NetworkStoragePowerStoredItemDrawValue>{0} Вт ({1} Вт / 100 байт)</MN_NetworkStoragePowerStoredItemDrawValue>
+    <MN_NetworkStoragePowerChargingDraw>Зарядка резерва</MN_NetworkStoragePowerChargingDraw>
+    <MN_NetworkStoragePowerConfiguredCharging>Цель зарядки</MN_NetworkStoragePowerConfiguredCharging>
+    <MN_NetworkStoragePowerReserve>Резерв</MN_NetworkStoragePowerReserve>
+    <MN_NetworkStoragePowerRuntime>Время работы</MN_NetworkStoragePowerRuntime>
+    <MN_NetworkStoragePowerRuntimeIndefinite>Неограниченно</MN_NetworkStoragePowerRuntimeIndefinite>
+    <MN_NetworkStoragePowerRuntimeEmpty>Пусто</MN_NetworkStoragePowerRuntimeEmpty>
+    <MN_NetworkStoragePowerStatus>Статус питания</MN_NetworkStoragePowerStatus>
+    <MN_NetworkStoragePowerChargeMinus>-</MN_NetworkStoragePowerChargeMinus>
+    <MN_NetworkStoragePowerChargePlus>+</MN_NetworkStoragePowerChargePlus>
+    <MN_NetworkStoragePowerFillReserve>DEV: Заполнить резерв</MN_NetworkStoragePowerFillReserve>
+    <MN_NetworkStoragePowerEmptyReserve>DEV: Опустошить резерв</MN_NetworkStoragePowerEmptyReserve>
+    <MN_DiskDriveSlotsTab>Ячейки</MN_DiskDriveSlotsTab>
+    <MN_DiskDriveSlotsHeaderTitle>МЭ-накопитель</MN_DiskDriveSlotsHeaderTitle>
+    <MN_DiskDriveSlotsHeaderSummary>{0}/{1} слотов занято</MN_DiskDriveSlotsHeaderSummary>
+    <MN_DiskDriveSlotsLocked>Заблокирован</MN_DiskDriveSlotsLocked>
+    <MN_DiskDriveSlotsAccepting>Принимает ячейки</MN_DiskDriveSlotsAccepting>
+    <MN_DiskDriveSlotsNoDrive>Накопитель не выбран</MN_DiskDriveSlotsNoDrive>
+    <MN_DiskDriveSlotsSlotNumber>Слот {0}</MN_DiskDriveSlotsSlotNumber>
+    <MN_DiskDriveSlotsEmpty>Пустой слот</MN_DiskDriveSlotsEmpty>
+    <MN_DiskDriveSlotsDiskDetailsActive>Ёмкость: {0} байт</MN_DiskDriveSlotsDiskDetailsActive>
+    <MN_DiskDriveSlotsDiskDetailsArchived>Ёмкость: {0} байт | В архиве: {1} в {2} стопках</MN_DiskDriveSlotsDiskDetailsArchived>
+    <MN_CountSuffixK>тыс.</MN_CountSuffixK>
+    <MN_CountSuffixMil>млн.</MN_CountSuffixMil>
+</LanguageData>

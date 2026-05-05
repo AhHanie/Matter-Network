@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+    <!--  ITab labels  -->
+    <MN_SettingsEnableLoggingLabel>Вести журнал сообщений и предупреждений</MN_SettingsEnableLoggingLabel>
+    <MN_SettingsEnableLoggingDescription>При включении МЭ-сеть будет записывать сообщения и предупреждения. Ошибки и исключения записываются всегда.</MN_SettingsEnableLoggingDescription>
+    <MN_SettingsDisableNetworkItemsForWealthLabel>Не учитывать предметы в МЭ-сети для богатства</MN_SettingsDisableNetworkItemsForWealthLabel>
+    <MN_SettingsDisableNetworkItemsForWealthDescription>При включении предметы, хранящиеся в МЭ-сети, не увеличивают богатство колонии. Если отключено, предметы всё равно считаются однократно, а не для каждого интерфейса/контроллера.</MN_SettingsDisableNetworkItemsForWealthDescription>
+    <MN_SettingsEnableStoredItemPowerDrawLabel>Расход энергии за хранимые предметы</MN_SettingsEnableStoredItemPowerDrawLabel>
+    <MN_SettingsEnableStoredItemPowerDrawDescription>При включении МЭ-сеть потребляет дополнительную энергию в зависимости от объёма хранимой материи. Указанное значение взимается за каждые начатые 100 байт.</MN_SettingsEnableStoredItemPowerDrawDescription>
+    <MN_SettingsStoredItemPowerDrawPer100Bytes>Расход за 100 байт хранимой материи</MN_SettingsStoredItemPowerDrawPer100Bytes>
+    <MN_SettingsNetworkPowerUsageTitle>Потребление энергии устройствами сети</MN_SettingsNetworkPowerUsageTitle>
+    <MN_SettingsNetworkPowerUsageDescription>Переопределить потребление энергии, которое каждое устройство МЭ-сети добавляет к своей подключённой сети. Значения указаны в ваттах и применяются ко всем соответствующим определениям.</MN_SettingsNetworkPowerUsageDescription>
+    <MN_SettingsNetworkPowerUsageBuilding>Устройство</MN_SettingsNetworkPowerUsageBuilding>
+    <MN_SettingsNetworkPowerUsageDefault>По умолчанию</MN_SettingsNetworkPowerUsageDefault>
+    <MN_SettingsNetworkPowerUsageCurrent>Текущее</MN_SettingsNetworkPowerUsageCurrent>
+    <MN_SettingsNetworkPowerUsageReset>Сброс</MN_SettingsNetworkPowerUsageReset>
+    <MN_SettingsNetworkPowerUsageSet>Задать</MN_SettingsNetworkPowerUsageSet>
+    <MN_SettingsNetworkPowerUsageRemove>Удалить</MN_SettingsNetworkPowerUsageRemove>
+    <MN_SettingsNetworkPowerUsageMissingDef>Отсутствует определение: {0}</MN_SettingsNetworkPowerUsageMissingDef>
+    <MN_LoadingLabel>Загрузка МЭ-сети...</MN_LoadingLabel>
+    <MN_SettingsTitle>МЭ-сеть</MN_SettingsTitle>
+    <MN_DiskDriveLockLabel>Заблокировать</MN_DiskDriveLockLabel>
+    <MN_DiskDriveUnlockLabel>Разблокировать</MN_DiskDriveUnlockLabel>
+    <MN_DiskDriveLockDesc>При блокировке ячейки из этого накопителя не будут извлекаться из-за приоритета хранения.</MN_DiskDriveLockDesc>
+    <MN_DiskDriveLockedMessage>{0} заблокирован.</MN_DiskDriveLockedMessage>
+    <MN_DiskDriveUnlockedMessage>{0} разблокирован.</MN_DiskDriveUnlockedMessage>
+    <MN_DiskInspectCapacity>Ёмкость: {0} байт</MN_DiskInspectCapacity>
+    <MN_DiskInspectArchived>В автономном архиве: {0} байт в {1} стопках</MN_DiskInspectArchived>
+    <MN_NetworkInspectNetworkId>ID сети: {0} (устройств: {1})</MN_NetworkInspectNetworkId>
+    <MN_DiskDriveInspectCapacity>Ёмкость накопителя: {0} байт</MN_DiskDriveInspectCapacity>
+    <MN_DiskDriveInspectDisks>Ячеек: {0}.</MN_DiskDriveInspectDisks>
+    <MN_DiskDriveInspectArchived>Данных в автономном архиве: {0} байт на {1} ячейках</MN_DiskDriveInspectArchived>
+    <MN_ControllerInspectStorage>Хранилище: {0}/{1} байт</MN_ControllerInspectStorage>
+    <MN_ControllerInspectOvercommitted>Перерасход: {0} байт — добавьте ячеек памяти или удалите предметы</MN_ControllerInspectOvercommitted>
+    <MN_ControllerInspectConflictDisabled>Конфликт контроллеров: отключён (другой контроллер в сети имеет меньший ID)</MN_ControllerInspectConflictDisabled>
+    <MN_ControllerInspectNoNetwork>Нет подключения к сети</MN_ControllerInspectNoNetwork>
+    <MN_ControllerInspectPower>Питание: {0}; потребление: {1} Вт; резерв: {2}/{3} Вт⋅д</MN_ControllerInspectPower>
+    <MN_ControllerPowerInspect>Питание сети: {0}; требуется: {1} Вт; зарядка: {2} Вт; резерв: {3}/{4} Вт⋅д</MN_ControllerPowerInspect>
+    <MN_NetworkInterfaceInspectStorage>Хранилище сети: {0}/{1} байт (стопок: {2})</MN_NetworkInterfaceInspectStorage>
+    <MN_NetworkInterfaceInspectOffline>Сеть отключена: {0}</MN_NetworkInterfaceInspectOffline>
+    <MN_NetworkInterfaceInspectNoController>Нет активного контроллера</MN_NetworkInterfaceInspectNoController>
+    <MN_NetworkBuildingPowerUsage>Потребление сети: {0} Вт</MN_NetworkBuildingPowerUsage>
+    <MN_NetworkPowerStorageInspectCapacity>Ёмкость резерва: {0} Вт⋅д</MN_NetworkPowerStorageInspectCapacity>
+    <MN_NetworkPowerStorageInspectNetworkReserve>Сетевой резерв: {0}/{1} Вт⋅д; это устройство: {2} Вт⋅д</MN_NetworkPowerStorageInspectNetworkReserve>
+    <MN_NetworkRefuelerTab>Топливный ретранслятор</MN_NetworkRefuelerTab>
+    <MN_NetworkRefuelerInterval>Интервал: {0} тиков ({1} сек.)</MN_NetworkRefuelerInterval>
+    <MN_PowerModeGridPowered>От общей сети</MN_PowerModeGridPowered>
+    <MN_PowerModeReservePowered>От резерва</MN_PowerModeReservePowered>
+    <MN_PowerModeControllerDisabled>Контроллер отключён</MN_PowerModeControllerDisabled>
+    <MN_PowerModeOffline>Нет сети</MN_PowerModeOffline>
+    <MN_PowerModeNoController>Нет контроллера</MN_PowerModeNoController>
+</LanguageData>
