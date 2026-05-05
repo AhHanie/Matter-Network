@@ -7,8 +7,11 @@
   </supportedVersions>
   <packageId>sk.matternetwork</packageId>
   <description>An end-game storage solution mod. Build a digital storage network with a central controller, expandable disk drives, and access interfaces your pawns can use across the base. Replace massive stockpiles with sleek, shared storage that grows with your colony. Perfect for advanced, high-tech colonies.</description>
-  <modVersion>1.5.0b</modVersion>
+  <modVersion>1.6.0b</modVersion>
   <url>https://steamcommunity.com/sharedfiles/filedetails/?id=3707570286</url>
+  <loadAfter>
+    <li>ferny.PerspectiveShift</li>
+  </loadAfter>
   <modDependencies>
     <li>
       <packageId>brrainz.harmony</packageId>

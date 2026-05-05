@@ -142,6 +142,7 @@
     <Compile Include="Patches\Pawn_CarryTracker.cs" />
     <Compile Include="Patches\Compat\PickupAndHaulCompat.cs" />
     <Compile Include="Patches\Compat\ChooseYourMedicineCompat.cs" />
+    <Compile Include="Patches\Compat\PerspectiveShiftCompat.cs" />
     <Compile Include="Patches\Compat\StellarLogisticsCompat.cs" />
     <Compile Include="Patches\Pawn_JobTracker.cs" />
     <Compile Include="Patches\Pawn_TradeTracker.cs" />
@@ -170,6 +171,7 @@
     <Compile Include="UI\NetworkStorage\ITab_DiskDriveSlots.cs" />
     <Compile Include="UI\NetworkStorage\ITab_NetworkStorage.cs" />
     <Compile Include="UI\NetworkRefueler\ITab_NetworkRefueler.cs" />
+    <Compile Include="UI\NetworkStorage\Dialog_PerspectiveShiftNetworkStorage.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageChromeDrawer.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageItemsDrawer.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageModels.cs" />
