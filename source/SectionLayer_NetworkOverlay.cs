@@ -6,7 +6,16 @@ namespace SK_Matter_Network
 {
     public class SectionLayer_NetworkOverlay : SectionLayer
     {
-        private static readonly HashSet<ThingDef> networkBuildings = new HashSet<ThingDef>() { BuildingDefOf.MN_DiskDrive, BuildingDefOf.MN_NetworkInterface, BuildingDefOf.MN_NetworkController, BuildingDefOf.MN_NetworkCable, BuildingDefOf.MN_AdvancedNetworkPowerStorage, BuildingDefOf.MN_NetworkPowerStorage };
+        private static readonly HashSet<ThingDef> networkBuildings = new HashSet<ThingDef>() { 
+            BuildingDefOf.MN_DiskDrive, 
+            BuildingDefOf.MN_NetworkInterface, 
+            BuildingDefOf.MN_NetworkController, 
+            BuildingDefOf.MN_NetworkCable,
+            BuildingDefOf.MN_AdvancedNetworkPowerStorage, 
+            BuildingDefOf.MN_NetworkPowerStorage,
+            BuildingDefOf.MN_NetworkRefueler,
+            BuildingDefOf.MN_AdvancedNetworkRefueler
+        };
         public SectionLayer_NetworkOverlay(Section section) : base(section)
         {
             relevantChangeTypes = MapMeshFlagDefOf.Buildings;
