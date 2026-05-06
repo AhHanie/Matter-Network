@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <LanguageData>
-    <!--  ITab labels  -->
+    <!-- ITab labels -->
     <MN_SettingsEnableLoggingLabel>Вести журнал сообщений и предупреждений</MN_SettingsEnableLoggingLabel>
     <MN_SettingsEnableLoggingDescription>При включении МЭ-сеть будет записывать сообщения и предупреждения. Ошибки и исключения записываются всегда.</MN_SettingsEnableLoggingDescription>
     <MN_SettingsDisableNetworkItemsForWealthLabel>Не учитывать предметы в МЭ-сети для богатства</MN_SettingsDisableNetworkItemsForWealthLabel>
@@ -19,19 +19,19 @@
     <MN_SettingsNetworkPowerUsageMissingDef>Отсутствует определение: {0}</MN_SettingsNetworkPowerUsageMissingDef>
     <MN_LoadingLabel>Загрузка МЭ-сети...</MN_LoadingLabel>
     <MN_SettingsTitle>МЭ-сеть</MN_SettingsTitle>
-    <MN_DiskDriveLockLabel>Заблокировать</MN_DiskDriveLockLabel>
-    <MN_DiskDriveUnlockLabel>Разблокировать</MN_DiskDriveUnlockLabel>
-    <MN_DiskDriveLockDesc>При блокировке ячейки из этого накопителя не будут извлекаться из-за приоритета хранения.</MN_DiskDriveLockDesc>
+    <MN_DiskDriveLockLabel>Блокировать</MN_DiskDriveLockLabel>
+    <MN_DiskDriveUnlockLabel>Разблок.</MN_DiskDriveUnlockLabel>
+    <MN_DiskDriveLockDesc>При блокировке, диски из этого накопителя не будут извлекаться из-за приоритета хранения.</MN_DiskDriveLockDesc>
     <MN_DiskDriveLockedMessage>{0} заблокирован.</MN_DiskDriveLockedMessage>
     <MN_DiskDriveUnlockedMessage>{0} разблокирован.</MN_DiskDriveUnlockedMessage>
     <MN_DiskInspectCapacity>Ёмкость: {0} байт</MN_DiskInspectCapacity>
     <MN_DiskInspectArchived>В автономном архиве: {0} байт в {1} стопках</MN_DiskInspectArchived>
     <MN_NetworkInspectNetworkId>ID сети: {0} (устройств: {1})</MN_NetworkInspectNetworkId>
     <MN_DiskDriveInspectCapacity>Ёмкость накопителя: {0} байт</MN_DiskDriveInspectCapacity>
-    <MN_DiskDriveInspectDisks>Ячеек: {0}.</MN_DiskDriveInspectDisks>
+    <MN_DiskDriveInspectDisks>Дисков: {0}.</MN_DiskDriveInspectDisks>
     <MN_DiskDriveInspectArchived>Данных в автономном архиве: {0} байт на {1} ячейках</MN_DiskDriveInspectArchived>
     <MN_ControllerInspectStorage>Хранилище: {0}/{1} байт</MN_ControllerInspectStorage>
-    <MN_ControllerInspectOvercommitted>Перерасход: {0} байт — добавьте ячеек памяти или удалите предметы</MN_ControllerInspectOvercommitted>
+    <MN_ControllerInspectOvercommitted>Перерасход: {0} байт — добавьте новый диск или удалите предметы</MN_ControllerInspectOvercommitted>
     <MN_ControllerInspectConflictDisabled>Конфликт контроллеров: отключён (другой контроллер в сети имеет меньший ID)</MN_ControllerInspectConflictDisabled>
     <MN_ControllerInspectNoNetwork>Нет подключения к сети</MN_ControllerInspectNoNetwork>
     <MN_ControllerInspectPower>Питание: {0}; потребление: {1} Вт; резерв: {2}/{3} Вт⋅д</MN_ControllerInspectPower>

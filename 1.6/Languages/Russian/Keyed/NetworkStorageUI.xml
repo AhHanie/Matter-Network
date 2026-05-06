@@ -70,11 +70,11 @@
     <MN_NetworkStoragePowerChargePlus>+</MN_NetworkStoragePowerChargePlus>
     <MN_NetworkStoragePowerFillReserve>DEV: Заполнить резерв</MN_NetworkStoragePowerFillReserve>
     <MN_NetworkStoragePowerEmptyReserve>DEV: Опустошить резерв</MN_NetworkStoragePowerEmptyReserve>
-    <MN_DiskDriveSlotsTab>Ячейки</MN_DiskDriveSlotsTab>
+    <MN_DiskDriveSlotsTab>Диски</MN_DiskDriveSlotsTab>
     <MN_DiskDriveSlotsHeaderTitle>МЭ-накопитель</MN_DiskDriveSlotsHeaderTitle>
     <MN_DiskDriveSlotsHeaderSummary>{0}/{1} слотов занято</MN_DiskDriveSlotsHeaderSummary>
     <MN_DiskDriveSlotsLocked>Заблокирован</MN_DiskDriveSlotsLocked>
-    <MN_DiskDriveSlotsAccepting>Принимает ячейки</MN_DiskDriveSlotsAccepting>
+    <MN_DiskDriveSlotsAccepting>Принимает диски</MN_DiskDriveSlotsAccepting>
     <MN_DiskDriveSlotsNoDrive>Накопитель не выбран</MN_DiskDriveSlotsNoDrive>
     <MN_DiskDriveSlotsSlotNumber>Слот {0}</MN_DiskDriveSlotsSlotNumber>
     <MN_DiskDriveSlotsEmpty>Пустой слот</MN_DiskDriveSlotsEmpty>
