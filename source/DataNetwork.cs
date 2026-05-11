@@ -1002,15 +1002,24 @@ namespace SK_Matter_Network
                     controllers.Add(ctrl);
             }
 
-            if (controllers.Count <= 1)
+            if (controllers.Count == 0)
+            {
+                activeController = null;
+                storedItems.Clear();
+                MarkBytesDirty();
+                return;
+            }
+
+            if (controllers.Count == 1)
             {
                 foreach (NetworkBuildingController ctrl in controllers)
                     ctrl.ControllerConflictDisabled = false;
-                if (controllers.Count == 1 && activeController != controllers[0])
+                if (activeController != controllers[0])
                 {
                     activeController = controllers[0];
                     RebuildStoredItemsFromController();
                 }
+                ConsolidateControllerItems();
                 return;
             }
 
@@ -1021,10 +1030,87 @@ namespace SK_Matter_Network
             for (int i = 1; i < controllers.Count; i++)
                 controllers[i].ControllerConflictDisabled = true;
 
+            ConsolidateControllerItems();
             RebuildStoredItemsFromController();
             EnsurePowerState();
             power.RefreshControllerPowerOutput();
             Logger.Warning($"Network {networkId}: Multiple controllers detected. Primary: {activeController.thingIDNumber}. Others disabled.");
+        }
+
+        private void ConsolidateControllerItems()
+        {
+            if (activeController?.innerContainer == null)
+            {
+                return;
+            }
+
+            List<NetworkBuildingController> controllers = buildings
+                .OfType<NetworkBuildingController>()
+                .Where(controller => controller != activeController && controller.innerContainer != null)
+                .OrderBy(controller => controller.thingIDNumber)
+                .ToList();
+
+            foreach (NetworkBuildingController controller in controllers)
+            {
+                foreach (Thing item in controller.innerContainer.InnerListForReading.ToList())
+                {
+                    while (item != null && !item.Destroyed && item.stackCount > 0)
+                    {
+                        int acceptedCount = System.Math.Min(item.stackCount, ControllerCapacityLimitForAdds - UsedBytes);
+                        if (acceptedCount <= 0)
+                        {
+                            DropControllerItem(controller, item, item.stackCount);
+                            break;
+                        }
+
+                        int moved = SafeTransfer(item, controller.innerContainer, activeController.innerContainer, acceptedCount);
+                        if (moved <= 0)
+                        {
+                            DropControllerItem(controller, item, item.stackCount);
+                            break;
+                        }
+
+                        if (!controller.innerContainer.Contains(item))
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+
+            RebuildStoredItemsFromController();
+            MarkBytesDirty();
+        }
+
+        private void DropControllerItem(NetworkBuildingController sourceController, Thing item, int count)
+        {
+            if (sourceController?.innerContainer == null || item == null || item.Destroyed || count <= 0)
+            {
+                return;
+            }
+
+            Thing toDrop;
+            if (count >= item.stackCount)
+            {
+                if (!sourceController.innerContainer.Remove(item))
+                {
+                    return;
+                }
+
+                toDrop = item;
+            }
+            else
+            {
+                toDrop = item.SplitOff(count);
+            }
+
+            if (!TryGetDropTarget(out IntVec3 dropCell, out Map dropMap))
+            {
+                dropCell = sourceController.Position;
+                dropMap = sourceController.Map;
+            }
+
+            GenPlace.TryPlaceThing(toDrop, dropCell, dropMap, ThingPlaceMode.Near);
         }
 
         public bool CellHasNetworkBuilding(IntVec3 cell) => networkBuildingsCells.Contains(cell);

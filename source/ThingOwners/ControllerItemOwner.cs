@@ -11,8 +11,13 @@ namespace SK_Matter_Network
 
         public ControllerItemOwner(NetworkBuildingController owner) : base(owner, oneStackOnly: false)
         {
-            ctrl = owner;
+            SetController(owner);
             dontTickContents = true;
+        }
+
+        public void SetController(NetworkBuildingController owner)
+        {
+            ctrl = owner;
         }
 
         public override bool TryAdd(Thing item, bool canMergeWithExistingStacks = true)

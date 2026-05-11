@@ -130,6 +130,8 @@ namespace SK_Matter_Network
             {
                 if (innerContainer == null)
                     innerContainer = new ControllerItemOwner(this);
+
+                innerContainer.SetController(this);
             }
         }
 

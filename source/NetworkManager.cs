@@ -101,7 +101,8 @@ namespace SK_Matter_Network
                 Logger.Message($"Network {network.NetworkId} split into {connectedGroups.Count} groups");
 
                 float reserveEnergyBeforeSplit = network.StoredReserveEnergyWd;
-                List<NetworkBuilding> firstGroup = connectedGroups[0];
+                List<NetworkBuilding> firstGroup = SelectGroupToKeep(network, connectedGroups);
+                List<List<NetworkBuilding>> groupsToSplit = connectedGroups.Where(group => group != firstGroup).ToList();
                 List<NetworkBuilding> buildingsToMove = network.Buildings.Where(b => !firstGroup.Contains(b)).ToList();
 
                 foreach (NetworkBuilding b in buildingsToMove)
@@ -111,10 +112,10 @@ namespace SK_Matter_Network
                 network.NotifyDiskCapacityChanged();
 
                 List<DataNetwork> splitNetworks = new List<DataNetwork> { network };
-                for (int i = 1; i < connectedGroups.Count; i++)
+                for (int i = 0; i < groupsToSplit.Count; i++)
                 {
                     DataNetwork newNetwork = new DataNetwork(mapComp.map);
-                    foreach (NetworkBuilding b in connectedGroups[i])
+                    foreach (NetworkBuilding b in groupsToSplit[i])
                         newNetwork.AddBuilding(b);
                     newNetwork.ValidateControllerConflicts();
                     newNetwork.NotifyDiskCapacityChanged();
@@ -130,6 +131,31 @@ namespace SK_Matter_Network
                 network.ValidateControllerConflicts();
                 network.NotifyDiskCapacityChanged();
             }
+        }
+
+        private static List<NetworkBuilding> SelectGroupToKeep(DataNetwork network, List<List<NetworkBuilding>> connectedGroups)
+        {
+            NetworkBuildingController activeController = network.ActiveController;
+            if (activeController != null)
+            {
+                for (int i = 0; i < connectedGroups.Count; i++)
+                {
+                    if (connectedGroups[i].Contains(activeController))
+                    {
+                        return connectedGroups[i];
+                    }
+                }
+            }
+
+            for (int i = 0; i < connectedGroups.Count; i++)
+            {
+                if (connectedGroups[i].Any(building => building is NetworkBuildingController))
+                {
+                    return connectedGroups[i];
+                }
+            }
+
+            return connectedGroups[0];
         }
 
         private static void MergeNetworks(DataNetwork primary, DataNetwork toMerge, NetworksMapComponent mapComp)
