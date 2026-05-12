@@ -11,6 +11,7 @@ namespace SK_Matter_Network
         public static ThingDef MN_NetworkCable;
         public static ThingDef MN_NetworkController;
         public static ThingDef MN_NetworkInterface;
+        public static ThingDef MN_MatterIOPort;
         public static ThingDef MN_NetworkPowerStorage;
         public static ThingDef MN_NetworkRefueler;
         public static ThingDef MN_AdvancedNetworkRefueler;

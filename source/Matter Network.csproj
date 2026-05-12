@@ -98,6 +98,15 @@
     <Compile Include="Comps\CompNetworkPowerController.cs" />
     <Compile Include="Comps\CompNetworkPowerStorage.cs" />
     <Compile Include="Comps\CompNetworkRefueler.cs" />
+    <Compile Include="Comps\CompMatterIOPort.cs" />
+    <Compile Include="Inventory\CompMatterInventoryAdapter.cs" />
+    <Compile Include="Inventory\CompMatterSlotGroupAdapter.cs" />
+    <Compile Include="Inventory\CompMatterThingOwnerAdapter.cs" />
+    <Compile Include="Inventory\IMatterInventoryAdapter.cs" />
+    <Compile Include="Inventory\MatterAdaptiveStorageInventoryAdapter.cs" />
+    <Compile Include="Inventory\MatterInventoryAdapterResolver.cs" />
+    <Compile Include="Inventory\MatterSlotGroupInventoryAdapter.cs" />
+    <Compile Include="Inventory\MatterThingOwnerInventoryAdapter.cs" />
     <Compile Include="Networking\INetworkTickable.cs" />
     <Compile Include="Networking\NetworkPowerMode.cs" />
     <Compile Include="Networking\NetworkPowerState.cs" />
@@ -114,6 +123,7 @@
     <Compile Include="Buildings\NetworkBuilding.cs" />
     <Compile Include="Buildings\NetworkBuildingDiskDrive.cs" />
     <Compile Include="Buildings\NetworkBuildingNetworkInterface.cs" />
+    <Compile Include="Buildings\NetworkBuildingMatterIOPort.cs" />
     <Compile Include="NetworkManager.cs" />
     <!-- Patches - emptied (no harmony attributes) -->
     <!-- Patches - active -->
@@ -180,6 +190,8 @@
     <Compile Include="UI\NetworkStorage\ITab_DiskDriveSlots.cs" />
     <Compile Include="UI\NetworkStorage\ITab_NetworkStorage.cs" />
     <Compile Include="UI\NetworkRefueler\ITab_NetworkRefueler.cs" />
+    <Compile Include="UI\MatterIOPort\ITab_MatterIOPort.cs" />
+    <Compile Include="UI\MatterIOPort\ITab_MatterIOPortFilter.cs" />
     <Compile Include="UI\NetworkStorage\Dialog_PerspectiveShiftNetworkStorage.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageChromeDrawer.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageItemsDrawer.cs" />

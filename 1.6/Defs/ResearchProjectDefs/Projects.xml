@@ -33,6 +33,32 @@
     </ResearchProjectDef>
 
     <ResearchProjectDef>
+        <defName>MN_NetworkIO</defName>
+        <label>matter network I/O</label>
+        <description>Automated import and export ports let a matter network exchange items with adjacent stockpiles, shelves, and compatible storage devices without pawn labor.</description>
+        <tab>MN_MatterNetworkTab</tab>
+        <baseCost>2500</baseCost>
+        <techLevel>Spacer</techLevel>
+        <prerequisites>
+            <li>MN_MatterNetwork</li>
+        </prerequisites>
+        <requiredResearchBuilding>HiTechResearchBench</requiredResearchBuilding>
+        <requiredResearchFacilities>
+            <li>MultiAnalyzer</li>
+        </requiredResearchFacilities>
+        <researchViewX>1.00</researchViewX>
+        <researchViewY>2.50</researchViewY>
+        <generalRules>
+            <rulesStrings>
+                <li>subject->matter network I/O</li>
+                <li>subject_story->automated matter network imports and exports</li>
+                <li>subject_story->linked adjacent storage to digitized matter reserves</li>
+                <li>subject_gerund->building matter network I/O ports</li>
+            </rulesStrings>
+        </generalRules>
+    </ResearchProjectDef>
+
+    <ResearchProjectDef>
         <defName>MN_NetworkPowerStorage</defName>
         <label>network power storage</label>
         <description>By adapting high-density capacitors for encoded matter networks, colonists can build reserve cells that keep network storage available during grid outages, solar flares, and temporary power shortages.</description>

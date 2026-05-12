@@ -330,6 +330,107 @@
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
+        <defName>MN_MatterIOPort</defName>
+        <label>matter IO port</label>
+        <description>Automatically imports or exports items between a connected Matter Network and one adjacent storage target. Its filter controls which items may move, and its selected arrow shows the active side.</description>
+        <thingClass>SK_Matter_Network.NetworkBuildingMatterIOPort</thingClass>
+        <graphicData>
+            <texPath>Things/Building/SpacerProps/SmallPlanningTable</texPath>
+            <graphicClass>Graphic_Random</graphicClass>
+            <drawSize>(1,1)</drawSize>
+            <shaderType>CutoutComplex</shaderType>
+        </graphicData>
+        <castEdgeShadows>True</castEdgeShadows>
+        <category>Building</category>
+        <noRightClickDraftAttack>true</noRightClickDraftAttack>
+        <statBases>
+            <MaxHitPoints>180</MaxHitPoints>
+            <WorkToBuild>750</WorkToBuild>
+            <Mass>12</Mass>
+            <Flammability>0.2</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>150</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+            <ComponentSpacer>1</ComponentSpacer>
+            <Plasteel>20</Plasteel>
+        </costList>
+        <comps>
+            <li Class="CompProperties_Forbiddable"/>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>300</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_MatterIOPort">
+                <defaultTickInterval>600</defaultTickInterval>
+                <minTickInterval>60</minTickInterval>
+                <maxTickInterval>6000</maxTickInterval>
+                <maxInputStacksPerTick>1</maxInputStacksPerTick>
+                <defaultMode>Input</defaultMode>
+            </li>
+        </comps>
+        <building>
+            <fixedStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Root</li>
+                    </categories>
+                    <disallowedCategories>
+                        <li>Animals</li>
+                        <li>Plants</li>
+                    </disallowedCategories>
+                    <disallowedThingDefs>
+                        <li>MN_Disk1k</li>
+                        <li>MN_Disk2k</li>
+                        <li>MN_Disk4k</li>
+                        <li>MN_Disk8k</li>
+                        <li>MN_Disk16k</li>
+                        <li>MN_Disk32k</li>
+                    </disallowedThingDefs>
+                </filter>
+            </fixedStorageSettings>
+            <defaultStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Foods</li>
+                        <li>Manufactured</li>
+                        <li>ResourcesRaw</li>
+                        <li>Items</li>
+                        <li>Weapons</li>
+                        <li>Apparel</li>
+                        <li>BodyParts</li>
+                    </categories>
+                </filter>
+            </defaultStorageSettings>
+            <ai_chillDestination>false</ai_chillDestination>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <altitudeLayer>Building</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.25</fillPercent>
+        <pathCost>20</pathCost>
+        <surfaceType>None</surfaceType>
+        <canOverlapZones>false</canOverlapZones>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_MatterIOPort</li>
+            <li>SK_Matter_Network.ITab_MatterIOPortFilter</li>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <researchPrerequisites>
+            <li>MN_NetworkIO</li>
+        </researchPrerequisites>
+        <designationCategory>Misc</designationCategory>
+        <defaultPlacingRot>North</defaultPlacingRot>
+        <rotatable>false</rotatable>
+        <uiIconScale>1</uiIconScale>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
         <defName>MN_NetworkPowerStorage</defName>
         <label>network capacitor</label>
         <description>A compact capacitor bank that stores backup power for a connected network. Its stored energy is shared across the network, keeping digitized storage online through brief outages and unstable grids.</description>

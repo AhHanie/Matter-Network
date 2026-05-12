@@ -14,7 +14,8 @@ namespace SK_Matter_Network
             BuildingDefOf.MN_AdvancedNetworkPowerStorage, 
             BuildingDefOf.MN_NetworkPowerStorage,
             BuildingDefOf.MN_NetworkRefueler,
-            BuildingDefOf.MN_AdvancedNetworkRefueler
+            BuildingDefOf.MN_AdvancedNetworkRefueler,
+            BuildingDefOf.MN_MatterIOPort
         };
         public SectionLayer_NetworkOverlay(Section section) : base(section)
         {

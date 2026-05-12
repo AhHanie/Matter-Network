@@ -44,6 +44,34 @@
     <MN_NetworkPowerStorageInspectNetworkReserve>Network reserve: {0}/{1} Wd; this unit: {2} Wd</MN_NetworkPowerStorageInspectNetworkReserve>
     <MN_NetworkRefuelerTab>Fuel relay</MN_NetworkRefuelerTab>
     <MN_NetworkRefuelerInterval>Interval: {0} ticks ({1} seconds)</MN_NetworkRefuelerInterval>
+    <MN_MatterIOPortTab>IO port</MN_MatterIOPortTab>
+    <MN_MatterIOPortFilterTab>Filter</MN_MatterIOPortFilterTab>
+    <MN_MatterIOPortMode>Mode: {0}</MN_MatterIOPortMode>
+    <MN_MatterIOPortModeInput>Input</MN_MatterIOPortModeInput>
+    <MN_MatterIOPortModeOutput>Output</MN_MatterIOPortModeOutput>
+    <MN_MatterIOPortDirection>Direction: {0}</MN_MatterIOPortDirection>
+    <MN_MatterIOPortInterval>Interval: {0} ticks ({1} seconds)</MN_MatterIOPortInterval>
+    <MN_MatterIOPortTargetCell>Target cell: {0}</MN_MatterIOPortTargetCell>
+    <MN_MatterIOPortTarget>Target: {0}</MN_MatterIOPortTarget>
+    <MN_MatterIOPortAdapterStatus>Status: {0}</MN_MatterIOPortAdapterStatus>
+    <MN_MatterIOPortNoCompatibleTarget>No compatible adjacent storage target</MN_MatterIOPortNoCompatibleTarget>
+    <MN_MatterIOPortLastStatus>Last result: {0}</MN_MatterIOPortLastStatus>
+    <MN_MatterIOPortInspect>IO port: {0}; direction {1}; interval {2} ticks; {3}</MN_MatterIOPortInspect>
+    <MN_MatterIOPortStatusIdle>idle</MN_MatterIOPortStatusIdle>
+    <MN_MatterIOPortStatusModeChanged>mode set to {0}</MN_MatterIOPortStatusModeChanged>
+    <MN_MatterIOPortStatusDirectionChanged>direction set to {0}</MN_MatterIOPortStatusDirectionChanged>
+    <MN_MatterIOPortStatusForbidden>forbidden</MN_MatterIOPortStatusForbidden>
+    <MN_MatterIOPortStatusNoNetwork>no connected network</MN_MatterIOPortStatusNoNetwork>
+    <MN_MatterIOPortStatusNetworkOffline>network offline: {0}</MN_MatterIOPortStatusNetworkOffline>
+    <MN_MatterIOPortStatusNoTarget>no compatible storage at {0}</MN_MatterIOPortStatusNoTarget>
+    <MN_MatterIOPortStatusInputMoved>imported {0} items from {1}</MN_MatterIOPortStatusInputMoved>
+    <MN_MatterIOPortStatusInputIdle>nothing to import from {0}</MN_MatterIOPortStatusInputIdle>
+    <MN_MatterIOPortStatusOutputNoItems>no filtered network items available to export</MN_MatterIOPortStatusOutputNoItems>
+    <MN_MatterIOPortStatusOutputMoved>exported {0} {1} to {2}</MN_MatterIOPortStatusOutputMoved>
+    <MN_MatterIOPortStatusOutputIdle>nothing accepted by {0}</MN_MatterIOPortStatusOutputIdle>
+    <MN_MatterIOPortStatusThingOwner>{0} container: {1} stacks</MN_MatterIOPortStatusThingOwner>
+    <MN_MatterIOPortStatusSlotGroup>{0}</MN_MatterIOPortStatusSlotGroup>
+    <MN_MatterIOPortStatusAdaptiveStorage>{0} adaptive storage: {1} stacks</MN_MatterIOPortStatusAdaptiveStorage>
     <MN_PowerModeGridPowered>Grid powered</MN_PowerModeGridPowered>
     <MN_PowerModeReservePowered>Reserve powered</MN_PowerModeReservePowered>
     <MN_PowerModeControllerDisabled>Controller disabled</MN_PowerModeControllerDisabled>
