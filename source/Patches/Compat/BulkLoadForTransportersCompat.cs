@@ -29,6 +29,7 @@ namespace SK_Matter_Network.Patches
         private static readonly MethodInfo claimItemsMethod = AccessTools.Method(centralLoadManagerType, "ClaimItems");
         private static readonly MethodInfo getAvailableToClaimMethod = AccessTools.Method(centralLoadManagerType, "GetAvailableToClaim");
         private static readonly PropertyInfo centralLoadManagerInstanceProperty = AccessTools.Property(centralLoadManagerType, "Instance");
+        private static readonly FieldInfo groupEvaluationCacheField = AccessTools.Field(workGiverUtilityType, "_groupEvaluationCache");
         private static readonly Dictionary<Type, LoadableMethodCache> loadableMethodCaches = new Dictionary<Type, LoadableMethodCache>();
 
         private static bool IsAvailable()
@@ -45,7 +46,8 @@ namespace SK_Matter_Network.Patches
                 && getJobDefForMethod != null
                 && claimItemsMethod != null
                 && getAvailableToClaimMethod != null
-                && centralLoadManagerInstanceProperty != null;
+                && centralLoadManagerInstanceProperty != null
+                && groupEvaluationCacheField != null;
         }
 
         private static bool IsGotoHaulableAvailable()
@@ -79,7 +81,11 @@ namespace SK_Matter_Network.Patches
                     return;
                 }
 
-                __result = TryCreateNetworkHaulPlan(pawn, groupLoadable, out _, out _);
+                if (TryCreateNetworkHaulPlan(pawn, groupLoadable, out _, out _))
+                {
+                    SetGroupEvaluationCache(groupLoadable, true);
+                    __result = true;
+                }
             }
         }
 
@@ -106,6 +112,7 @@ namespace SK_Matter_Network.Patches
 
                 if (TryCreateNetworkBulkJob(pawn, groupLoadable, out Job networkJob))
                 {
+                    SetGroupEvaluationCache(groupLoadable, true);
                     job = networkJob;
                     __result = true;
                 }
@@ -218,17 +225,65 @@ namespace SK_Matter_Network.Patches
                         return;
                     }
 
-                    if (sourceOwner.TryDrop(thingToTake, pawn.Position, pawn.Map, ThingPlaceMode.Near, countToDrop, out Thing droppedThing))
+                    Thing droppedThing;
+                    if (TryDropReservableNetworkThing(pawn, job, sourceOwner, thingToTake, countToDrop, out droppedThing))
                     {
                         job.SetTarget(itemIndex, droppedThing);
-                        pawn.Reserve(droppedThing, job);
                         network.MarkBytesDirty();
                         return;
+                    }
+
+                    if (droppedThing != null)
+                    {
+                        network.MarkBytesDirty();
                     }
 
                     pawn.jobs.EndCurrentJob(JobCondition.Incompletable, true);
                 };
             }
+        }
+
+        private static bool TryDropReservableNetworkThing(
+            Pawn pawn,
+            Job job,
+            ThingOwner sourceOwner,
+            Thing thingToTake,
+            int countToDrop,
+            out Thing droppedThing)
+        {
+            Predicate<IntVec3> validator = cell => CanDropNetworkPickupAt(cell, pawn, thingToTake);
+            if (!sourceOwner.TryDrop(thingToTake, pawn.Position, pawn.Map, ThingPlaceMode.Near, countToDrop, out droppedThing, null, validator))
+            {
+                return false;
+            }
+
+            if (droppedThing == null || droppedThing.Destroyed || !droppedThing.Spawned)
+            {
+                return false;
+            }
+
+            return pawn.Reserve(droppedThing, job, errorOnFailed: false);
+        }
+
+        private static bool CanDropNetworkPickupAt(IntVec3 cell, Pawn pawn, Thing thingToTake)
+        {
+            Map map = pawn.Map;
+            if (!cell.InBounds(map) || !pawn.CanReach(cell, PathEndMode.OnCell, Danger.Deadly))
+            {
+                return false;
+            }
+
+            List<Thing> things = cell.GetThingList(map);
+            for (int i = 0; i < things.Count; i++)
+            {
+                Thing thing = things[i];
+                if (thing.def.category == ThingCategory.Item && thing.CanStackWith(thingToTake))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static bool TryCreateNetworkBulkJob(Pawn pawn, object loadable, out Job job)
@@ -284,6 +339,78 @@ namespace SK_Matter_Network.Patches
                 return false;
             }
 
+            Dictionary<ThingDef, int> remainingClaims = new Dictionary<ThingDef, int>(availableToClaim);
+            Dictionary<Thing, int> remainingStacks = new Dictionary<Thing, int>();
+            List<NetworkHaulCandidate> plannedPickups = new List<NetworkHaulCandidate>();
+            float inventoryMassLimit = GetInventoryMassLimit(pawn, loadable);
+            float plannedInventoryMass = 0f;
+
+            foreach (TransferableOneWay transferable in transferables)
+            {
+                if (!transferable.HasAnyThing || transferable.CountToTransfer <= 0)
+                {
+                    continue;
+                }
+
+                if (!remainingClaims.TryGetValue(transferable.ThingDef, out int availableCount) || availableCount <= 0)
+                {
+                    continue;
+                }
+
+                int remainingNeed = Mathf.Min(transferable.CountToTransfer, availableCount);
+                foreach (NetworkHaulCandidate candidate in MatchingNetworkCandidates(pawn, map, transferable, remainingNeed)
+                    .OrderBy(candidate => candidate.DistanceSquared))
+                {
+                    while (remainingNeed > 0 && remainingClaims[transferable.ThingDef] > 0 && plannedInventoryMass < inventoryMassLimit)
+                    {
+                        int remainingStack = GetRemainingStack(remainingStacks, candidate.Thing);
+                        int count = Mathf.Min(candidate.Count, remainingStack, remainingNeed, remainingClaims[transferable.ThingDef]);
+                        count = LimitByRemainingMass(candidate.Thing, count, inventoryMassLimit - plannedInventoryMass);
+                        if (count <= 0)
+                        {
+                            break;
+                        }
+
+                        plannedPickups.Add(new NetworkHaulCandidate(candidate.Thing, count, candidate.DistanceSquared));
+                        remainingStacks[candidate.Thing] = remainingStack - count;
+                        remainingClaims[transferable.ThingDef] -= count;
+                        remainingNeed -= count;
+                        plannedInventoryMass += count * candidate.Thing.GetStatValue(StatDefOf.Mass);
+                    }
+
+                    if (remainingNeed <= 0 || remainingClaims[transferable.ThingDef] <= 0 || plannedInventoryMass >= inventoryMassLimit)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            TryAddHandheldPickup(pawn, map, transferables, remainingClaims, remainingStacks, plannedPickups);
+            SplitSingleStackPlanForInventoryPhase(plannedPickups, inventoryMassLimit);
+
+            if (plannedPickups.Count == 0)
+            {
+                return false;
+            }
+
+            targets = plannedPickups.Select(pickup => new LocalTargetInfo(pickup.Thing)).ToList();
+            counts = plannedPickups.Select(pickup => pickup.Count).ToList();
+            return true;
+        }
+
+        private static void TryAddHandheldPickup(
+            Pawn pawn,
+            Map map,
+            List<TransferableOneWay> transferables,
+            Dictionary<ThingDef, int> remainingClaims,
+            Dictionary<Thing, int> remainingStacks,
+            List<NetworkHaulCandidate> plannedPickups)
+        {
+            if (pawn.carryTracker.CarriedThing != null)
+            {
+                return;
+            }
+
             NetworkHaulCandidate bestCandidate = null;
             foreach (TransferableOneWay transferable in transferables)
             {
@@ -292,28 +419,53 @@ namespace SK_Matter_Network.Patches
                     continue;
                 }
 
-                if (!availableToClaim.TryGetValue(transferable.ThingDef, out int availableCount) || availableCount <= 0)
+                if (!remainingClaims.TryGetValue(transferable.ThingDef, out int availableCount) || availableCount <= 0)
                 {
                     continue;
                 }
 
                 foreach (NetworkHaulCandidate candidate in MatchingNetworkCandidates(pawn, map, transferable, availableCount))
                 {
+                    int remainingStack = GetRemainingStack(remainingStacks, candidate.Thing);
+                    int count = Mathf.Min(candidate.Count, remainingStack, availableCount);
+                    if (count <= 0)
+                    {
+                        continue;
+                    }
+
                     if (bestCandidate == null || candidate.DistanceSquared < bestCandidate.DistanceSquared)
                     {
-                        bestCandidate = candidate;
+                        bestCandidate = new NetworkHaulCandidate(candidate.Thing, count, candidate.DistanceSquared);
                     }
                 }
             }
 
-            if (bestCandidate == null || bestCandidate.Count <= 0)
+            if (bestCandidate == null)
             {
-                return false;
+                return;
             }
 
-            targets = new List<LocalTargetInfo> { new LocalTargetInfo(bestCandidate.Thing) };
-            counts = new List<int> { bestCandidate.Count };
-            return true;
+            plannedPickups.Add(bestCandidate);
+            remainingStacks[bestCandidate.Thing] = GetRemainingStack(remainingStacks, bestCandidate.Thing) - bestCandidate.Count;
+            remainingClaims[bestCandidate.Thing.def] -= bestCandidate.Count;
+        }
+
+        private static void SplitSingleStackPlanForInventoryPhase(List<NetworkHaulCandidate> plannedPickups, float inventoryMassLimit)
+        {
+            if (plannedPickups.Count != 1 || plannedPickups[0].Count <= 1)
+            {
+                return;
+            }
+
+            NetworkHaulCandidate pickup = plannedPickups[0];
+            int inventoryCount = Mathf.Min(pickup.Count - 1, LimitByRemainingMass(pickup.Thing, pickup.Count - 1, inventoryMassLimit));
+            if (inventoryCount <= 0)
+            {
+                return;
+            }
+
+            plannedPickups[0] = new NetworkHaulCandidate(pickup.Thing, inventoryCount, pickup.DistanceSquared);
+            plannedPickups.Add(new NetworkHaulCandidate(pickup.Thing, pickup.Count - inventoryCount, pickup.DistanceSquared));
         }
 
         private static IEnumerable<NetworkHaulCandidate> MatchingNetworkCandidates(
@@ -374,6 +526,40 @@ namespace SK_Matter_Network.Patches
             return Mathf.Min(item.stackCount, neededCount, availableCount, carryLimit);
         }
 
+        private static int GetRemainingStack(Dictionary<Thing, int> remainingStacks, Thing item)
+        {
+            if (!remainingStacks.TryGetValue(item, out int remainingStack))
+            {
+                remainingStack = item.stackCount;
+                remainingStacks[item] = remainingStack;
+            }
+
+            return remainingStack;
+        }
+
+        private static int LimitByRemainingMass(Thing item, int count, float remainingMass)
+        {
+            if (count <= 0)
+            {
+                return 0;
+            }
+
+            float massPerItem = item.GetStatValue(StatDefOf.Mass);
+            if (massPerItem <= 0f)
+            {
+                return count;
+            }
+
+            return Mathf.Min(count, Mathf.FloorToInt(remainingMass / massPerItem));
+        }
+
+        private static float GetInventoryMassLimit(Pawn pawn, object loadable)
+        {
+            float pawnFreeSpace = Mathf.Max(0f, MassUtility.FreeSpace(pawn));
+            float loadableFreeSpace = Mathf.Max(0f, GetMassCapacity(loadable) - GetMassUsage(loadable));
+            return Mathf.Min(pawnFreeSpace, loadableFreeSpace);
+        }
+
         private static bool CanPawnUseNetworkBulkLoad(Pawn pawn, object loadable)
         {
             if (loadable == null || pawn.Drafted)
@@ -405,6 +591,17 @@ namespace SK_Matter_Network.Patches
         private static JobDef GetJobDefFor(ThingDef parentDef)
         {
             return getJobDefForMethod.Invoke(null, new object[] { parentDef }) as JobDef;
+        }
+
+        private static void SetGroupEvaluationCache(object loadable, bool value)
+        {
+            Dictionary<int, bool> cache = groupEvaluationCacheField.GetValue(null) as Dictionary<int, bool>;
+            if (cache == null)
+            {
+                return;
+            }
+
+            cache[GetUniqueLoadID(loadable)] = value;
         }
 
         private static void TryClaimItems(Pawn pawn, Job job, object loadable)
@@ -455,6 +652,24 @@ namespace SK_Matter_Network.Patches
         private static List<TransferableOneWay> GetTransferables(object loadable)
         {
             return InvokeLoadableMethod<List<TransferableOneWay>>(loadable, "GetTransferables");
+        }
+
+        private static int GetUniqueLoadID(object loadable)
+        {
+            MethodInfo method = GetLoadableMethodCache(loadable.GetType()).Get("GetUniqueLoadID");
+            return (int)method.Invoke(loadable, null);
+        }
+
+        private static float GetMassCapacity(object loadable)
+        {
+            MethodInfo method = GetLoadableMethodCache(loadable.GetType()).Get("GetMassCapacity");
+            return (float)method.Invoke(loadable, null);
+        }
+
+        private static float GetMassUsage(object loadable)
+        {
+            MethodInfo method = GetLoadableMethodCache(loadable.GetType()).Get("GetMassUsage");
+            return (float)method.Invoke(loadable, null);
         }
 
         private static T InvokeLoadableMethod<T>(object loadable, string methodName) where T : class
@@ -535,12 +750,18 @@ namespace SK_Matter_Network.Patches
             private readonly MethodInfo getMapMethod;
             private readonly MethodInfo getParentThingMethod;
             private readonly MethodInfo getTransferablesMethod;
+            private readonly MethodInfo getUniqueLoadIDMethod;
+            private readonly MethodInfo getMassCapacityMethod;
+            private readonly MethodInfo getMassUsageMethod;
 
             public LoadableMethodCache(Type loadableType)
             {
                 getMapMethod = AccessTools.Method(loadableType, "GetMap");
                 getParentThingMethod = AccessTools.Method(loadableType, "GetParentThing");
                 getTransferablesMethod = AccessTools.Method(loadableType, "GetTransferables");
+                getUniqueLoadIDMethod = AccessTools.Method(loadableType, "GetUniqueLoadID");
+                getMassCapacityMethod = AccessTools.Method(loadableType, "GetMassCapacity");
+                getMassUsageMethod = AccessTools.Method(loadableType, "GetMassUsage");
             }
 
             public MethodInfo Get(string methodName)
@@ -553,6 +774,12 @@ namespace SK_Matter_Network.Patches
                         return getParentThingMethod;
                     case "GetTransferables":
                         return getTransferablesMethod;
+                    case "GetUniqueLoadID":
+                        return getUniqueLoadIDMethod;
+                    case "GetMassCapacity":
+                        return getMassCapacityMethod;
+                    case "GetMassUsage":
+                        return getMassUsageMethod;
                     default:
                         throw new ArgumentException(methodName);
                 }
