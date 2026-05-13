@@ -49,4 +49,44 @@
     <MN_PowerModeControllerDisabled>Контроллер отключён</MN_PowerModeControllerDisabled>
     <MN_PowerModeOffline>Нет сети</MN_PowerModeOffline>
     <MN_PowerModeNoController>Нет контроллера</MN_PowerModeNoController>
+
+    <!-- ДОБАВЛЕННЫЕ СТРОКИ -->
+    <MN_NetworkRefuelerTab>Топливный ретранслятор</MN_NetworkRefuelerTab>
+    <MN_NetworkRefuelerInterval>Интервал: {0} тиков ({1} сек.)</MN_NetworkRefuelerInterval>
+    <MN_MatterIOPortTab>Порт ввода-вывода</MN_MatterIOPortTab>
+    <MN_MatterIOPortFilterTab>Фильтр</MN_MatterIOPortFilterTab>
+    <MN_MatterIOPortMode>Режим: {0}</MN_MatterIOPortMode>
+    <MN_MatterIOPortModeInput>Ввод</MN_MatterIOPortModeInput>
+    <MN_MatterIOPortModeOutput>Вывод</MN_MatterIOPortModeOutput>
+    <MN_MatterIOPortDirection>Направление: {0}</MN_MatterIOPortDirection>
+    <MN_MatterIOPortInterval>Интервал: {0} тиков ({1} сек.)</MN_MatterIOPortInterval>
+    <MN_MatterIOPortTargetCell>Целевая клетка: {0}</MN_MatterIOPortTargetCell>
+    <MN_MatterIOPortTarget>Цель: {0}</MN_MatterIOPortTarget>
+    <MN_MatterIOPortAdapterStatus>Статус: {0}</MN_MatterIOPortAdapterStatus>
+    <MN_MatterIOPortNoCompatibleTarget>Нет совместимого хранилища по соседству</MN_MatterIOPortNoCompatibleTarget>
+    <MN_MatterIOPortLastStatus>Последний результат: {0}</MN_MatterIOPortLastStatus>
+    <MN_MatterIOPortInspect>Порт ввода-вывода: {0}; направление {1}; интервал {2} тиков; {3}</MN_MatterIOPortInspect>
+    <MN_MatterIOPortStatusIdle>ожидание</MN_MatterIOPortStatusIdle>
+    <MN_MatterIOPortStatusModeChanged>режим установлен на {0}</MN_MatterIOPortStatusModeChanged>
+    <MN_MatterIOPortStatusDirectionChanged>направление установлено на {0}</MN_MatterIOPortStatusDirectionChanged>
+    <MN_MatterIOPortStatusForbidden>запрещено</MN_MatterIOPortStatusForbidden>
+    <MN_MatterIOPortStatusNoNetwork>нет подключения к сети</MN_MatterIOPortStatusNoNetwork>
+    <MN_MatterIOPortStatusNetworkOffline>сеть отключена: {0}</MN_MatterIOPortStatusNetworkOffline>
+    <MN_MatterIOPortStatusNoTarget>нет совместимого хранилища в {0}</MN_MatterIOPortStatusNoTarget>
+    <MN_MatterIOPortStatusInputMoved>импортировано {0} предметов из {1}</MN_MatterIOPortStatusInputMoved>
+    <MN_MatterIOPortStatusInputIdle>нечего импортировать из {0}</MN_MatterIOPortStatusInputIdle>
+    <MN_MatterIOPortStatusOutputNoItems>нет предметов для экспорта по текущему фильтру</MN_MatterIOPortStatusOutputNoItems>
+    <MN_MatterIOPortStatusOutputMoved>экспортировано {0} {1} в {2}</MN_MatterIOPortStatusOutputMoved>
+    <MN_MatterIOPortStatusOutputIdle>{0} не принимает предметы</MN_MatterIOPortStatusOutputIdle>
+    <MN_MatterIOPortStatusThingOwner>{0}: {1} стопок</MN_MatterIOPortStatusThingOwner>
+    <MN_MatterIOPortStatusSlotGroup>{0}</MN_MatterIOPortStatusSlotGroup>
+    <MN_MatterIOPortStatusAdaptiveStorage>{0}: {1} стопок</MN_MatterIOPortStatusAdaptiveStorage>
+
+    <MN_PowerModeGridPowered>От общей сети</MN_PowerModeGridPowered>
+    <MN_PowerModeReservePowered>От резерва</MN_PowerModeReservePowered>
+    <MN_PowerModeControllerDisabled>Контроллер отключён</MN_PowerModeControllerDisabled>
+    <MN_PowerModeOffline>Нет сети</MN_PowerModeOffline>
+    <MN_PowerModeNoController>Нет контроллера</MN_PowerModeNoController>
+
+
 </LanguageData>

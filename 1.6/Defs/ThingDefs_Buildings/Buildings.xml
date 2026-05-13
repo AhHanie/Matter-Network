@@ -335,8 +335,8 @@
         <description>Automatically imports or exports items between a connected Matter Network and one adjacent storage target. Its filter controls which items may move, and its selected arrow shows the active side.</description>
         <thingClass>SK_Matter_Network.NetworkBuildingMatterIOPort</thingClass>
         <graphicData>
-            <texPath>Things/Building/SpacerProps/SmallPlanningTable</texPath>
-            <graphicClass>Graphic_Random</graphicClass>
+            <texPath>Things/Building/SpacerProps/SmallPlanningTable/SmallPlanningTable</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
             <drawSize>(1,1)</drawSize>
             <shaderType>CutoutComplex</shaderType>
         </graphicData>

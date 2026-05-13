@@ -23,4 +23,8 @@
 
     <MN_AdvancedNetworkRefueler.label>Продвинутый топливный ретранслятор</MN_AdvancedNetworkRefueler.label>
     <MN_AdvancedNetworkRefueler.description>Забирает подходящее топливо из подключённой сети и распределяет его по механизмам, нуждающимся в заправке, в увеличенном радиусе. Запрет этого устройства отключает автоматическую заправку.</MN_AdvancedNetworkRefueler.description>
+
+    <MN_MatterIOPort.label>Порт ввода-вывода</MN_MatterIOPort.label>
+    <MN_MatterIOPort.description>Автоматически импортирует или экспортирует предметы между подключённой МЭ-сетью и одним соседним хранилищем. Фильтр определяет, какие предметы могут перемещаться, а выбранная стрелка показывает активную сторону.</MN_MatterIOPort.description>
+
 </LanguageData>

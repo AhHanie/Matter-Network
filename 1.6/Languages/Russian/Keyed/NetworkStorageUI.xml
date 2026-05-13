@@ -15,10 +15,12 @@
     <MN_NetworkStorageNoStoredItems>В сети нет хранимых предметов.</MN_NetworkStorageNoStoredItems>
     <MN_NetworkStorageNoStoredStacks>В сети нет хранимых стопок.</MN_NetworkStorageNoStoredStacks>
     <MN_NetworkStorageDropLabel>Выбросить</MN_NetworkStorageDropLabel>
+
     <MN_NetworkStorageStatusOnline>В сети</MN_NetworkStorageStatusOnline>
     <MN_NetworkStorageStatusReserve>Резерв</MN_NetworkStorageStatusReserve>
     <MN_NetworkStorageStatusOffline>Нет сети</MN_NetworkStorageStatusOffline>
     <MN_NetworkStorageStatusOvercommitted>Перерасход</MN_NetworkStorageStatusOvercommitted>
+
     <MN_NetworkStorageOffline>Сеть отключена: {0}</MN_NetworkStorageOffline>
     <MN_NetworkStorageOverviewUsedBytes>Занято байт</MN_NetworkStorageOverviewUsedBytes>
     <MN_NetworkStorageOverviewCapacity>Ёмкость</MN_NetworkStorageOverviewCapacity>
@@ -34,7 +36,9 @@
     <MN_NetworkStorageOverviewControllerState>Состояние контроллера</MN_NetworkStorageOverviewControllerState>
     <MN_NetworkStorageOverviewExtraction>Выдача</MN_NetworkStorageOverviewExtraction>
     <MN_NetworkStorageOverviewStoredUnits>Хранимых единиц</MN_NetworkStorageOverviewStoredUnits>
+
     <MN_NetworkStorageOverviewOvercommitted>Перерасход</MN_NetworkStorageOverviewOvercommitted>
+
     <MN_NetworkStorageOverviewPowerState>Питание</MN_NetworkStorageOverviewPowerState>
     <MN_NetworkStorageOverviewPowerDraw>Потребление</MN_NetworkStorageOverviewPowerDraw>
     <MN_NetworkStorageOverviewReserve>Резерв</MN_NetworkStorageOverviewReserve>
@@ -66,12 +70,16 @@
     <MN_NetworkStoragePowerRuntimeIndefinite>Неограниченно</MN_NetworkStoragePowerRuntimeIndefinite>
     <MN_NetworkStoragePowerRuntimeEmpty>Пусто</MN_NetworkStoragePowerRuntimeEmpty>
     <MN_NetworkStoragePowerStatus>Статус питания</MN_NetworkStoragePowerStatus>
+
+
     <MN_NetworkStoragePowerChargeMinus>-</MN_NetworkStoragePowerChargeMinus>
     <MN_NetworkStoragePowerChargePlus>+</MN_NetworkStoragePowerChargePlus>
+
     <MN_NetworkStoragePowerFillReserve>DEV: Заполнить резерв</MN_NetworkStoragePowerFillReserve>
-    <MN_NetworkStoragePowerEmptyReserve>DEV: Опустошить резерв</MN_NetworkStoragePowerEmptyReserve>
+    <MN_NetworkStoragePowerEmptyReserve>DEV: Очистить резерв</MN_NetworkStoragePowerEmptyReserve>
+
     <MN_DiskDriveSlotsTab>Диски</MN_DiskDriveSlotsTab>
-    <MN_DiskDriveSlotsHeaderTitle>МЭ-накопитель</MN_DiskDriveSlotsHeaderTitle>
+    <MN_DiskDriveSlotsHeaderTitle>Накопитель</MN_DiskDriveSlotsHeaderTitle>
     <MN_DiskDriveSlotsHeaderSummary>{0}/{1} слотов занято</MN_DiskDriveSlotsHeaderSummary>
     <MN_DiskDriveSlotsLocked>Заблокирован</MN_DiskDriveSlotsLocked>
     <MN_DiskDriveSlotsAccepting>Принимает диски</MN_DiskDriveSlotsAccepting>
