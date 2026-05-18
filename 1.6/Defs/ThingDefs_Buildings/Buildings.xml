@@ -92,6 +92,7 @@
             <MaxHitPoints>300</MaxHitPoints>
             <WorkToBuild>1000</WorkToBuild>
             <Flammability>0.5</Flammability>
+            <Mass>12</Mass>
             <Beauty>-1</Beauty>
         </statBases>
         <thingClass>SK_Matter_Network.NetworkBuildingDiskDrive</thingClass>
@@ -138,6 +139,7 @@
             <destroySound>BuildingDestroyed_Metal_Small</destroySound>
         </building>
         <altitudeLayer>Building</altitudeLayer>
+        <minifiedDef>MinifiedThing</minifiedDef>
         <passability>PassThroughOnly</passability>
         <fillPercent>0.4</fillPercent>
         <pathCost>50</pathCost>
@@ -158,6 +160,9 @@
         <preventDroppingThingsOn>true</preventDroppingThingsOn>
         <defaultPlacingRot>South</defaultPlacingRot>
         <uiIconScale>0.8</uiIconScale>
+        <thingCategories>
+            <li>BuildingsMisc</li>
+        </thingCategories>
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
