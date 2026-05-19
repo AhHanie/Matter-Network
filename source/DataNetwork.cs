@@ -1047,13 +1047,18 @@ namespace SK_Matter_Network
             if (isBroadcastingSettingsChange || isAddingBuilding) return;
 
             isBroadcastingSettingsChange = true;
-            storageSettings.CopyFrom(interfaceSettings);
-            storageSettingsSeeded = true;
+            try
+            {
+                storageSettings.CopyFrom(interfaceSettings);
+                storageSettingsSeeded = true;
 
-            foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
-                iface.NotifyNetworkSettingsChanged();
-
-            isBroadcastingSettingsChange = false;
+                foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
+                    iface.NotifyNetworkSettingsChanged();
+            }
+            finally
+            {
+                isBroadcastingSettingsChange = false;
+            }
         }
 
         public void ExposeData()
@@ -1096,6 +1101,7 @@ namespace SK_Matter_Network
                 if (b != null) b.ParentNetwork = this;
             }
 
+            ReconcileStorageSettingsFromInterfaces();
             RebuildStoredItemsFromController();
             RecalcTotalCapacityBytes();
             EnsurePowerState();
@@ -1305,6 +1311,42 @@ namespace SK_Matter_Network
             int remainingCapacity = System.Math.Max(0, capacityLimit - UsedBytes);
             int remainingQuota = RemainingQuotaFor(def);
             return System.Math.Min(remainingCapacity, remainingQuota);
+        }
+
+        private void ReconcileStorageSettingsFromInterfaces()
+        {
+            NetworkBuildingNetworkInterface settingsSource = null;
+            foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
+            {
+                if (iface != null && !iface.Destroyed)
+                {
+                    settingsSource = iface;
+                    break;
+                }
+            }
+
+            if (settingsSource == null)
+            {
+                return;
+            }
+
+            storageSettings.CopyFrom(settingsSource.GetStoreSettings());
+
+            isBroadcastingSettingsChange = true;
+            try
+            {
+                foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
+                {
+                    if (iface != null && !iface.Destroyed)
+                    {
+                        iface.NotifyNetworkSettingsChanged();
+                    }
+                }
+            }
+            finally
+            {
+                isBroadcastingSettingsChange = false;
+            }
         }
 
         private static int ClampItemQuota(int quota)

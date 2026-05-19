@@ -108,5 +108,10 @@ namespace SK_Matter_Network
                     archivedContainer.Remove(thing);
             }
         }
+
+        public override bool AllowStackWith(Thing other)
+        {
+            return false;
+        }
     }
 }

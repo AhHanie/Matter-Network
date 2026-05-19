@@ -130,6 +130,7 @@
     <Compile Include="Patches\AddictionUtility.cs" />
     <Compile Include="Patches\CaravanFormingUtility.cs" />
     <Compile Include="Patches\FoodUtility.cs" />
+    <Compile Include="Patches\ForbidUtility.cs" />
     <Compile Include="Patches\HealthAIUtility.cs" />
     <Compile Include="Patches\HaulAIUtility.cs" />
     <Compile Include="Patches\HealthCardUtility.cs" />

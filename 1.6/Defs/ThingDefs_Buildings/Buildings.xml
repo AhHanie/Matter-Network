@@ -426,6 +426,10 @@
             <destroySound>BuildingDestroyed_Metal_Small</destroySound>
         </building>
         <altitudeLayer>Building</altitudeLayer>
+        <minifiedDef>MinifiedThing</minifiedDef>
+        <thingCategories>
+            <li>BuildingsMisc</li>
+        </thingCategories>
         <passability>PassThroughOnly</passability>
         <fillPercent>0.25</fillPercent>
         <pathCost>20</pathCost>
