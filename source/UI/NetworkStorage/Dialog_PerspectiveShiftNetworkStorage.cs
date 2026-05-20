@@ -18,6 +18,31 @@ namespace SK_Matter_Network
         private const float ToolbarHeight = 34f;
         private const float BottomHeight = 76f;
         private const float CellSize = 86f;
+        private const float InventoryHeaderHeight = 24f;
+        private const float InventoryBarHeight = 94f;
+        private const float InventoryGap = 10f;
+        private const float InventoryCellSize = 76f;
+        private const float InventoryCellSpacing = 10f;
+
+        private enum SelectedSource
+        {
+            None,
+            Network,
+            Inventory,
+            Held
+        }
+
+        private struct InventoryDisplayItem
+        {
+            public Thing Thing;
+            public bool IsHeld;
+
+            public InventoryDisplayItem(Thing thing, bool isHeld)
+            {
+                Thing = thing;
+                IsHeld = isHeld;
+            }
+        }
 
         private readonly NetworkBuildingNetworkInterface selectedInterface;
         private readonly Pawn pawn;
@@ -25,10 +50,13 @@ namespace SK_Matter_Network
         private readonly NetworkStorageChromeDrawer chromeDrawer = new NetworkStorageChromeDrawer();
 
         private Thing selectedItem;
+        private SelectedSource selectedSource;
+        private Thing selectedInventoryItem;
         private Vector2 scrollPosition;
+        private Vector2 inventoryScrollPosition;
         private string searchText = string.Empty;
 
-        public override Vector2 InitialSize => new Vector2(700f, 640f);
+        public override Vector2 InitialSize => new Vector2(700f, 760f);
 
         private DataNetwork Network => selectedInterface.ParentNetwork;
 
@@ -49,7 +77,9 @@ namespace SK_Matter_Network
             Rect headerRect = new Rect(inRect.x, inRect.y, inRect.width, HeaderHeight);
             Rect toolbarRect = new Rect(inRect.x, headerRect.yMax + 8f, inRect.width, ToolbarHeight);
             Rect bottomRect = new Rect(inRect.x, inRect.yMax - BottomHeight, inRect.width, BottomHeight);
-            Rect gridRect = new Rect(inRect.x, toolbarRect.yMax + 8f, inRect.width, bottomRect.y - toolbarRect.yMax - 16f);
+            float inventoryHeight = InventoryHeaderHeight + InventoryBarHeight;
+            Rect inventoryRect = new Rect(inRect.x, bottomRect.y - InventoryGap - inventoryHeight, inRect.width, inventoryHeight);
+            Rect gridRect = new Rect(inRect.x, toolbarRect.yMax + 8f, inRect.width, inventoryRect.y - toolbarRect.yMax - InventoryGap - 8f);
 
             DrawHeader(headerRect, network);
 
@@ -62,12 +92,14 @@ namespace SK_Matter_Network
                         ? "MN_NetworkStorageOffline".Translate(network.PowerModeLabel).ToString()
                         : "MN_NetworkStorageNoController".Translate().ToString();
                 chromeDrawer.DrawCenteredMessage(gridRect.ContractedBy(10f), message, GameFont.Medium, NetworkStorageUiConstants.WarningColor);
+                DrawInventoryBar(inventoryRect);
                 DrawActionBar(bottomRect);
                 return;
             }
 
             DrawSearchToolbar(toolbarRect, network);
             DrawItemGrid(gridRect, network);
+            DrawInventoryBar(inventoryRect);
             DrawActionBar(bottomRect);
         }
 
@@ -81,16 +113,11 @@ namespace SK_Matter_Network
                 150f,
                 NetworkStorageUiConstants.StatusPillHeight);
             Rect summaryRect = new Rect(statusRect.x - 220f, statusRect.y, 210f, statusRect.height);
-            Rect titleRect = new Rect(innerRect.x, innerRect.y + 1f, summaryRect.x - innerRect.x - 12f, 26f);
-            Rect subtitleRect = new Rect(innerRect.x, titleRect.yMax, titleRect.width, 18f);
+            Rect titleRect = new Rect(innerRect.x, innerRect.y + ((innerRect.height - 30f) / 2f), summaryRect.x - innerRect.x - 12f, 30f);
 
             Text.Font = GameFont.Medium;
             GUI.color = NetworkStorageUiConstants.PrimaryTextColor;
             Widgets.Label(titleRect, "MN_PSNetworkStorageTitle".Translate());
-
-            Text.Font = GameFont.Small;
-            GUI.color = NetworkStorageUiConstants.MutedTextColor;
-            Widgets.Label(subtitleRect, selectedInterface.LabelCap);
 
             Text.Anchor = TextAnchor.MiddleRight;
             GUI.color = NetworkStorageUiConstants.SecondaryTextColor;
@@ -203,7 +230,7 @@ namespace SK_Matter_Network
         {
             chromeDrawer.DrawPanel(rect, strong: false);
             Widgets.DrawHighlightIfMouseover(rect);
-            if (selectedItem == item)
+            if (selectedSource == SelectedSource.Network && selectedItem == item)
             {
                 Widgets.DrawBoxSolidWithOutline(rect, Color.clear, NetworkStorageUiConstants.AccentColor);
             }
@@ -225,7 +252,109 @@ namespace SK_Matter_Network
 
             if (Mouse.IsOver(rect) && Event.current.type == EventType.MouseDown && (Event.current.button == 0 || Event.current.button == 1))
             {
-                selectedItem = item;
+                if (selectedSource == SelectedSource.Network && selectedItem == item)
+                {
+                    ClearSelection();
+                }
+                else
+                {
+                    SelectNetworkItem(item);
+                }
+
+                Event.current.Use();
+            }
+        }
+
+        private void DrawInventoryBar(Rect rect)
+        {
+            chromeDrawer.DrawPanel(rect, strong: false);
+
+            Rect labelRect = new Rect(rect.x + 10f, rect.y + 3f, rect.width - 20f, InventoryHeaderHeight - 4f);
+            Text.Font = GameFont.Small;
+            Text.Anchor = TextAnchor.MiddleLeft;
+            GUI.color = NetworkStorageUiConstants.SecondaryTextColor;
+            Widgets.Label(labelRect, "MN_PSNetworkStorageInventoryLabel".Translate());
+            Text.Anchor = TextAnchor.UpperLeft;
+            GUI.color = Color.white;
+
+            Rect stripRect = new Rect(rect.x + 10f, rect.y + InventoryHeaderHeight, rect.width - 20f, InventoryBarHeight);
+            List<InventoryDisplayItem> items = BuildInventoryItems();
+
+            if (items.Count == 0)
+            {
+                chromeDrawer.DrawCenteredMessage(stripRect, "MN_PSNetworkStorageNoInventoryItems".Translate(), GameFont.Small, NetworkStorageUiConstants.SecondaryTextColor);
+                return;
+            }
+
+            float contentWidth = items.Count * (InventoryCellSize + InventoryCellSpacing) - InventoryCellSpacing;
+            Rect viewRect = new Rect(0f, 0f, Mathf.Max(stripRect.width - 16f, contentWidth), InventoryCellSize);
+
+            Widgets.BeginScrollView(stripRect, ref inventoryScrollPosition, viewRect);
+            for (int i = 0; i < items.Count; i++)
+            {
+                Rect cellRect = new Rect(i * (InventoryCellSize + InventoryCellSpacing), 0f, InventoryCellSize, InventoryCellSize);
+                DrawInventoryItemCell(cellRect, items[i]);
+            }
+            Widgets.EndScrollView();
+        }
+
+        private void DrawInventoryItemCell(Rect rect, InventoryDisplayItem displayItem)
+        {
+            Thing item = displayItem.Thing;
+            chromeDrawer.DrawPanel(rect, strong: false);
+            Widgets.DrawHighlightIfMouseover(rect);
+
+            bool selected = selectedInventoryItem == item
+                && ((displayItem.IsHeld && selectedSource == SelectedSource.Held)
+                    || (!displayItem.IsHeld && selectedSource == SelectedSource.Inventory));
+            if (selected)
+            {
+                Widgets.DrawBoxSolidWithOutline(rect, Color.clear, NetworkStorageUiConstants.AccentColor);
+            }
+
+            Rect iconRect = new Rect(rect.x + 8f, rect.y + 8f, rect.width - 16f, rect.height - 16f);
+            Widgets.ThingIcon(iconRect, item);
+
+            if (displayItem.IsHeld)
+            {
+                Rect heldRect = new Rect(rect.x + 4f, rect.y + 3f, rect.width - 8f, 18f);
+                Text.Font = GameFont.Tiny;
+                Text.Anchor = TextAnchor.UpperLeft;
+                GUI.color = NetworkStorageUiConstants.SecondaryTextColor;
+                Widgets.Label(heldRect, "MN_PSNetworkStorageHeldIndicator".Translate());
+                Text.Anchor = TextAnchor.UpperLeft;
+                GUI.color = Color.white;
+            }
+
+            if (item.stackCount > 1 || item.def.stackLimit > 1)
+            {
+                Text.Font = GameFont.Small;
+                Text.Anchor = TextAnchor.LowerRight;
+                GUI.color = NetworkStorageUiConstants.PrimaryTextColor;
+                Widgets.Label(new Rect(rect.x, rect.y, rect.width - 4f, rect.height - 3f), item.stackCount.ToString());
+                Text.Anchor = TextAnchor.UpperLeft;
+                GUI.color = Color.white;
+            }
+
+            string tooltip = item.LabelCap + "\n" + dataSource.BuildThingMetadata(item);
+            if (displayItem.IsHeld)
+            {
+                tooltip = "MN_PSNetworkStorageHeldIndicator".Translate() + "\n" + tooltip;
+            }
+
+            TooltipHandler.TipRegion(rect, tooltip);
+
+            if (Mouse.IsOver(rect) && Event.current.type == EventType.MouseDown && (Event.current.button == 0 || Event.current.button == 1))
+            {
+                if (selected)
+                {
+                    ClearSelection();
+                }
+                else
+                {
+                    SelectInventoryItem(item, displayItem.IsHeld);
+                }
+
                 Event.current.Use();
             }
         }
@@ -239,7 +368,7 @@ namespace SK_Matter_Network
             Rect equipRect = new Rect(holdRect.xMax + spacing, rect.y, buttonWidth, rect.height);
             Rect depositRect = new Rect(equipRect.xMax + spacing, rect.y, buttonWidth, rect.height);
 
-            bool hasSelection = HasSelectedItem();
+            bool hasSelection = HasSelectedNetworkItem();
             bool canEquip = hasSelection && IsWearOrEquipItem(selectedItem);
             string equipLabel = hasSelection && selectedItem is Apparel
                 ? "MN_PSNetworkStorageWear".Translate().ToString()
@@ -265,9 +394,9 @@ namespace SK_Matter_Network
                 TryWearOrEquipSelectedItem();
             });
 
-            DrawTextActionButton(depositRect, "MN_PSNetworkStorageDepositCarried".Translate(), CanDepositCarriedItem(), delegate(int button)
+            DrawTextActionButton(depositRect, "MN_PSNetworkStorageDeposit".Translate(), CanDepositSelectedItem(), delegate(int button)
             {
-                TryDepositCarriedItem(button == 1 ? 1 : int.MaxValue);
+                TryDepositSelectedItem(button == 1 ? 1 : selectedInventoryItem.stackCount);
             });
         }
 
@@ -310,6 +439,27 @@ namespace SK_Matter_Network
             return items;
         }
 
+        private List<InventoryDisplayItem> BuildInventoryItems()
+        {
+            List<InventoryDisplayItem> items = new List<InventoryDisplayItem>();
+
+            Thing carried = pawn.carryTracker.CarriedThing;
+            if (carried != null && !carried.Destroyed && !(carried is Pawn) && !(carried is Corpse))
+            {
+                items.Add(new InventoryDisplayItem(carried, true));
+            }
+
+            foreach (Thing thing in pawn.inventory.innerContainer.InnerListForReading)
+            {
+                if (!thing.Destroyed)
+                {
+                    items.Add(new InventoryDisplayItem(thing, false));
+                }
+            }
+
+            return items;
+        }
+
         private bool MatchesSearch(Thing thing)
         {
             if (string.IsNullOrWhiteSpace(searchText))
@@ -345,10 +495,56 @@ namespace SK_Matter_Network
             return value.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
-        private bool HasSelectedItem()
+        private void ClearSelection()
+        {
+            selectedSource = SelectedSource.None;
+            selectedItem = null;
+            selectedInventoryItem = null;
+        }
+
+        private void SelectNetworkItem(Thing item)
+        {
+            selectedSource = SelectedSource.Network;
+            selectedItem = item;
+            selectedInventoryItem = null;
+        }
+
+        private void SelectInventoryItem(Thing item, bool isHeld)
+        {
+            selectedSource = isHeld ? SelectedSource.Held : SelectedSource.Inventory;
+            selectedInventoryItem = item;
+            selectedItem = null;
+        }
+
+        private bool HasSelectedNetworkItem()
         {
             DataNetwork network = Network;
-            return selectedItem != null && !selectedItem.Destroyed && IsUsableNetwork(network) && network.ActiveController.innerContainer.Contains(selectedItem);
+            return selectedSource == SelectedSource.Network
+                && selectedItem != null
+                && !selectedItem.Destroyed
+                && IsUsableNetwork(network)
+                && network.ActiveController.innerContainer.Contains(selectedItem);
+        }
+
+        private bool HasSelectedInventoryItem()
+        {
+            return selectedSource == SelectedSource.Inventory
+                && selectedInventoryItem != null
+                && !selectedInventoryItem.Destroyed
+                && pawn.inventory.innerContainer.Contains(selectedInventoryItem);
+        }
+
+        private bool HasSelectedHeldItem()
+        {
+            return selectedSource == SelectedSource.Held
+                && selectedInventoryItem != null
+                && !selectedInventoryItem.Destroyed
+                && pawn.carryTracker.CarriedThing == selectedInventoryItem;
+        }
+
+        private bool HasSelectedDepositableItem()
+        {
+            return IsUsableNetwork(Network) && (HasSelectedInventoryItem() || HasSelectedHeldItem());
         }
 
         private static int MaxPickupStackCount(Thing item)
@@ -436,7 +632,7 @@ namespace SK_Matter_Network
 
         private bool TryMoveSelectedToInventory(int requestedCount)
         {
-            if (!HasSelectedItem())
+            if (!HasSelectedNetworkItem())
             {
                 return false;
             }
@@ -461,7 +657,7 @@ namespace SK_Matter_Network
             {
                 if (tookAll)
                 {
-                    selectedItem = null;
+                    ClearSelection();
                 }
 
                 toAdd.def.soundDrop?.PlayOneShot(pawn);
@@ -474,7 +670,7 @@ namespace SK_Matter_Network
 
         private bool TryMoveSelectedToCarryTracker(int requestedCount)
         {
-            if (!HasSelectedItem())
+            if (!HasSelectedNetworkItem())
             {
                 return false;
             }
@@ -510,7 +706,7 @@ namespace SK_Matter_Network
                 }
                 else if (tookAll)
                 {
-                    selectedItem = null;
+                    ClearSelection();
                 }
 
                 toCarry.def.soundDrop?.PlayOneShot(pawn);
@@ -530,7 +726,7 @@ namespace SK_Matter_Network
 
         private bool TryWearOrEquipSelectedItem()
         {
-            if (!HasSelectedItem() || !IsWearOrEquipItem(selectedItem))
+            if (!HasSelectedNetworkItem() || !IsWearOrEquipItem(selectedItem))
             {
                 return false;
             }
@@ -547,7 +743,7 @@ namespace SK_Matter_Network
                 return false;
             }
 
-            selectedItem = null;
+            ClearSelection();
             if (!item.Spawned)
             {
                 GenSpawn.Spawn(item, pawn.Position, pawn.Map, WipeMode.Vanish);
@@ -563,16 +759,61 @@ namespace SK_Matter_Network
             return false;
         }
 
-        private bool CanDepositCarriedItem()
+        private bool CanDepositSelectedItem()
         {
-            Thing carried = pawn.carryTracker.CarriedThing;
-            return carried != null && !carried.Destroyed && !(carried is Pawn) && !(carried is Corpse) && IsUsableNetwork(Network);
+            return HasSelectedDepositableItem();
         }
 
-        private bool TryDepositCarriedItem(int requestedCount)
+        private bool TryDepositSelectedItem(int requestedCount)
+        {
+            if (HasSelectedHeldItem())
+            {
+                return TryDepositHeldItem(requestedCount);
+            }
+
+            if (HasSelectedInventoryItem())
+            {
+                return TryDepositInventoryItem(requestedCount);
+            }
+
+            return false;
+        }
+
+        private bool TryDepositInventoryItem(int requestedCount)
+        {
+            if (!HasSelectedInventoryItem())
+            {
+                return false;
+            }
+
+            Thing item = selectedInventoryItem;
+            if (!CanInsertIntoNetwork(item, requestedCount, out int acceptedCount))
+            {
+                return false;
+            }
+
+            DataNetwork network = Network;
+            int moved = pawn.inventory.innerContainer.TryTransferToContainer(item, network.ActiveController.innerContainer, acceptedCount);
+            if (moved > 0)
+            {
+                network.MarkBytesDirty();
+                item.def.soundDrop?.PlayOneShot(pawn);
+
+                if (!pawn.inventory.innerContainer.Contains(item))
+                {
+                    ClearSelection();
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
+        private bool TryDepositHeldItem(int requestedCount)
         {
             Thing carried = pawn.carryTracker.CarriedThing;
-            if (carried == null || carried.Destroyed)
+            if (!HasSelectedHeldItem() || carried == null || carried.Destroyed)
             {
                 return false;
             }
@@ -590,6 +831,12 @@ namespace SK_Matter_Network
                 network.MarkBytesDirty();
                 DropCarriedOverflowAtInterface(requestedToMove - moved);
                 carried.def.soundDrop?.PlayOneShot(pawn);
+
+                if (pawn.carryTracker.CarriedThing != carried)
+                {
+                    ClearSelection();
+                }
+
                 return true;
             }
 
