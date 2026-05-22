@@ -26,11 +26,11 @@
             <DeteriorationRate>2.0</DeteriorationRate>
         </statBases>
         <thingCategories>
-            <li>ItemsMisc</li>
+            <li>MN_Disks</li>
         </thingCategories>
-        <researchPrerequisites>
-            <li>MN_MatterNetwork</li>
-        </researchPrerequisites>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase" Name="CraftableDiskBase" Abstract="True">
         <recipeMaker>
             <workSpeedStat>GeneralLaborSpeed</workSpeedStat>
             <workSkill>Crafting</workSkill>
@@ -43,16 +43,19 @@
             </recipeUsers>
             <workAmount>18000</workAmount>
         </recipeMaker>
+        <researchPrerequisites>
+            <li>MN_MatterNetwork</li>
+        </researchPrerequisites>
     </ThingDef>
 
-    <ThingDef ParentName="DiskBase">
+    <ThingDef ParentName="CraftableDiskBase">
         <defName>MN_Disk1k</defName>
-        <graphicData>
-            <texPath>MatterNetwork/Things/Item/disk_1k</texPath>
-            <graphicClass>Graphic_Single</graphicClass>
-        </graphicData>
         <label>1k disk</label>
         <description>A data storage disk that can hold up to 1024 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/Disk_1k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
         <comps>
             <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
                 <maxBytes>1024</maxBytes>
@@ -70,14 +73,14 @@
         </costList>
     </ThingDef>
 
-    <ThingDef ParentName="DiskBase">
+    <ThingDef ParentName="CraftableDiskBase">
         <defName>MN_Disk2k</defName>
-        <graphicData>
-            <texPath>MatterNetwork/Things/Item/disk_2k</texPath>
-            <graphicClass>Graphic_Single</graphicClass>
-        </graphicData>
         <label>2k disk</label>
         <description>A data storage disk that can hold up to 2048 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/Disk_2k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
         <comps>
             <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
                 <maxBytes>2048</maxBytes>
@@ -95,14 +98,14 @@
         </costList>
     </ThingDef>
 
-    <ThingDef ParentName="DiskBase">
+    <ThingDef ParentName="CraftableDiskBase">
         <defName>MN_Disk4k</defName>
-        <graphicData>
-            <texPath>MatterNetwork/Things/Item/disk_4k</texPath>
-            <graphicClass>Graphic_Single</graphicClass>
-        </graphicData>
         <label>4k disk</label>
         <description>A data storage disk that can hold up to 4096 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/Disk_4k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
         <comps>
             <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
                 <maxBytes>4096</maxBytes>
@@ -120,14 +123,14 @@
         </costList>
     </ThingDef>
 
-    <ThingDef ParentName="DiskBase">
+    <ThingDef ParentName="CraftableDiskBase">
         <defName>MN_Disk8k</defName>
-        <graphicData>
-            <texPath>MatterNetwork/Things/Item/disk_8k</texPath>
-            <graphicClass>Graphic_Single</graphicClass>
-        </graphicData>
         <label>8k disk</label>
         <description>A data storage disk that can hold up to 8192 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/Disk_8k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
         <comps>
             <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
                 <maxBytes>8192</maxBytes>
@@ -145,14 +148,14 @@
         </costList>
     </ThingDef>
 
-    <ThingDef ParentName="DiskBase">
+    <ThingDef ParentName="CraftableDiskBase">
         <defName>MN_Disk16k</defName>
-        <graphicData>
-            <texPath>MatterNetwork/Things/Item/disk_16k</texPath>
-            <graphicClass>Graphic_Single</graphicClass>
-        </graphicData>
         <label>16k disk</label>
         <description>A data storage disk that can hold up to 16384 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/Disk_16k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
         <comps>
             <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
                 <maxBytes>16384</maxBytes>
@@ -168,16 +171,19 @@
             <ComponentSpacer>3</ComponentSpacer>
             <Gold>2</Gold>
         </costList>
+        <tradeTags>
+            <li>ExoticMisc</li>
+        </tradeTags>
     </ThingDef>
 
-    <ThingDef ParentName="DiskBase">
+    <ThingDef ParentName="CraftableDiskBase">
         <defName>MN_Disk32k</defName>
-        <graphicData>
-            <texPath>MatterNetwork/Things/Item/disk_32k</texPath>
-            <graphicClass>Graphic_Single</graphicClass>
-        </graphicData>
         <label>32k disk</label>
         <description>A data storage disk that can hold up to 32768 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/Disk_32k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
         <comps>
             <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
                 <maxBytes>32768</maxBytes>
@@ -193,5 +199,29 @@
             <ComponentSpacer>4</ComponentSpacer>
             <Gold>2</Gold>
         </costList>
+        <tradeTags>
+            <li>ExoticMisc</li>
+        </tradeTags>
+    </ThingDef>
+
+    <ThingDef ParentName="DiskBase">
+        <defName>MN_Disk256k</defName>
+        <label>256k disk</label>
+        <description>A data storage disk that can hold up to 32768 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/Disk_256k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
+                <maxBytes>262144</maxBytes>
+            </li>
+        </comps>
+        <tradeTags>
+            <li>ExoticMisc</li>
+        </tradeTags>
+        <thingSetMakerTags>
+            <li>RewardStandardCore</li>
+        </thingSetMakerTags>
     </ThingDef>
 </Defs>

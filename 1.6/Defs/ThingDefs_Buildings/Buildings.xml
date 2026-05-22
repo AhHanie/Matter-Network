@@ -68,7 +68,7 @@
         <researchPrerequisites>
             <li>MN_MatterNetwork</li>
         </researchPrerequisites>
-        <designationCategory>Misc</designationCategory>
+        <designationCategory>MN_MatterNetwork</designationCategory>
         <uiOrder>2000</uiOrder>
         <constructEffect>ConstructMetal</constructEffect>
         <clearBuildingArea>false</clearBuildingArea>
@@ -79,9 +79,9 @@
         <label>disk drive</label>
         <description>Holds matter disks that provide storage capacity to a connected data network. Can hold up to 6 disks. Add more drives or larger disks to increase how much the network can store.</description>
         <graphicData>
-            <texPath>Things/Building/SpacerProps/ServerRack/ServerRack</texPath>
+            <texPath>MatterNetwork/Things/Building/DiskDriveFull</texPath>
             <graphicClass>Graphic_Multi</graphicClass>
-            <drawSize>(1.5,1.5)</drawSize>
+            <drawSize>(3, 3)</drawSize>
             <shaderType>CutoutComplex</shaderType>
             <shadowData>
                 <volume>(0.55, 0.30, 0.40)</volume>
@@ -156,13 +156,16 @@
             <li>MN_MatterNetwork</li>
         </researchPrerequisites>
         <uiOrder>2050</uiOrder>
-        <designationCategory>Misc</designationCategory>
+        <designationCategory>MN_MatterNetwork</designationCategory>
         <preventDroppingThingsOn>true</preventDroppingThingsOn>
         <defaultPlacingRot>South</defaultPlacingRot>
         <uiIconScale>0.8</uiIconScale>
         <thingCategories>
             <li>BuildingsMisc</li>
         </thingCategories>
+        <tradeTags>
+            <li>ExoticMisc</li>
+        </tradeTags>
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
@@ -170,9 +173,9 @@
         <label>network interface</label>
         <description>A storage access point for a data network. Pawns can upload and extract allowed items here when the network has an active controller, and the selected storage filter is shared across the network.</description>
         <graphicData>
-            <texPath>Things/Building/SpacerProps/SingleDisplay/SingleDisplay</texPath>
+            <texPath>MatterNetwork/Things/Building/Terminal</texPath>
             <graphicClass>Graphic_Multi</graphicClass>
-            <drawSize>(1.2,1.2)</drawSize>
+            <drawSize>(1, 1)</drawSize>
             <shaderType>CutoutComplex</shaderType>
             <shadowData>
                 <volume>(0.3, 0.30, 0.40)</volume>
@@ -208,15 +211,8 @@
                     <disallowedCategories>
                         <li>Animals</li>
                         <li>Plants</li>
+                        <li>MN_Disks</li>
                     </disallowedCategories>
-                    <disallowedThingDefs>
-                        <li>MN_Disk1k</li>
-                        <li>MN_Disk2k</li>
-                        <li>MN_Disk4k</li>
-                        <li>MN_Disk8k</li>
-                        <li>MN_Disk16k</li>
-                        <li>MN_Disk32k</li>
-                    </disallowedThingDefs>
                 </filter>
             </fixedStorageSettings>
             <defaultStorageSettings>
@@ -260,12 +256,14 @@
             <li>MN_MatterNetwork</li>
         </researchPrerequisites>
         <uiOrder>2050</uiOrder>
-        <designationCategory>Misc</designationCategory>
+        <designationCategory>MN_MatterNetwork</designationCategory>
         <preventDroppingThingsOn>true</preventDroppingThingsOn>
         <hasInteractionCell>true</hasInteractionCell>
-        <interactionCellOffset>(0,0,1)</interactionCellOffset>
-        <defaultPlacingRot>South</defaultPlacingRot>
+        <interactionCellOffset>(0,0,-1)</interactionCellOffset>
         <uiIconScale>0.8</uiIconScale>
+        <tradeTags>
+            <li>ExoticMisc</li>
+        </tradeTags>
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
@@ -287,14 +285,15 @@
             <li Class="CompProperties_Breakdownable"/>
         </comps>
         <graphicData>
-            <texPath>Things/Building/SpacerProps/PersonalConsole/PersonalConsole</texPath>
-            <graphicClass>Graphic_Multi</graphicClass>
-            <drawSize>(1.5,1.5)</drawSize>
+            <texPath>MatterNetwork/Things/Building/ControllerBig</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(5, 5)</drawSize>
             <shaderType>CutoutComplex</shaderType>
             <shadowData>
                 <volume>(0.55, 0.30, 0.40)</volume>
             </shadowData>
         </graphicData>
+        <rotatable>false</rotatable>
         <altitudeLayer>Building</altitudeLayer>
         <minifiedDef>MinifiedThing</minifiedDef>
         <thingCategories>
@@ -308,7 +307,7 @@
             <Mass>18</Mass>
             <Flammability>0.5</Flammability>
         </statBases>
-        <size>(1,1)</size>
+        <size>(3,3)</size>
         <costList>
             <Steel>500</Steel>
             <ComponentSpacer>4</ComponentSpacer>
@@ -321,14 +320,11 @@
                     <categories>
                         <li>Root</li>
                     </categories>
-                    <disallowedThingDefs>
-                        <li>MN_Disk1k</li>
-                        <li>MN_Disk2k</li>
-                        <li>MN_Disk4k</li>
-                        <li>MN_Disk8k</li>
-                        <li>MN_Disk16k</li>
-                        <li>MN_Disk32k</li>
-                    </disallowedThingDefs>
+                    <disallowedCategories>
+                        <li>Animals</li>
+                        <li>Plants</li>
+                        <li>MN_Disks</li>
+                    </disallowedCategories>
                 </filter>
             </fixedStorageSettings>
             <destroySound>BuildingDestroyed_Metal_Small</destroySound>
@@ -343,9 +339,11 @@
         <researchPrerequisites>
             <li>MN_MatterNetwork</li>
         </researchPrerequisites>
-        <designationCategory>Misc</designationCategory>
-        <defaultPlacingRot>South</defaultPlacingRot>
+        <designationCategory>MN_MatterNetwork</designationCategory>
         <uiIconScale>1</uiIconScale>
+        <tradeTags>
+            <li>ExoticMisc</li>
+        </tradeTags>
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
@@ -354,7 +352,7 @@
         <description>Automatically imports or exports items between a connected Matter Network and one adjacent storage target. Its filter controls which items may move, and its selected arrow shows the active side.</description>
         <thingClass>SK_Matter_Network.NetworkBuildingMatterIOPort</thingClass>
         <graphicData>
-            <texPath>Things/Building/SpacerProps/SmallPlanningTable/SmallPlanningTable</texPath>
+            <texPath>MatterNetwork/Things/Building/MatterIOPort</texPath>
             <graphicClass>Graphic_Single</graphicClass>
             <drawSize>(1,1)</drawSize>
             <shaderType>CutoutComplex</shaderType>
@@ -398,15 +396,8 @@
                     <disallowedCategories>
                         <li>Animals</li>
                         <li>Plants</li>
+                        <li>MN_Disks</li>
                     </disallowedCategories>
-                    <disallowedThingDefs>
-                        <li>MN_Disk1k</li>
-                        <li>MN_Disk2k</li>
-                        <li>MN_Disk4k</li>
-                        <li>MN_Disk8k</li>
-                        <li>MN_Disk16k</li>
-                        <li>MN_Disk32k</li>
-                    </disallowedThingDefs>
                 </filter>
             </fixedStorageSettings>
             <defaultStorageSettings>
@@ -446,7 +437,7 @@
         <researchPrerequisites>
             <li>MN_NetworkIO</li>
         </researchPrerequisites>
-        <designationCategory>Misc</designationCategory>
+        <designationCategory>MN_MatterNetwork</designationCategory>
         <defaultPlacingRot>North</defaultPlacingRot>
         <rotatable>false</rotatable>
         <uiIconScale>1</uiIconScale>
@@ -459,7 +450,7 @@
         <description>A compact capacitor bank that stores backup power for a connected network. Its stored energy is shared across the network, keeping digitized storage online through brief outages and unstable grids.</description>
         <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
         <graphicData>
-            <texPath>Things/Building/Spaceships/HoloEmitters/BasicHolodeck</texPath>
+            <texPath>MatterNetwork/Things/Building/Capacitor</texPath>
             <graphicClass>Graphic_Single</graphicClass>
             <drawSize>(1,1)</drawSize>
         </graphicData>
@@ -501,7 +492,7 @@
         <researchPrerequisites>
             <li>MN_NetworkPowerStorage</li>
         </researchPrerequisites>
-        <designationCategory>Misc</designationCategory>
+        <designationCategory>MN_MatterNetwork</designationCategory>
         <defaultPlacingRot>North</defaultPlacingRot>
         <rotatable>false</rotatable>
         <uiIconScale>1</uiIconScale>
@@ -514,7 +505,7 @@
         <description>A high-density reserve cell for network infrastructure. It stores a large shared charge for long outages, solar flares, and other disruptions that would otherwise cut access to digitized matter.</description>
         <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
         <graphicData>
-            <texPath>Things/Building/Spaceships/HoloEmitters/HologramRepeater</texPath>
+            <texPath>MatterNetwork/Things/Building/ReserveCell</texPath>
             <graphicClass>Graphic_Single</graphicClass>
             <drawSize>(1,1)</drawSize>
         </graphicData>
@@ -558,7 +549,7 @@
         <researchPrerequisites>
             <li>MN_NetworkPowerStorage</li>
         </researchPrerequisites>
-        <designationCategory>Misc</designationCategory>
+        <designationCategory>MN_MatterNetwork</designationCategory>
         <defaultPlacingRot>North</defaultPlacingRot>
         <rotatable>false</rotatable>
         <uiIconScale>1</uiIconScale>
@@ -571,7 +562,7 @@
         <description>Draws suitable fuel from a connected network and distributes it to nearby machines that need refueling. Forbidding this building disables automatic refueling.</description>
         <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
         <graphicData>
-            <texPath>MatterNetwork/Things/Building/Refueler</texPath>
+            <texPath>MatterNetwork/Things/Building/FuelRelayBasic</texPath>
             <graphicClass>Graphic_Single</graphicClass>
             <drawSize>(1,1)</drawSize>
             <shadowData>
@@ -618,7 +609,7 @@
         <researchPrerequisites>
             <li>MN_NetworkRefueling</li>
         </researchPrerequisites>
-        <designationCategory>Misc</designationCategory>
+        <designationCategory>MN_MatterNetwork</designationCategory>
         <defaultPlacingRot>North</defaultPlacingRot>
         <rotatable>false</rotatable>
         <uiIconScale>1</uiIconScale>
@@ -632,7 +623,7 @@
         <description>Draws suitable fuel from a connected network and distributes it to machines that need refueling over a wider area. Forbidding this building disables automatic refueling.</description>
         <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
         <graphicData>
-            <texPath>MatterNetwork/Things/Building/AdvancedRefueler</texPath>
+            <texPath>MatterNetwork/Things/Building/FuelRelayAdvanced</texPath>
             <graphicClass>Graphic_Single</graphicClass>
             <drawSize>(1,1)</drawSize>
             <shadowData>
@@ -680,7 +671,7 @@
         <researchPrerequisites>
             <li>MN_NetworkRefueling</li>
         </researchPrerequisites>
-        <designationCategory>Misc</designationCategory>
+        <designationCategory>MN_MatterNetwork</designationCategory>
         <defaultPlacingRot>North</defaultPlacingRot>
         <rotatable>false</rotatable>
         <uiIconScale>1</uiIconScale>
