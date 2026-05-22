@@ -8,7 +8,7 @@ namespace SK_Matter_Network
     {
         public override AcceptanceReport AllowsPlacing(BuildableDef checkingDef, IntVec3 loc, Rot4 rot, Map map, Thing thingToIgnore = null, Thing thing = null)
         {
-            bool newBuildingIsController = checkingDef == BuildingDefOf.MN_NetworkController;
+            bool newBuildingIsController = checkingDef == BuildingDefOf.MN_NetworkController || checkingDef == BuildingDefOf.MN_NetworkControllerLarge;
 
             HashSet<NetworkBuilding> visited = new HashSet<NetworkBuilding>();
             Queue<NetworkBuilding> queue = new Queue<NetworkBuilding>();

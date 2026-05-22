@@ -268,7 +268,7 @@
 
     <ThingDef ParentName="BuildingBase">
         <defName>MN_NetworkController</defName>
-        <label>network controller</label>
+        <label>network controller (legacy)</label>
         <description>The central hub of a data network. Stores all items digitally. A network can have only one active controller.</description>
         <thingClass>SK_Matter_Network.NetworkBuildingController</thingClass>
         <comps>
@@ -308,6 +308,79 @@
             <Flammability>0.5</Flammability>
         </statBases>
         <size>(1,1)</size>
+        <costList>
+            <Steel>500</Steel>
+            <ComponentSpacer>4</ComponentSpacer>
+            <Plasteel>50</Plasteel>
+            <Gold>20</Gold>
+        </costList>
+        <building>
+            <fixedStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Root</li>
+                    </categories>
+                    <disallowedCategories>
+                        <li>Animals</li>
+                        <li>Plants</li>
+                        <li>MN_Disks</li>
+                    </disallowedCategories>
+                </filter>
+            </fixedStorageSettings>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
+        <uiIconScale>1</uiIconScale>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkControllerLarge</defName>
+        <label>network controller</label>
+        <description>The central hub of a data network. Stores all items digitally. A network can have only one active controller.</description>
+        <thingClass>SK_Matter_Network.NetworkBuildingController</thingClass>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>500</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkPowerController">
+                <basePowerConsumption>500</basePowerConsumption>
+                <updateIntervalTicks>60</updateIntervalTicks>
+                <chargeEfficiency>1</chargeEfficiency>
+                <chargingSurplusBufferWatts>50</chargingSurplusBufferWatts>
+            </li>
+            <li Class="CompProperties_Flickable"/>
+            <li Class="CompProperties_Breakdownable"/>
+        </comps>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/ControllerBig</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(5, 5)</drawSize>
+            <shaderType>CutoutComplex</shaderType>
+            <shadowData>
+                <volume>(0.55, 0.30, 0.40)</volume>
+            </shadowData>
+        </graphicData>
+        <rotatable>false</rotatable>
+        <altitudeLayer>Building</altitudeLayer>
+        <minifiedDef>MinifiedThing</minifiedDef>
+        <thingCategories>
+            <li>BuildingsMisc</li>
+        </thingCategories>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.2</fillPercent>
+        <statBases>
+            <MaxHitPoints>400</MaxHitPoints>
+            <WorkToBuild>2000</WorkToBuild>
+            <Mass>18</Mass>
+            <Flammability>0.5</Flammability>
+        </statBases>
+        <size>(3,3)</size>
         <costList>
             <Steel>500</Steel>
             <ComponentSpacer>4</ComponentSpacer>
