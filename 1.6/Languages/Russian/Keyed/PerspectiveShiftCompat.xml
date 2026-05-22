@@ -4,7 +4,7 @@
     <MN_PSNetworkStorageKeep>Забрать</MN_PSNetworkStorageKeep>
     <MN_PSNetworkStorageHold>Взять в руки</MN_PSNetworkStorageHold>
     <MN_PSNetworkStorageEquip>Экипировать</MN_PSNetworkStorageEquip>
-    <MN_PSNetworkStorageWear>Надеть</MN_PSNetworkStorageWear>
+    <MN_PSNetworkStorageWear>Экипировать</MN_PSNetworkStorageWear>
     <MN_PSNetworkStorageDepositCarried>Положить</MN_PSNetworkStorageDepositCarried>
     <MN_PSNetworkStorageDepositHere>Положить сюда</MN_PSNetworkStorageDepositHere>
     <MN_PSNetworkStorageDeposit>Положить</MN_PSNetworkStorageDeposit>

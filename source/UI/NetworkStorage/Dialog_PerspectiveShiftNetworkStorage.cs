@@ -11,7 +11,7 @@ namespace SK_Matter_Network
 {
     public sealed class Dialog_PerspectiveShiftNetworkStorage : Window
     {
-        private const int ItemsPerRow = 6;
+        private const int ItemsPerRow = 7;
         private const float CellSpacing = 10f;
         private const float IconPadding = 10f;
         private const float HeaderHeight = 64f;
@@ -23,6 +23,9 @@ namespace SK_Matter_Network
         private const float InventoryGap = 10f;
         private const float InventoryCellSize = 76f;
         private const float InventoryCellSpacing = 10f;
+        private const int QualityBorderThickness = 2;
+        private const int SelectedBorderThickness = 2;
+        private const float SelectedQualityBorderInset = 3f;
 
         private enum SelectedSource
         {
@@ -56,7 +59,7 @@ namespace SK_Matter_Network
         private Vector2 inventoryScrollPosition;
         private string searchText = string.Empty;
 
-        public override Vector2 InitialSize => new Vector2(700f, 760f);
+        public override Vector2 InitialSize => new Vector2(718f, 760f);
 
         private DataNetwork Network => selectedInterface.ParentNetwork;
 
@@ -236,7 +239,7 @@ namespace SK_Matter_Network
             }
 
             Rect iconRect = new Rect(rect.x + IconPadding, rect.y + IconPadding, rect.width - (IconPadding * 2f), rect.height - (IconPadding * 2f));
-            Widgets.ThingIcon(iconRect, item);
+            DrawStorageThingIcon(iconRect, item);
 
             if (item.stackCount > 1 || item.def.stackLimit > 1)
             {
@@ -307,13 +310,15 @@ namespace SK_Matter_Network
             bool selected = selectedInventoryItem == item
                 && ((displayItem.IsHeld && selectedSource == SelectedSource.Held)
                     || (!displayItem.IsHeld && selectedSource == SelectedSource.Inventory));
+            DrawInventoryItemQualityBorder(rect, item, selected);
+
             if (selected)
             {
-                Widgets.DrawBoxSolidWithOutline(rect, Color.clear, NetworkStorageUiConstants.AccentColor);
+                Widgets.DrawBoxSolidWithOutline(rect, Color.clear, NetworkStorageUiConstants.AccentColor, SelectedBorderThickness);
             }
 
             Rect iconRect = new Rect(rect.x + 8f, rect.y + 8f, rect.width - 16f, rect.height - 16f);
-            Widgets.ThingIcon(iconRect, item);
+            DrawStorageThingIcon(iconRect, item);
 
             if (displayItem.IsHeld)
             {
@@ -359,6 +364,42 @@ namespace SK_Matter_Network
             }
         }
 
+        private static void DrawInventoryItemQualityBorder(Rect rect, Thing item, bool selected)
+        {
+            Color borderColor;
+            if (!TryGetQualityBorderColor(item, out borderColor)) return;
+
+            Rect borderRect = selected ? rect.ContractedBy(SelectedQualityBorderInset) : rect;
+            Widgets.DrawBoxSolidWithOutline(borderRect, Color.clear, borderColor, QualityBorderThickness);
+        }
+
+        private static bool TryGetQualityBorderColor(Thing item, out Color color)
+        {
+            QualityCategory quality;
+            if (!item.TryGetQuality(out quality))
+            {
+                color = default(Color);
+                return false;
+            }
+            color = QualityBorderColor(quality);
+            return true;
+        }
+
+        private static Color QualityBorderColor(QualityCategory quality)
+        {
+            switch (quality)
+            {
+                case QualityCategory.Awful:      return new Color(0.68f, 0.24f, 0.24f);
+                case QualityCategory.Poor:       return new Color(0.73f, 0.46f, 0.22f);
+                case QualityCategory.Normal:     return NetworkStorageUiConstants.SecondaryTextColor;
+                case QualityCategory.Good:       return NetworkStorageUiConstants.OkColor;
+                case QualityCategory.Excellent:  return new Color(0.28f, 0.62f, 0.86f);
+                case QualityCategory.Masterwork: return new Color(0.64f, 0.36f, 0.82f);
+                case QualityCategory.Legendary:  return new Color(0.96f, 0.84f, 0.32f);
+                default:                         return NetworkStorageUiConstants.SecondaryTextColor;
+            }
+        }
+
         private void DrawActionBar(Rect rect)
         {
             float spacing = 10f;
@@ -369,8 +410,9 @@ namespace SK_Matter_Network
             Rect depositRect = new Rect(equipRect.xMax + spacing, rect.y, buttonWidth, rect.height);
 
             bool hasSelection = HasSelectedNetworkItem();
-            bool canEquip = hasSelection && IsWearOrEquipItem(selectedItem);
-            string equipLabel = hasSelection && selectedItem is Apparel
+            bool canEquip = HasSelectedWearOrEquipItem();
+            Thing actionItem = SelectedActionItem();
+            string equipLabel = actionItem is Apparel
                 ? "MN_PSNetworkStorageWear".Translate().ToString()
                 : "MN_PSNetworkStorageEquip".Translate().ToString();
 
@@ -380,10 +422,11 @@ namespace SK_Matter_Network
                 TryMoveSelectedToInventory(count);
             });
 
-            DrawTextActionButton(holdRect, "MN_PSNetworkStorageHold".Translate(), hasSelection, delegate(int button)
+            DrawTextActionButton(holdRect, "MN_PSNetworkStorageHold".Translate(), HasSelectedHoldableItem(), delegate(int button)
             {
-                int count = button == 1 ? 1 : selectedItem.stackCount;
-                if (TryMoveSelectedToCarryTracker(count))
+                Thing ai = SelectedActionItem();
+                int count = button == 1 ? 1 : (ai?.stackCount ?? 1);
+                if (TryHoldSelectedItem(count))
                 {
                     Close();
                 }
@@ -391,7 +434,7 @@ namespace SK_Matter_Network
 
             DrawTextActionButton(equipRect, equipLabel, canEquip, delegate(int button)
             {
-                TryWearOrEquipSelectedItem();
+                TryWearOrEquipSelectedActionItem();
             });
 
             DrawTextActionButton(depositRect, "MN_PSNetworkStorageDeposit".Translate(), CanDepositSelectedItem(), delegate(int button)
@@ -495,6 +538,52 @@ namespace SK_Matter_Network
             return value.IndexOf(term, StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
+        private static void DrawStorageThingIcon(Rect rect, Thing item)
+        {
+            if (TryDrawStackCountThingIcon(rect, item))
+                return;
+            Widgets.ThingIcon(rect, item);
+        }
+
+        private static bool TryDrawStackCountThingIcon(Rect rect, Thing item)
+        {
+            if (item == null)
+                return false;
+
+            Thing thing = item.GetInnerIfMinified();
+            if (thing == null)
+                return false;
+
+            if (thing.UIIconOverride != null || thing.StyleDef?.UIIcon != null || !thing.def.uiIconPath.NullOrEmpty())
+                return false;
+
+            Graphic graphic = thing.Graphic;
+            if (graphic is Graphic_MealVariants)
+                return false;
+
+            Graphic_StackCount stackGraphic = graphic as Graphic_StackCount;
+            if (stackGraphic == null)
+                return false;
+
+            Graphic subGraphic = stackGraphic.SubGraphicForStackCount(thing.stackCount, thing.def);
+            Material material = subGraphic.MatSingleFor(thing);
+            if (material == null || material.mainTexture == null || material.mainTexture == BaseContent.BadTex)
+                return false;
+
+            DrawResolvedThingIcon(rect, thing, material);
+            return true;
+        }
+
+        private static void DrawResolvedThingIcon(Rect rect, Thing thing, Material material)
+        {
+            float scale = GenUI.IconDrawScale(thing.def);
+            Vector2 texProportions = thing.DrawSize;
+            Color previousColor = GUI.color;
+            GUI.color = Color.white;
+            Widgets.DrawTextureFitted(rect, material.mainTexture, scale, texProportions, new Rect(0f, 0f, 1f, 1f));
+            GUI.color = previousColor;
+        }
+
         private void ClearSelection()
         {
             selectedSource = SelectedSource.None;
@@ -540,6 +629,24 @@ namespace SK_Matter_Network
                 && selectedInventoryItem != null
                 && !selectedInventoryItem.Destroyed
                 && pawn.carryTracker.CarriedThing == selectedInventoryItem;
+        }
+
+        private Thing SelectedActionItem()
+        {
+            if (HasSelectedNetworkItem()) return selectedItem;
+            if (HasSelectedInventoryItem() || HasSelectedHeldItem()) return selectedInventoryItem;
+            return null;
+        }
+
+        private bool HasSelectedHoldableItem()
+        {
+            return HasSelectedNetworkItem() || HasSelectedInventoryItem();
+        }
+
+        private bool HasSelectedWearOrEquipItem()
+        {
+            Thing item = SelectedActionItem();
+            return item != null && IsWearOrEquipItem(item);
         }
 
         private bool HasSelectedDepositableItem()
@@ -717,6 +824,46 @@ namespace SK_Matter_Network
             return false;
         }
 
+        private bool TryHoldSelectedItem(int requestedCount)
+        {
+            if (HasSelectedNetworkItem()) return TryMoveSelectedToCarryTracker(requestedCount);
+            if (HasSelectedInventoryItem()) return TryMoveSelectedInventoryItemToCarryTracker(requestedCount);
+            return false;
+        }
+
+        private bool TryMoveSelectedInventoryItemToCarryTracker(int requestedCount)
+        {
+            if (!HasSelectedInventoryItem()) return false;
+
+            Thing item = selectedInventoryItem;
+
+            if (pawn.carryTracker.CarriedThing != null && pawn.carryTracker.CarriedThing != item)
+            {
+                Messages.Message("MN_PSNetworkStorageAlreadyHolding".Translate(), MessageTypeDefOf.RejectInput, false);
+                return false;
+            }
+
+            int available = pawn.carryTracker.AvailableStackSpace(item.def);
+            int count = Mathf.Min(requestedCount, Mathf.Min(item.stackCount, available));
+            if (count <= 0)
+            {
+                Messages.Message("MN_PSNetworkStorageCannotCarryMore".Translate(), MessageTypeDefOf.RejectInput, false);
+                return false;
+            }
+
+            int moved = pawn.inventory.innerContainer.TryTransferToContainer(
+                item, pawn.carryTracker.innerContainer, count);
+
+            if (moved > 0)
+            {
+                item.def.soundDrop?.PlayOneShot(pawn);
+                if (!pawn.inventory.innerContainer.Contains(item)) ClearSelection();
+                return true;
+            }
+
+            return false;
+        }
+
         private int MaxCarryCountForSelected(int requestedCount)
         {
             int maxStackCount = selectedItem.def.stackLimit > 0 ? selectedItem.def.stackLimit : selectedItem.stackCount;
@@ -756,6 +903,43 @@ namespace SK_Matter_Network
                 return true;
             }
 
+            return false;
+        }
+
+        private bool TryWearOrEquipSelectedActionItem()
+        {
+            if (HasSelectedNetworkItem()) return TryWearOrEquipSelectedItem();
+            if (HasSelectedInventoryItem() || HasSelectedHeldItem()) return TryWearOrEquipSelectedInventoryOrHeldItem();
+            return false;
+        }
+
+        private bool TryWearOrEquipSelectedInventoryOrHeldItem()
+        {
+            Thing item = selectedInventoryItem;
+            if (item == null || item.Destroyed || !IsWearOrEquipItem(item)) return false;
+            if (!TryMakeWearOrEquipJob(pawn, item, out _)) return false;
+
+            ThingOwner sourceContainer = HasSelectedInventoryItem()
+                ? (ThingOwner)pawn.inventory.innerContainer
+                : pawn.carryTracker.innerContainer;
+
+            Thing taken = sourceContainer.Take(item);
+            if (taken == null) return false;
+
+            ClearSelection();
+            if (!taken.Spawned)
+            {
+                GenSpawn.Spawn(taken, pawn.Position, pawn.Map, WipeMode.Vanish);
+            }
+
+            if (TryMakeWearOrEquipJob(pawn, taken, out Job job))
+            {
+                pawn.jobs.TryTakeOrderedJob(job);
+                Close();
+                return true;
+            }
+
+            GenPlace.TryPlaceThing(taken, pawn.Position, pawn.Map, ThingPlaceMode.Near);
             return false;
         }
 
