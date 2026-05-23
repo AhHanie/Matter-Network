@@ -38,6 +38,7 @@
     <MN_ControllerInspectPower>Питание: {0}; потребление: {1} Вт; резерв: {2}/{3} Вт⋅д</MN_ControllerInspectPower>
     <MN_ControllerPowerInspect>Питание сети: {0}; требуется: {1} Вт; зарядка: {2} Вт; резерв: {3}/{4} Вт⋅д</MN_ControllerPowerInspect>
     <MN_NetworkInterfaceInspectStorage>Хранилище сети: {0}/{1} байт (стопок: {2})</MN_NetworkInterfaceInspectStorage>
+    <MN_NetworkChuteInspectStorage>Ввод в сеть: {0}/{1} байт</MN_NetworkChuteInspectStorage>
     <MN_NetworkInterfaceInspectOffline>Сеть отключена: {0}</MN_NetworkInterfaceInspectOffline>
     <MN_NetworkInterfaceInspectNoController>Нет активного контроллера</MN_NetworkInterfaceInspectNoController>
     <MN_NetworkBuildingPowerUsage>Потребление сети: {0} Вт</MN_NetworkBuildingPowerUsage>

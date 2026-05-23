@@ -19,7 +19,7 @@ namespace SK_Matter_Network.Patches
                     return true;
                 }
 
-                if (!network.IsOperational)
+                if (!network.CanExtractItems)
                 {
                     pawn.jobs.EndCurrentJob(JobCondition.Incompletable);
                     __result = true;
@@ -58,15 +58,21 @@ namespace SK_Matter_Network.Patches
                     Job curJob = actor.jobs.curJob;
                     Thing container = curJob.GetTarget(containerInd).Thing;
 
-                    NetworkBuildingNetworkInterface networkInterface = container as NetworkBuildingNetworkInterface;
-                    if (networkInterface == null)
+                    NetworkBuilding networkTarget = container as NetworkBuildingNetworkInterface;
+                    if (networkTarget == null)
+                    {
+                        networkTarget = container as NetworkBuildingNetworkChute;
+                    }
+
+                    if (networkTarget == null)
                     {
                         originalInitAction?.Invoke();
                         return;
                     }
 
-                    DataNetwork network = networkInterface.ParentNetwork;
-                    if (network == null)
+                    DataNetwork network = networkTarget.ParentNetwork;
+                    ThingOwner thingOwner = network?.ActiveController?.innerContainer;
+                    if (network == null || thingOwner == null)
                     {
                         originalInitAction?.Invoke();
                         return;
@@ -82,13 +88,16 @@ namespace SK_Matter_Network.Patches
                     int acceptedCount = Math.Min(carried.stackCount, network.ControllerCanAcceptCount(carried));
                     if (acceptedCount > 0)
                     {
-                        ThingOwner thingOwner = networkInterface.TryGetInnerInteractableThingOwner();
                         Thing carriedBeforeTransfer = carried;
                         int moved = actor.carryTracker.innerContainer.TryTransferToContainer(carried, thingOwner, acceptedCount);
                         if (moved > 0)
                         {
-                            actor.Map.enrouteManager.ReleaseFor(networkInterface, actor);
-                            if (networkInterface is INotifyHauledTo notifyHauledTo)
+                            if (networkTarget is IHaulEnroute enroute)
+                            {
+                                actor.Map.enrouteManager.ReleaseFor(enroute, actor);
+                            }
+
+                            if (networkTarget is INotifyHauledTo notifyHauledTo)
                             {
                                 notifyHauledTo.Notify_HauledTo(actor, carriedBeforeTransfer, moved);
                             }
@@ -105,7 +114,7 @@ namespace SK_Matter_Network.Patches
                     carried = actor.carryTracker.CarriedThing;
                     if (carried != null && !carried.Destroyed)
                     {
-                        actor.carryTracker.TryDropCarriedThing(networkInterface.Position, ThingPlaceMode.Near, out Thing _);
+                        actor.carryTracker.TryDropCarriedThing(networkTarget.Position, ThingPlaceMode.Near, out Thing _);
                     }
                 };
             }

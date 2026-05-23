@@ -9,6 +9,9 @@
     <MN_NetworkInterface.label>Сетевой интерфейс</MN_NetworkInterface.label>
     <MN_NetworkInterface.description>Точка доступа к хранилищу сети передачи данных. Поселенцы могут загружать и извлекать разрешённые предметы, когда в сети есть активный контроллер. Выбранный фильтр хранения используется всей сетью.</MN_NetworkInterface.description>
 
+    <MN_NetworkChute.label>Сетевой шлюз</MN_NetworkChute.label>
+    <MN_NetworkChute.description>Точка доступа только для ввода предметов в сеть передачи данных. Поселенцы могут загружать сюда разрешённые предметы, когда в сети есть активный контроллер, но извлекать сохранённые предметы через это устройство нельзя.</MN_NetworkChute.description>
+
     <MN_NetworkController.label>Сетевой контроллер</MN_NetworkController.label>
     <MN_NetworkController.description>Центральный узел сети передачи данных. Хранит все предметы в цифровом виде. В сети может быть только один активный контроллер.</MN_NetworkController.description>
 

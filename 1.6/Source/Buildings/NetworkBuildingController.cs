@@ -20,10 +20,11 @@ namespace SK_Matter_Network
         }
 
         public bool HasValidStorage => !controllerConflictDisabled && ParentNetwork?.IsOperational == true;
+        public bool HasExtractionAccess => !controllerConflictDisabled && ParentNetwork?.CanExtractItems == true;
 
         public bool HaulDestinationEnabled => false;
-        public bool HaulSourceEnabled => HasValidStorage;
-        public bool ApparelSourceEnabled => HasValidStorage;
+        public bool HaulSourceEnabled => HasExtractionAccess;
+        public bool ApparelSourceEnabled => HasExtractionAccess;
 
         public bool Accepts(Thing t)
         {

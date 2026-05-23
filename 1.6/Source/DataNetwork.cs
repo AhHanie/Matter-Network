@@ -36,6 +36,17 @@ namespace SK_Matter_Network
                     }
                 }
 
+                if (network.networkChutes != null)
+                {
+                    foreach (NetworkBuildingNetworkChute chute in network.networkChutes)
+                    {
+                        if (chute != null && !chute.Destroyed)
+                        {
+                            return chute.GetParentStoreSettings();
+                        }
+                    }
+                }
+
                 if (network.activeController != null && !network.activeController.Destroyed)
                 {
                     return network.activeController.GetParentStoreSettings();
@@ -53,6 +64,7 @@ namespace SK_Matter_Network
         private HashSet<IntVec3> networkBuildingsCells;
         private NetworkBuildingController activeController;
         private List<NetworkBuildingNetworkInterface> networkInterfaces;
+        private List<NetworkBuildingNetworkChute> networkChutes;
         private List<NetworkBuildingDiskDrive> diskDrives;
         private string networkId;
         private Map map;
@@ -82,6 +94,7 @@ namespace SK_Matter_Network
         public bool HasSeededStorageSettings => storageSettingsSeeded;
         public bool IsBroadcastingSettingsChange => isBroadcastingSettingsChange;
         public List<NetworkBuildingNetworkInterface> NetworkInterfaces => networkInterfaces;
+        public List<NetworkBuildingNetworkChute> NetworkChutes => networkChutes;
         public NetworkBuildingController ActiveController => activeController;
         public bool HasActiveController => activeController != null && !activeController.ControllerConflictDisabled && !activeController.Destroyed;
         public bool IsOperational => HasActiveController && power != null && power.IsOperational;
@@ -177,6 +190,7 @@ namespace SK_Matter_Network
             buildings = new List<NetworkBuilding>();
             networkBuildingsCells = new HashSet<IntVec3>();
             networkInterfaces = new List<NetworkBuildingNetworkInterface>();
+            networkChutes = new List<NetworkBuildingNetworkChute>();
             diskDrives = new List<NetworkBuildingDiskDrive>();
             storageSettingsOwner = new NetworkStorageSettingsParent(this);
             storageSettings = new StorageSettings(storageSettingsOwner);
@@ -551,7 +565,7 @@ namespace SK_Matter_Network
             {
                 networkInterfaces.Add(iface);
 
-                if (!storageSettingsSeeded && networkInterfaces.Count == 1)
+                if (!storageSettingsSeeded)
                 {
                     storageSettings.CopyFrom(iface.GetStandaloneSettings());
                     storageSettingsSeeded = true;
@@ -559,6 +573,20 @@ namespace SK_Matter_Network
                 else
                 {
                     iface.NotifyNetworkSettingsChanged();
+                }
+            }
+            else if (building is NetworkBuildingNetworkChute chute)
+            {
+                networkChutes.Add(chute);
+
+                if (!storageSettingsSeeded)
+                {
+                    storageSettings.CopyFrom(chute.GetStandaloneSettings());
+                    storageSettingsSeeded = true;
+                }
+                else
+                {
+                    chute.NotifyNetworkSettingsChanged();
                 }
             }
 
@@ -596,6 +624,10 @@ namespace SK_Matter_Network
             else if (building is NetworkBuildingNetworkInterface iface)
             {
                 networkInterfaces.Remove(iface);
+            }
+            else if (building is NetworkBuildingNetworkChute chute)
+            {
+                networkChutes.Remove(chute);
             }
 
             Logger.Message($"Removed {building.def.defName} at {building.Position} from network {networkId}. Count: {buildings.Count}");
@@ -1070,6 +1102,9 @@ namespace SK_Matter_Network
 
                 foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
                     iface.NotifyNetworkSettingsChanged();
+
+                foreach (NetworkBuildingNetworkChute chute in networkChutes)
+                    chute.NotifyNetworkSettingsChanged();
             }
             finally
             {
@@ -1085,6 +1120,7 @@ namespace SK_Matter_Network
             Scribe_References.Look(ref activeController, "activeController");
             Scribe_Collections.Look(ref diskDrives, "diskDrives", LookMode.Reference);
             Scribe_Collections.Look(ref networkInterfaces, "networkInterfaces", LookMode.Reference);
+            Scribe_Collections.Look(ref networkChutes, "networkChutes", LookMode.Reference);
             Scribe_Deep.Look(ref storageSettings, "storageSettings");
             Scribe_Collections.Look(ref itemQuotaByDef, "itemQuotaByDef", LookMode.Def, LookMode.Value);
             Scribe_Values.Look(ref storageSettingsSeeded, "storageSettingsSeeded", false);
@@ -1096,6 +1132,7 @@ namespace SK_Matter_Network
                 if (buildings == null) buildings = new List<NetworkBuilding>();
                 if (networkBuildingsCells == null) networkBuildingsCells = new HashSet<IntVec3>();
                 if (networkInterfaces == null) networkInterfaces = new List<NetworkBuildingNetworkInterface>();
+                if (networkChutes == null) networkChutes = new List<NetworkBuildingNetworkChute>();
                 if (diskDrives == null) diskDrives = new List<NetworkBuildingDiskDrive>();
                 if (storedItems == null) storedItems = new HashSet<Thing>();
                 if (itemCountByDef == null) itemCountByDef = new Dictionary<ThingDef, int>();
@@ -1117,7 +1154,7 @@ namespace SK_Matter_Network
                 if (b != null) b.ParentNetwork = this;
             }
 
-            ReconcileStorageSettingsFromInterfaces();
+            ReconcileStorageSettingsFromEndpoints();
             RebuildStoredItemsFromController();
             RecalcTotalCapacityBytes();
             EnsurePowerState();
@@ -1329,15 +1366,27 @@ namespace SK_Matter_Network
             return System.Math.Min(remainingCapacity, remainingQuota);
         }
 
-        private void ReconcileStorageSettingsFromInterfaces()
+        private void ReconcileStorageSettingsFromEndpoints()
         {
-            NetworkBuildingNetworkInterface settingsSource = null;
+            IStoreSettingsParent settingsSource = null;
             foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
             {
                 if (iface != null && !iface.Destroyed)
                 {
                     settingsSource = iface;
                     break;
+                }
+            }
+
+            if (settingsSource == null)
+            {
+                foreach (NetworkBuildingNetworkChute chute in networkChutes)
+                {
+                    if (chute != null && !chute.Destroyed)
+                    {
+                        settingsSource = chute;
+                        break;
+                    }
                 }
             }
 
@@ -1356,6 +1405,14 @@ namespace SK_Matter_Network
                     if (iface != null && !iface.Destroyed)
                     {
                         iface.NotifyNetworkSettingsChanged();
+                    }
+                }
+
+                foreach (NetworkBuildingNetworkChute chute in networkChutes)
+                {
+                    if (chute != null && !chute.Destroyed)
+                    {
+                        chute.NotifyNetworkSettingsChanged();
                     }
                 }
             }
@@ -1413,6 +1470,11 @@ namespace SK_Matter_Network
             for (int i = 0; i < networkInterfaces.Count; i++)
             {
                 RefreshHaulRegistration(networkInterfaces[i]);
+            }
+
+            for (int i = 0; i < networkChutes.Count; i++)
+            {
+                RefreshHaulRegistration(networkChutes[i]);
             }
 
             if (activeController != null)

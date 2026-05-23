@@ -115,6 +115,7 @@
     <Compile Include="Buildings\NetworkBuilding.cs" />
     <Compile Include="Buildings\NetworkBuildingDiskDrive.cs" />
     <Compile Include="Buildings\NetworkBuildingNetworkInterface.cs" />
+    <Compile Include="Buildings\NetworkBuildingNetworkChute.cs" />
     <Compile Include="Buildings\NetworkBuildingMatterIOPort.cs" />
     <Compile Include="NetworkManager.cs" />
     <!-- Patches - emptied (no harmony attributes) -->

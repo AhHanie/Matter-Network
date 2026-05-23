@@ -16,7 +16,8 @@ namespace SK_Matter_Network
             BuildingDefOf.MN_NetworkRefueler,
             BuildingDefOf.MN_AdvancedNetworkRefueler,
             BuildingDefOf.MN_MatterIOPort,
-            BuildingDefOf.MN_NetworkControllerLarge
+            BuildingDefOf.MN_NetworkControllerLarge,
+            BuildingDefOf.MN_NetworkChute
         };
         public SectionLayer_NetworkOverlay(Section section) : base(section)
         {

@@ -38,6 +38,7 @@
     <MN_ControllerInspectPower>Power: {0}; draw {1} W; reserve {2}/{3} Wd</MN_ControllerInspectPower>
     <MN_ControllerPowerInspect>Network power: {0}; required {1} W; charging {2} W; reserve {3}/{4} Wd</MN_ControllerPowerInspect>
     <MN_NetworkInterfaceInspectStorage>Network storage: {0}/{1} bytes ({2} stacks)</MN_NetworkInterfaceInspectStorage>
+    <MN_NetworkChuteInspectStorage>Network input: {0}/{1} bytes</MN_NetworkChuteInspectStorage>
     <MN_NetworkInterfaceInspectOffline>Network offline: {0}</MN_NetworkInterfaceInspectOffline>
     <MN_NetworkInterfaceInspectNoController>No active controller</MN_NetworkInterfaceInspectNoController>
     <MN_NetworkBuildingPowerUsage>Network power usage: {0} W</MN_NetworkBuildingPowerUsage>

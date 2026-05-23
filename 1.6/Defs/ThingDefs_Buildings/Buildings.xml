@@ -267,6 +267,100 @@
     </ThingDef>
 
     <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkChute</defName>
+        <label>network chute</label>
+        <description>An input-only access point for a data network. Pawns can upload allowed items here when the network has an active controller, but stored items cannot be extracted through this building.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/TerminalBasic</texPath>
+            <graphicClass>Graphic_Multi</graphicClass>
+            <drawSize>(1, 1)</drawSize>
+            <shaderType>CutoutComplex</shaderType>
+            <shadowData>
+                <volume>(0.3, 0.30, 0.35)</volume>
+            </shadowData>
+        </graphicData>
+        <category>Building</category>
+        <noRightClickDraftAttack>true</noRightClickDraftAttack>
+        <statBases>
+            <MaxHitPoints>160</MaxHitPoints>
+            <WorkToBuild>300</WorkToBuild>
+            <Mass>8</Mass>
+            <StyleDominance MayRequire="Ludeon.RimWorld.Ideology">3</StyleDominance>
+            <Flammability>0.5</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <thingClass>SK_Matter_Network.NetworkBuildingNetworkChute</thingClass>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>150</powerUsage>
+            </li>
+        </comps>
+        <costList>
+            <Steel>150</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+        </costList>
+        <building>
+            <fixedStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Root</li>
+                    </categories>
+                    <disallowedCategories>
+                        <li>Animals</li>
+                        <li>Plants</li>
+                        <li>MN_Disks</li>
+                    </disallowedCategories>
+                </filter>
+            </fixedStorageSettings>
+            <defaultStorageSettings>
+                <priority>Preferred</priority>
+                <filter>
+                    <categories>
+                        <li>Foods</li>
+                        <li>Manufactured</li>
+                        <li>ResourcesRaw</li>
+                        <li>Items</li>
+                        <li>Weapons</li>
+                        <li>Apparel</li>
+                        <li>BodyParts</li>
+                    </categories>
+                </filter>
+            </defaultStorageSettings>
+            <preventDeteriorationOnTop>true</preventDeteriorationOnTop>
+            <ignoreStoredThingsBeauty>true</ignoreStoredThingsBeauty>
+            <maxItemsInCell>500</maxItemsInCell>
+            <blueprintClass>Blueprint_Storage</blueprintClass>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <altitudeLayer>Building</altitudeLayer>
+        <minifiedDef>MinifiedThing</minifiedDef>
+        <thingCategories>
+            <li>BuildingsMisc</li>
+        </thingCategories>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.3</fillPercent>
+        <pathCost>35</pathCost>
+        <inspectorTabs>
+            <li>ITab_Storage</li>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <surfaceType>None</surfaceType>
+        <canOverlapZones>false</canOverlapZones>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <researchPrerequisites>
+            <li>MN_MatterNetwork</li>
+        </researchPrerequisites>
+        <uiOrder>2051</uiOrder>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <preventDroppingThingsOn>true</preventDroppingThingsOn>
+        <hasInteractionCell>true</hasInteractionCell>
+        <interactionCellOffset>(0,0,-1)</interactionCellOffset>
+        <uiIconScale>0.8</uiIconScale>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
         <defName>MN_NetworkController</defName>
         <label>network controller (legacy)</label>
         <description>The central hub of a data network. Stores all items digitally. A network can have only one active controller.</description>

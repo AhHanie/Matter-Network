@@ -10,7 +10,7 @@ namespace SK_Matter_Network.Patches
         {
             public static void Postfix(StorageSettings __instance)
             {
-                if (__instance.owner is NetworkBuildingNetworkInterface)
+                if (__instance.owner is NetworkBuildingNetworkInterface || __instance.owner is NetworkBuildingNetworkChute)
                 {
                     __instance.owner.Notify_SettingsChanged();
                 }
