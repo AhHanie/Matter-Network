@@ -259,6 +259,7 @@ namespace SK_Matter_Network
         public void NotifyPowerModeChanged(NetworkPowerMode oldMode, NetworkPowerMode newMode)
         {
             RefreshHaulRegistrations();
+            NotifyIOPortVisualStatesChanged();
             RefreshUI();
         }
 
@@ -564,6 +565,7 @@ namespace SK_Matter_Network
             Logger.Message($"Added {building.def.defName} at {building.Position} to network {networkId}. Count: {buildings.Count}");
             EnsurePowerState();
             power.NotifyBuildingAdded(building);
+            NotifyIOPortVisualStateChanged(building);
             isAddingBuilding = false;
         }
 
@@ -599,6 +601,20 @@ namespace SK_Matter_Network
             Logger.Message($"Removed {building.def.defName} at {building.Position} from network {networkId}. Count: {buildings.Count}");
             EnsurePowerState();
             power.NotifyBuildingRemoved(building);
+            NotifyIOPortVisualStateChanged(building);
+        }
+
+        private void NotifyIOPortVisualStatesChanged()
+        {
+            for (int i = 0; i < buildings.Count; i++)
+            {
+                NotifyIOPortVisualStateChanged(buildings[i]);
+            }
+        }
+
+        private static void NotifyIOPortVisualStateChanged(NetworkBuilding building)
+        {
+            (building as NetworkBuildingMatterIOPort)?.NotifyVisualStateChanged();
         }
 
         private void SetController(NetworkBuildingController ctrl)

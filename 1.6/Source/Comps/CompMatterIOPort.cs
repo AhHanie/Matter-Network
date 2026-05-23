@@ -62,8 +62,14 @@ namespace SK_Matter_Network
 
         public void SetMode(MatterIOPortMode newMode)
         {
+            if (newMode == mode)
+            {
+                return;
+            }
+
             mode = newMode;
             lastStatus = "MN_MatterIOPortStatusModeChanged".Translate(ModeLabel);
+            (parent as NetworkBuildingMatterIOPort)?.NotifyVisualStateChanged();
         }
 
         public string ModeLabel
