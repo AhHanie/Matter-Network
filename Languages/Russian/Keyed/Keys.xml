@@ -60,6 +60,11 @@
     <MN_MatterIOPortMode>Режим: {0}</MN_MatterIOPortMode>
     <MN_MatterIOPortModeInput>Ввод</MN_MatterIOPortModeInput>
     <MN_MatterIOPortModeOutput>Вывод</MN_MatterIOPortModeOutput>
+    <MN_MatterIOPortCopySettingsTip>Скопировать фильтр, режим, направление и интервал этого порта ввода-вывода.</MN_MatterIOPortCopySettingsTip>
+    <MN_MatterIOPortPasteSettingsTip>Вставить скопированные настройки порта ввода-вывода.</MN_MatterIOPortPasteSettingsTip>
+    <MN_MatterIOPortPasteSettingsDisabledTip>Сначала скопируйте настройки порта ввода-вывода.</MN_MatterIOPortPasteSettingsDisabledTip>
+    <MN_MatterIOPortSettingsCopied>Настройки порта ввода-вывода скопированы.</MN_MatterIOPortSettingsCopied>
+    <MN_MatterIOPortSettingsPasted>Настройки порта ввода-вывода вставлены.</MN_MatterIOPortSettingsPasted>
     <MN_MatterIOPortDirection>Направление: {0}</MN_MatterIOPortDirection>
     <MN_MatterIOPortInterval>Интервал: {0} тиков ({1} сек.)</MN_MatterIOPortInterval>
     <MN_MatterIOPortTargetCell>Целевая клетка: {0}</MN_MatterIOPortTargetCell>

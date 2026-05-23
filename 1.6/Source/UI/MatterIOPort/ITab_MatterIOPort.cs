@@ -1,6 +1,7 @@
 using RimWorld;
 using UnityEngine;
 using Verse;
+using Verse.Sound;
 
 namespace SK_Matter_Network
 {
@@ -23,7 +24,12 @@ namespace SK_Matter_Network
             Listing_Standard listing = new Listing_Standard();
             listing.Begin(rect);
 
-            listing.Label("MN_MatterIOPortMode".Translate(comp.ModeLabel));
+            Rect modeLabelRect = listing.GetRect(Text.LineHeight);
+            string modeLabel = "MN_MatterIOPortMode".Translate(comp.ModeLabel).ToString();
+            Widgets.Label(modeLabelRect, modeLabel);
+            float copyPasteX = Mathf.Min(modeLabelRect.x + Text.CalcSize(modeLabel).x + 8f, modeLabelRect.xMax - 44f);
+            Rect copyPasteRect = new Rect(copyPasteX, modeLabelRect.y - 2f, 44f, 28f);
+            DrawCopyPasteButtons(copyPasteRect, comp);
             DrawModeButtons(listing, comp);
             listing.Gap();
 
@@ -51,6 +57,39 @@ namespace SK_Matter_Network
 
             listing.Label("MN_MatterIOPortLastStatus".Translate(comp.LastStatus));
             listing.End();
+        }
+
+        private void DrawCopyPasteButtons(Rect rect, CompMatterIOPort comp)
+        {
+            Rect copyRect = new Rect(rect.x, rect.y + 2f, 20f, 24f);
+            Rect pasteRect = new Rect(copyRect.xMax + 4f, copyRect.y, 20f, 24f);
+
+            if (Widgets.ButtonImage(copyRect, TexButton.Copy))
+            {
+                SoundDefOf.Tick_High.PlayOneShotOnCamera();
+                MatterIOPortSettingsClipboard.CopyFrom(comp);
+            }
+
+            TooltipHandler.TipRegionByKey(copyRect, "MN_MatterIOPortCopySettingsTip");
+
+            if (MatterIOPortSettingsClipboard.HasCopiedSettings)
+            {
+                if (Widgets.ButtonImage(pasteRect, TexButton.Paste))
+                {
+                    SoundDefOf.Tick_Low.PlayOneShotOnCamera();
+                    MatterIOPortSettingsClipboard.PasteInto(comp);
+                }
+
+                TooltipHandler.TipRegionByKey(pasteRect, "MN_MatterIOPortPasteSettingsTip");
+            }
+            else
+            {
+                Color previousColor = GUI.color;
+                GUI.color = Widgets.InactiveColor;
+                Widgets.DrawTextureFitted(pasteRect, TexButton.Paste, 1f);
+                GUI.color = previousColor;
+                TooltipHandler.TipRegionByKey(pasteRect, "MN_MatterIOPortPasteSettingsDisabledTip");
+            }
         }
 
         private void DrawModeButtons(Listing_Standard listing, CompMatterIOPort comp)

@@ -51,6 +51,11 @@
     <MN_MatterIOPortMode>Mode: {0}</MN_MatterIOPortMode>
     <MN_MatterIOPortModeInput>Input</MN_MatterIOPortModeInput>
     <MN_MatterIOPortModeOutput>Output</MN_MatterIOPortModeOutput>
+    <MN_MatterIOPortCopySettingsTip>Copy this IO port's filter, mode, direction, and interval.</MN_MatterIOPortCopySettingsTip>
+    <MN_MatterIOPortPasteSettingsTip>Paste copied IO port settings.</MN_MatterIOPortPasteSettingsTip>
+    <MN_MatterIOPortPasteSettingsDisabledTip>Copy IO port settings before pasting.</MN_MatterIOPortPasteSettingsDisabledTip>
+    <MN_MatterIOPortSettingsCopied>IO port settings copied.</MN_MatterIOPortSettingsCopied>
+    <MN_MatterIOPortSettingsPasted>IO port settings pasted.</MN_MatterIOPortSettingsPasted>
     <MN_MatterIOPortDirection>Direction: {0}</MN_MatterIOPortDirection>
     <MN_MatterIOPortInterval>Interval: {0} ticks ({1} seconds)</MN_MatterIOPortInterval>
     <MN_MatterIOPortTargetCell>Target cell: {0}</MN_MatterIOPortTargetCell>
