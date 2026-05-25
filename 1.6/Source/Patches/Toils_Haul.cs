@@ -28,7 +28,7 @@ namespace SK_Matter_Network.Patches
 
                 if (haulThing.stackCount == 0)
                 {
-                    Log.Message(pawn?.ToString() + " tried to start carry " + haulThing?.ToString() + " which had stackcount 0.");
+                    Logger.Message(pawn?.ToString() + " tried to start carry " + haulThing?.ToString() + " which had stackcount 0.");
                     pawn.jobs.EndCurrentJob(JobCondition.Incompletable);
                     __result = true;
                     return false;
@@ -36,7 +36,7 @@ namespace SK_Matter_Network.Patches
 
                 if (pawn.jobs.curJob.count <= 0)
                 {
-                    Log.Error("Invalid count: " + pawn.jobs.curJob.count + ", setting to 1. Job was " + pawn.jobs.curJob);
+                    Logger.Error("Invalid count: " + pawn.jobs.curJob.count + ", setting to 1. Job was " + pawn.jobs.curJob);
                     pawn.jobs.curJob.count = 1;
                 }
 
@@ -81,7 +81,7 @@ namespace SK_Matter_Network.Patches
                     Thing carried = actor.carryTracker.CarriedThing;
                     if (carried == null)
                     {
-                        Log.Error(actor?.ToString() + " tried to place hauled thing in network but is not hauling anything.");
+                        Logger.Error(actor?.ToString() + " tried to place hauled thing in network but is not hauling anything.");
                         return;
                     }
 

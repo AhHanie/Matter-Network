@@ -24,7 +24,7 @@ namespace SK_Matter_Network
 
             if (itemToDrop == null)
             {
-                Log.Warning($"Could not find {thingDef.defName} in network storage");
+                Logger.Warning($"Could not find {thingDef.defName} in network storage");
                 return;
             }
 

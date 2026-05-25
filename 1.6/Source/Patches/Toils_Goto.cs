@@ -47,7 +47,7 @@ namespace SK_Matter_Network.Patches
 
                     if (closestInterface != null)
                     {
-                        Log.Message($"Redirecting {actor.LabelShort} to network interface at {closestInterface.Position} to retrieve {thing.LabelShort}");
+                        Logger.Message($"Redirecting {actor.LabelShort} to network interface at {closestInterface.Position} to retrieve {thing.LabelShort}");
                         PathEndMode interfacePeMode = peMode == PathEndMode.InteractionCell ? PathEndMode.OnCell : peMode;
 
                         if (actor.Position == closestInterface.InteractionCell)
@@ -62,7 +62,7 @@ namespace SK_Matter_Network.Patches
                     }
                     else
                     {
-                        Log.Warning($"No reachable network interface found for {actor.LabelShort} to retrieve {thing.LabelShort}");
+                        Logger.Warning($"No reachable network interface found for {actor.LabelShort} to retrieve {thing.LabelShort}");
                         actor.jobs.EndCurrentJob(JobCondition.Incompletable);
                     }
                 };

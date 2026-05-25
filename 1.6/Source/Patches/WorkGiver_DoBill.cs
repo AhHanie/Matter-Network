@@ -49,7 +49,7 @@ namespace SK_Matter_Network.Patches
                 var displayClassType = AccessTools.Inner(typeof(WorkGiver_DoBill), "<>c__DisplayClass24_0");
                 if (displayClassType == null)
                 {
-                    Log.Error("[Matter Network]: Could not find display class in TryFindBestIngredientsHelper");
+                    Logger.Error("[Matter Network]: Could not find display class in TryFindBestIngredientsHelper");
                     return codes;
                 }
 
@@ -84,7 +84,7 @@ namespace SK_Matter_Network.Patches
 
                 if (insertIndex == -1)
                 {
-                    Log.Error("[Matter Network]: Could not find insertion point in TryFindBestIngredientsHelper");
+                    Logger.Error("[Matter Network]: Could not find insertion point in TryFindBestIngredientsHelper");
                     return codes;
                 }
 
@@ -123,7 +123,7 @@ namespace SK_Matter_Network.Patches
                 codes[insertIndex].blocks.Clear();
 
                 codes.InsertRange(insertIndex, instructionsToInsert);
-                Log.Message($"[Matter Network]: Patched WorkGiver_DoBill.TryFindBestIngredientsHelper transpiler successfully at instruction {insertIndex}.");
+                Logger.Message($"[Matter Network]: Patched WorkGiver_DoBill.TryFindBestIngredientsHelper transpiler successfully at instruction {insertIndex}.");
 
                 return codes;
             }
