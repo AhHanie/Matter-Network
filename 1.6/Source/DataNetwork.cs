@@ -468,6 +468,25 @@ namespace SK_Matter_Network
             RefreshUI();
         }
 
+        public void MergeMissingQuotasFrom(Dictionary<ThingDef, int> sourceQuotas)
+        {
+            if (sourceQuotas == null || sourceQuotas.Count == 0) return;
+            bool changed = false;
+            foreach (KeyValuePair<ThingDef, int> entry in sourceQuotas)
+            {
+                if (entry.Key != null && !itemQuotaByDef.ContainsKey(entry.Key))
+                {
+                    itemQuotaByDef.Add(entry.Key, ClampItemQuota(entry.Value));
+                    changed = true;
+                }
+            }
+            if (changed)
+            {
+                RefreshHaulRegistrations();
+                RefreshUI();
+            }
+        }
+
         public void CopyQuotasFrom(DataNetwork other)
         {
             itemQuotaByDef.Clear();
@@ -1483,8 +1502,19 @@ namespace SK_Matter_Network
             }
         }
 
+        private static void UnregisterHaulEndpoints(NetworkBuilding building)
+        {
+            if (building == null || !building.Spawned || building.Map == null) return;
+            if (building is IHaulDestination haulDest)
+                building.Map.haulDestinationManager.RemoveHaulDestination(haulDest);
+            if (building is IHaulSource haulSource)
+                building.Map.haulDestinationManager.RemoveHaulSource(haulSource);
+        }
+
         private static void RefreshHaulRegistration(NetworkBuilding building)
         {
+            if (building == null || !building.Spawned || building.Map == null) return;
+
             if (building is IHaulDestination haulDestination)
             {
                 bool registered = building.Map.haulDestinationManager.AllHaulDestinationsListForReading.Contains(haulDestination);
@@ -1514,6 +1544,65 @@ namespace SK_Matter_Network
                     building.Map.listerHaulables.Notify_HaulSourceChanged(haulSource);
                 }
             }
+        }
+
+        // Rebuilds all runtime state after the network's buildings have moved to a new map.
+        // Safe to call when buildings are on the wrong map (they will be removed from this network).
+        public void RefreshAfterMapChange(Map newMap)
+        {
+            this.map = newMap;
+
+            // Drop buildings that aren't alive and spawned on this map.
+            // Clean up stale per-map registrations for removed buildings before dropping them.
+            for (int i = buildings.Count - 1; i >= 0; i--)
+            {
+                NetworkBuilding b = buildings[i];
+                if (b == null || b.Destroyed || !b.Spawned || b.Map != newMap)
+                {
+                    buildings.RemoveAt(i);
+                    if (b != null)
+                    {
+                        if (b.ParentNetwork == this)
+                            b.ParentNetwork = null;
+                        if (b.Spawned && b.Map != null)
+                        {
+                            UnregisterHaulEndpoints(b);
+                            NotifyIOPortVisualStateChanged(b);
+                        }
+                    }
+                }
+            }
+
+            // Rebuild all derived collections from the master buildings list.
+            networkBuildingsCells.Clear();
+            networkInterfaces.Clear();
+            networkChutes.Clear();
+            diskDrives.Clear();
+            activeController = null;
+
+            foreach (NetworkBuilding b in buildings)
+            {
+                b.ParentNetwork = this;
+                networkBuildingsCells.Add(b.Position);
+
+                if (b is NetworkBuildingNetworkInterface iface)
+                    networkInterfaces.Add(iface);
+                else if (b is NetworkBuildingNetworkChute chute)
+                    networkChutes.Add(chute);
+                else if (b is NetworkBuildingDiskDrive drive)
+                    diskDrives.Add(drive);
+                // Controllers are handled by ValidateControllerConflicts below.
+            }
+
+            RecalcTotalCapacityBytes();
+            ValidateControllerConflicts();
+            RestoreArchivedItemsToController();
+            ReconcileStorageSettingsFromEndpoints();
+            RebuildStoredItemsFromController();
+            RebuildPowerCaches();
+            MarkBytesDirty();
+            RefreshHaulRegistrations();
+            NotifyIOPortVisualStatesChanged();
         }
 
         private void EnsureStorageSettingsOwner()

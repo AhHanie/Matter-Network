@@ -175,6 +175,12 @@ namespace SK_Matter_Network
             }
             if (mode != DestroyMode.WillReplace)
                 innerContainer.TryDropAll(base.Position, base.Map, ThingPlaceMode.Near);
+
+            // When locked, SpawnSetup removed this drive from the haul-source registry.
+            // Re-register it here so base.DeSpawn (Thing.DeSpawn) can cleanly unregister it.
+            if (locked)
+                Map.haulDestinationManager.AddHaulSource(this);
+
             base.DeSpawn(mode);
         }
 
