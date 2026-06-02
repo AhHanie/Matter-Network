@@ -175,6 +175,7 @@
     <Compile Include="Patches\Toils_JobTransforms.cs" />
     <Compile Include="Patches\TradeDeal.cs" />
     <Compile Include="Patches\TradeUtility.cs" />
+    <Compile Include="Patches\Toils_Recipe.cs" />
     <Compile Include="Patches\WorkGiver_DoBill.cs" />
     <Compile Include="Patches\Xenogerm.cs" />
     <Compile Include="SectionLayer_NetworkOverlay.cs" />
