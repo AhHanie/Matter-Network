@@ -129,6 +129,7 @@
     <Compile Include="Patches\HealthAIUtility.cs" />
     <Compile Include="Patches\HaulAIUtility.cs" />
     <Compile Include="Patches\HealthCardUtility.cs" />
+    <Compile Include="Patches\NetworkBillIngredientUtility.cs" />
     <Compile Include="Patches\NetworkItemSearchUtility.cs" />
     <Compile Include="Patches\JoyGiver_TakeDrug.cs" />
     <Compile Include="Patches\JoyGiver_SocialRelax.cs" />
@@ -144,6 +145,7 @@
     <Compile Include="Patches\WorkGiver_PaintFloor.cs" />
     <Compile Include="Patches\JobGiver_OptimizeApparel.cs" />
     <Compile Include="Patches\JobGiver_GetHemogen.cs" />
+    <Compile Include="Patches\JobDriver_DoBill.cs" />
     <Compile Include="Patches\JobDriver_Refuel.cs" />
     <Compile Include="Patches\JobDriver_TakeInventory.cs" />
     <Compile Include="Patches\GenClosest.cs" />

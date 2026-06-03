@@ -131,51 +131,7 @@ namespace SK_Matter_Network.Patches
 
         public static void AddNetworkThings(Pawn pawn, Thing billGiver, float searchRadius, List<Thing> relevantThings, HashSet<Thing> processedThings, Predicate<Thing> thingValidator)
         {
-            NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
-            float radiusSq = searchRadius * searchRadius;
-
-            foreach (DataNetwork network in mapComp.ExtractionEnabledNetworks)
-            {
-                if (!HasReachableInterfaceInRadius(pawn, billGiver, searchRadius, radiusSq, network))
-                {
-                    continue;
-                }
-
-                foreach (Thing thing in network.StoredItems)
-                {
-                    if (!processedThings.Contains(thing) &&
-                        !thing.IsForbidden(pawn) &&
-                        pawn.CanReserve(thing) &&
-                        thingValidator(thing))
-                    {
-                        relevantThings.Add(thing);
-                        processedThings.Add(thing);
-                    }
-                }
-            }
-        }
-
-        private static bool HasReachableInterfaceInRadius(Pawn pawn, Thing billGiver, float searchRadius, float radiusSq, DataNetwork network)
-        {
-            foreach (NetworkBuildingNetworkInterface interf in network.NetworkInterfaces)
-            {
-                if (!interf.Position.InHorDistOf(billGiver.Position, searchRadius))
-                {
-                    continue;
-                }
-
-                if ((interf.Position - billGiver.Position).LengthHorizontalSquared > radiusSq)
-                {
-                    continue;
-                }
-
-                if (pawn.Map.reachability.CanReach(pawn.Position, interf.InteractionCell, PathEndMode.OnCell, TraverseParms.For(pawn)))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            NetworkBillIngredientUtility.AddNetworkIngredientCandidates(pawn, billGiver, searchRadius, relevantThings, processedThings, thingValidator);
         }
 
         [HarmonyPatch(typeof(WorkGiver_DoBill), "CannotDoBillDueToMedicineRestriction")]
