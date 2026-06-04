@@ -274,7 +274,8 @@ namespace SK_Matter_Network.Patches
                 bool lookInHaulSources,
                 ref Thing __result)
             {
-                if (thingReq.singleDef == null || !thingReq.singleDef.EverStorable(false))
+                // thingReq.singleDef == null || thingReq.singleDef.defName.NullOrEmpty() was added for a weird edge case bug with a specific mod list 
+                if (thingReq.singleDef == null || thingReq.singleDef.defName.NullOrEmpty() || !thingReq.singleDef.EverStorable(false))
                 {
                     return;
                 }
