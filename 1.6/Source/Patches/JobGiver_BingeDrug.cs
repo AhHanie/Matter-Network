@@ -58,12 +58,12 @@ namespace SK_Matter_Network.Patches
                     return false;
                 }
 
-                if (!pawn.InMentalState && item.IsForbidden(pawn))
+                if (!NetworkDrugUtility.IsReachableNetworkItem(pawn, item, out _))
                 {
                     return false;
                 }
 
-                if (!pawn.CanReserve(item))
+                if (!pawn.InMentalState && item.Spawned && item.IsForbidden(pawn))
                 {
                     return false;
                 }

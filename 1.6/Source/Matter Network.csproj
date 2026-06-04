@@ -130,6 +130,7 @@
     <Compile Include="Patches\HaulAIUtility.cs" />
     <Compile Include="Patches\HealthCardUtility.cs" />
     <Compile Include="Patches\NetworkBillIngredientUtility.cs" />
+    <Compile Include="Patches\NetworkDrugUtility.cs" />
     <Compile Include="Patches\NetworkItemSearchUtility.cs" />
     <Compile Include="Patches\JoyGiver_TakeDrug.cs" />
     <Compile Include="Patches\JoyGiver_SocialRelax.cs" />
@@ -139,6 +140,7 @@
     <Compile Include="Patches\JobGiver_BingeDrug.cs" />
     <Compile Include="Patches\JobGiver_SatisfyChemicalNeed.cs" />
     <Compile Include="Patches\JobGiver_SatifyChemicalDependency.cs" />
+    <Compile Include="Patches\JobGiver_TakeDrugsForDrugPolicy.cs" />
     <Compile Include="Patches\PaintUtility.cs" />
     <Compile Include="Patches\WealthWatcher.cs" />
     <Compile Include="Patches\WorkGiver_PaintBuilding.cs" />

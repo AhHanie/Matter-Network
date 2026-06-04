@@ -36,12 +36,18 @@ namespace SK_Matter_Network.Patches
             private static bool IsValidNetworkDrug(Pawn pawn, Need_Chemical need, Thing drug)
             {
                 Hediff_Addiction addiction = need.AddictionHediff;
-                if (addiction == null || !drug.def.IsDrug || !drug.IngestibleNow)
+                if (addiction == null || !drug.def.IsDrug)
                 {
                     return false;
                 }
 
-                if (!pawn.CanReserve(drug) || drug.IsForbidden(pawn) || !drug.IsSociallyProper(pawn))
+                if (drug.Spawned && !drug.IngestibleNow)
+                {
+                    return false;
+                }
+
+                if (!NetworkDrugUtility.IsReachableNetworkItem(pawn, drug, out _) ||
+                    !NetworkDrugUtility.PassesSpawnedWorldChecks(pawn, drug))
                 {
                     return false;
                 }

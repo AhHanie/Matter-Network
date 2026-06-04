@@ -93,6 +93,11 @@ namespace SK_Matter_Network.Patches
 
         public static float GetThingDistanceSquared(Pawn pawn, Thing thing)
         {
+            return GetThingDistanceSquared(pawn.Position, pawn, thing);
+        }
+
+        public static float GetThingDistanceSquared(IntVec3 root, Pawn pawn, Thing thing)
+        {
             NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
             if (mapComp.TryGetItemNetwork(thing, out DataNetwork network))
             {
@@ -101,10 +106,10 @@ namespace SK_Matter_Network.Patches
                     return float.MaxValue;
                 }
 
-                return GetClosestReachableInterfaceDistanceSquared(pawn.Position, pawn, network);
+                return GetClosestReachableInterfaceDistanceSquared(root, pawn, network);
             }
 
-            return (pawn.Position - thing.PositionHeld).LengthHorizontalSquared;
+            return (root - thing.PositionHeld).LengthHorizontalSquared;
         }
 
         public static float GetClosestReachableInterfaceDistanceSquared(Pawn pawn, Thing item)

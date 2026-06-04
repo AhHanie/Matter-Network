@@ -47,7 +47,8 @@ namespace SK_Matter_Network.Patches
                     return false;
                 }
 
-                if (!pawn.CanReserve(item) || item.IsForbidden(pawn) || !item.IsSociallyProper(pawn) || !item.IsPoliticallyProper(pawn))
+                if (!NetworkDrugUtility.IsReachableNetworkItem(pawn, item, out _) ||
+                    !NetworkDrugUtility.PassesSpawnedWorldChecks(pawn, item, checkPolitical: true))
                 {
                     return false;
                 }

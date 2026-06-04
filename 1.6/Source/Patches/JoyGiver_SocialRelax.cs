@@ -12,6 +12,21 @@ namespace SK_Matter_Network.Patches
         {
             public static void Postfix(IntVec3 center, Pawn ingester, ref Thing ingestible, ref bool __result)
             {
+                if (ingester.IsTeetotaler())
+                {
+                    return;
+                }
+
+                if (!new HistoryEvent(HistoryEventDefOf.IngestedRecreationalDrug, ingester.Named(HistoryEventArgsNames.Doer)).DoerWillingToDo())
+                {
+                    return;
+                }
+
+                if (ingester.drugs == null)
+                {
+                    return;
+                }
+
                 Thing networkDrug = NetworkItemSearchUtility.FindClosestReachableThing(center, ingester, item => IsValidNurseableDrug(ingester, item), out float networkDistanceSquared);
                 if (networkDrug == null)
                 {
@@ -25,7 +40,7 @@ namespace SK_Matter_Network.Patches
                     return;
                 }
 
-                float currentDistanceSquared = NetworkItemSearchUtility.GetThingDistanceSquared(ingester, ingestible);
+                float currentDistanceSquared = NetworkItemSearchUtility.GetThingDistanceSquared(center, ingester, ingestible);
                 if (networkDistanceSquared < currentDistanceSquared)
                 {
                     ingestible = networkDrug;
@@ -40,12 +55,13 @@ namespace SK_Matter_Network.Patches
                     return false;
                 }
 
-                if (ingester.drugs == null || !ingester.drugs.CurrentPolicy[item.def].allowedForJoy)
+                if (!ingester.drugs.CurrentPolicy[item.def].allowedForJoy)
                 {
                     return false;
                 }
 
-                return ingester.CanReserve(item) && !item.IsForbidden(ingester);
+                return NetworkDrugUtility.IsReachableNetworkItem(ingester, item, out _) &&
+                       NetworkDrugUtility.PassesSpawnedWorldChecks(ingester, item);
             }
         }
     }
