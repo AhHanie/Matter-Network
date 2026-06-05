@@ -180,6 +180,7 @@
     <Compile Include="Patches\Toils_Haul.cs" />
     <Compile Include="Patches\WorkGiver_CookFillHopper.cs" />
     <Compile Include="Patches\WorkGiver_EmptyWasteContainer.cs" />
+    <Compile Include="Patches\WorkGiver_HaulToGeneBank.cs" />
     <Compile Include="Patches\Toils_Goto.cs" />
     <Compile Include="Patches\Toils_JobTransforms.cs" />
     <Compile Include="Patches\TradeDeal.cs" />
