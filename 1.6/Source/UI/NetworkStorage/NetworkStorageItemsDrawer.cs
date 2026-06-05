@@ -127,6 +127,7 @@ namespace SK_Matter_Network
 
             Rect innerRect = rect.ContractedBy(8f);
             Rect iconRect = new Rect(innerRect.x, innerRect.y + 2f, NetworkStorageUiConstants.DefIconSize, NetworkStorageUiConstants.DefIconSize);
+            Rect infoButtonRect = new Rect(innerRect.xMax - NetworkStorageUiConstants.InfoButtonSize, iconRect.yMax - NetworkStorageUiConstants.InfoButtonSize + 4f, NetworkStorageUiConstants.InfoButtonSize, NetworkStorageUiConstants.InfoButtonSize);
             Rect infoRect = new Rect(iconRect.xMax + 8f, innerRect.y + 1f, innerRect.width - NetworkStorageUiConstants.DefIconSize - 8f, 42f);
             Rect countRect = new Rect(innerRect.x, iconRect.yMax + 8f, innerRect.width, 22f);
             Rect stackRect = new Rect(innerRect.x, countRect.yMax, innerRect.width, 16f);
@@ -137,6 +138,8 @@ namespace SK_Matter_Network
             Text.Font = GameFont.Small;
             GUI.color = NetworkStorageUiConstants.PrimaryTextColor;
             Widgets.Label(infoRect, entry.Def.LabelCap.Truncate(infoRect.width));
+
+            Widgets.InfoCardButton(infoButtonRect, entry.Def);
 
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.MiddleLeft;
@@ -154,7 +157,10 @@ namespace SK_Matter_Network
                 actions.DropItemByDef(selectedInterface, entry.Def);
             }
 
-            TooltipHandler.TipRegion(rect, "MN_NetworkStorageDropByDefTooltip".Translate(entry.Def.LabelCap, entry.StackEntries, dataSource.FormatItemCount(entry.TotalCount)));
+            if (!Mouse.IsOver(infoButtonRect))
+            {
+                TooltipHandler.TipRegion(rect, "MN_NetworkStorageDropByDefTooltip".Translate(entry.Def.LabelCap, entry.StackEntries, dataSource.FormatItemCount(entry.TotalCount)));
+            }
         }
 
         private void DrawStoredThingRow(Rect rect, StoredThingEntry entry, NetworkBuildingNetworkInterface selectedInterface)
@@ -165,7 +171,8 @@ namespace SK_Matter_Network
             Rect innerRect = rect.ContractedBy(8f);
             Rect iconRect = new Rect(innerRect.x, innerRect.y + ((innerRect.height - NetworkStorageUiConstants.ThingIconSize) / 2f), NetworkStorageUiConstants.ThingIconSize, NetworkStorageUiConstants.ThingIconSize);
             Rect buttonRect = new Rect(innerRect.xMax - 92f, innerRect.y + ((innerRect.height - NetworkStorageUiConstants.DropButtonHeight) / 2f), 92f, NetworkStorageUiConstants.DropButtonHeight);
-            Rect countRect = new Rect(buttonRect.x - 94f, innerRect.y + 2f, 84f, innerRect.height - 4f);
+            Rect infoButtonRect = new Rect(buttonRect.x - NetworkStorageUiConstants.InfoButtonGap - NetworkStorageUiConstants.InfoButtonSize, innerRect.y + ((innerRect.height - NetworkStorageUiConstants.InfoButtonSize) / 2f), NetworkStorageUiConstants.InfoButtonSize, NetworkStorageUiConstants.InfoButtonSize);
+            Rect countRect = new Rect(infoButtonRect.x - 94f, innerRect.y + 2f, 84f, innerRect.height - 4f);
             Rect textRect = new Rect(iconRect.xMax + 10f, innerRect.y + 2f, countRect.x - iconRect.xMax - 18f, innerRect.height - 4f);
             Rect nameRect = new Rect(textRect.x, textRect.y, textRect.width, 19f);
             Rect detailsRect = new Rect(textRect.x, nameRect.yMax + 1f, textRect.width, 18f);
@@ -189,12 +196,20 @@ namespace SK_Matter_Network
             Text.Anchor = TextAnchor.UpperLeft;
             GUI.color = Color.white;
 
+            if (entry.Thing != null && !entry.Thing.Destroyed)
+            {
+                Widgets.InfoCardButton(infoButtonRect.x, infoButtonRect.y, entry.Thing);
+            }
+
             if (Widgets.ButtonText(buttonRect, "MN_NetworkStorageDropLabel".Translate()))
             {
                 actions.DropStoredThing(selectedInterface, entry.Thing);
             }
 
-            TooltipHandler.TipRegion(rect, "MN_NetworkStorageDropStackTooltip".Translate(entry.Label, dataSource.FormatItemCount(entry.StackCount)));
+            if (!Mouse.IsOver(infoButtonRect))
+            {
+                TooltipHandler.TipRegion(rect, "MN_NetworkStorageDropStackTooltip".Translate(entry.Label, dataSource.FormatItemCount(entry.StackCount)));
+            }
         }
     }
 }

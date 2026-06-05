@@ -25,6 +25,8 @@ namespace SK_Matter_Network
         internal const float RowGap = 6f;
         internal const float ThingIconSize = 30f;
         internal const float StatusPillHeight = 24f;
+        internal const float InfoButtonSize = 24f;
+        internal const float InfoButtonGap = 6f;
 
         internal static readonly Color PrimaryTextColor = new Color(0.94f, 0.94f, 0.94f);
         internal static readonly Color SecondaryTextColor = new Color(0.76f, 0.78f, 0.82f);
