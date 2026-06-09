@@ -18,6 +18,11 @@ namespace SK_Matter_Network.Patches
             {
                 Pawn pawn = traverseParams.pawn ?? eater;
 
+                if (!pawn.RaceProps.ToolUser || !pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                {
+                    return;
+                }
+
                 NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
                 if (mapComp.Networks.Count == 0)
                 {
