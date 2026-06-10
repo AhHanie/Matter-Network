@@ -59,7 +59,7 @@ namespace SK_Matter_Network.Patches
                     return false;
                 }
 
-                if (!HaulAIUtility.PawnCanAutomaticallyHaul(pawn, thing, forced))
+                if (!NetworkItemSearchUtility.PawnCanUseNetworkItemForHaul(pawn, thing, forced))
                 {
                     return false;
                 }

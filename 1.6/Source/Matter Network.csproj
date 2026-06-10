@@ -188,6 +188,7 @@
     <Compile Include="Patches\Toils_Recipe.cs" />
     <Compile Include="Patches\WorkGiver_DoBill.cs" />
     <Compile Include="Patches\Xenogerm.cs" />
+    <Compile Include="Graphic_LinkedNetworkOverlay.cs" />
     <Compile Include="SectionLayer_NetworkOverlay.cs" />
     <Compile Include="Comps\NetworksMapComponent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

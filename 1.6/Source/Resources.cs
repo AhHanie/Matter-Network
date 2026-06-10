@@ -19,10 +19,7 @@ namespace SK_Matter_Network
                 new Color(0f, 1f, 0f, 0.4f)
             );
 
-            LinkedOverlayGraphic = GraphicUtility.WrapLinked(
-                atlasGraphic,
-                LinkDrawerType.Basic
-            );
+            LinkedOverlayGraphic = new Graphic_LinkedNetworkOverlay(atlasGraphic);
 
             atlasGraphic.MatSingle.renderQueue = 3600;
         }

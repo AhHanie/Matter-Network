@@ -153,5 +153,50 @@ namespace SK_Matter_Network.Patches
 
             return closestDistanceSquared;
         }
+
+        public static bool TryGetPawnMapNetwork(Pawn pawn, Thing item, out DataNetwork network)
+        {
+            network = null;
+            NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
+            return mapComp.TryGetItemNetwork(item, out network);
+        }
+
+        public static bool IsUsableNetworkItemForExtraction(Pawn pawn, Thing item, out DataNetwork network)
+        {
+            if (!TryGetPawnMapNetwork(pawn, item, out network))
+                return false;
+
+            return network.CanExtractItems &&
+                GetClosestReachableInterfaceDistanceSquared(pawn, item) != float.MaxValue;
+        }
+
+        public static int GetReservableNetworkStackCount(Pawn pawn, Thing item, int maxPawns, int desiredCount = -1)
+        {
+            if (!IsUsableNetworkItemForExtraction(pawn, item, out _))
+                return 0;
+
+            int reservable = pawn.Map.reservationManager.CanReserveStack(pawn, item, maxPawns);
+            if (reservable <= 0)
+                return 0;
+
+            return desiredCount > 0 ? Math.Min(reservable, desiredCount) : reservable;
+        }
+
+        public static bool PawnCanUseNetworkItemForHaul(Pawn pawn, Thing item, bool forced, int maxPawns = 1)
+        {
+            if (!IsUsableNetworkItemForExtraction(pawn, item, out _))
+                return false;
+
+            if (!item.def.EverHaulable)
+                return false;
+
+            if (item.IsForbidden(pawn))
+                return false;
+
+            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                return false;
+
+            return GetReservableNetworkStackCount(pawn, item, maxPawns) > 0;
+        }
     }
 }
