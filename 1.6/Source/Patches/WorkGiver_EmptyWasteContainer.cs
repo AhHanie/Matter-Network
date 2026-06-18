@@ -8,39 +8,52 @@ namespace SK_Matter_Network.Patches
 {
     public static class Patch_WorkGiver_EmptyWasteContainer
     {
+        private static void SetStorageTarget(Job job, Pawn pawn, Thing item)
+        {
+            if (job == null)
+            {
+                return;
+            }
+
+            if (job.GetTarget(TargetIndex.C).IsValid)
+            {
+                return;
+            }
+
+            if (!StoreUtility.TryFindBestBetterStorageFor(item, pawn, pawn.Map, StoragePriority.Unstored, pawn.Faction, out IntVec3 foundCell, out IHaulDestination haulDestination))
+            {
+                return;
+            }
+
+            if (foundCell.IsValid)
+            {
+                job.SetTarget(TargetIndex.C, foundCell);
+                return;
+            }
+
+            if (haulDestination is Thing haulDestinationThing)
+            {
+                job.SetTarget(TargetIndex.C, haulDestinationThing);
+            }
+        }
+
         [HarmonyPatch(typeof(WorkGiver_EmptyWasteContainer), nameof(WorkGiver_EmptyWasteContainer.JobOnThing))]
         public static class JobOnThing
         {
             public static void Postfix(Pawn pawn, Thing t, ref Job __result)
             {
-                if (__result == null)
-                {
-                    return;
-                }
-
-                if (__result.GetTarget(TargetIndex.C).IsValid)
-                {
-                    return;
-                }
-
                 CompWasteProducer compWasteProducer = t.TryGetComp<CompWasteProducer>();
-                Thing waste = compWasteProducer.Waste;
+                SetStorageTarget(__result, pawn, compWasteProducer?.Waste);
+            }
+        }
 
-                if (!StoreUtility.TryFindBestBetterStorageFor(waste, pawn, pawn.Map, StoragePriority.Unstored, pawn.Faction, out IntVec3 foundCell, out IHaulDestination haulDestination))
-                {
-                    return;
-                }
-
-                if (foundCell.IsValid)
-                {
-                    __result.SetTarget(TargetIndex.C, foundCell);
-                    return;
-                }
-
-                if (haulDestination is Thing haulDestinationThing)
-                {
-                    __result.SetTarget(TargetIndex.C, haulDestinationThing);
-                }
+        [HarmonyPatch(typeof(WorkGiver_EmptyEggBox), nameof(WorkGiver_EmptyEggBox.JobOnThing))]
+        public static class EggBoxJobOnThing
+        {
+            public static void Postfix(Pawn pawn, Thing t, ref Job __result)
+            {
+                CompEggContainer compEggContainer = t.TryGetComp<CompEggContainer>();
+                SetStorageTarget(__result, pawn, compEggContainer?.ContainedThing);
             }
         }
 
