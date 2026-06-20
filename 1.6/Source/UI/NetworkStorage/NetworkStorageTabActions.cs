@@ -1,4 +1,5 @@
 using System.Linq;
+using RimWorld;
 using UnityEngine;
 using Verse;
 
@@ -6,7 +7,7 @@ namespace SK_Matter_Network
 {
     internal sealed class NetworkStorageTabActions
     {
-        internal void DropItemByDef(NetworkBuildingNetworkInterface selectedInterface, ThingDef thingDef)
+        internal void DropItemByGroup(NetworkBuildingNetworkInterface selectedInterface, GroupedItemEntry entry)
         {
             if (selectedInterface?.ParentNetwork == null || !selectedInterface.ParentNetwork.IsOperational)
             {
@@ -19,12 +20,17 @@ namespace SK_Matter_Network
                 return;
             }
 
-            Thing itemToDrop = controller.innerContainer.InnerListForReading.FirstOrDefault(
-                thing => thing != null && !thing.Destroyed && thing.def == thingDef);
+            Thing itemToDrop = controller.innerContainer.InnerListForReading.FirstOrDefault(thing =>
+            {
+                if (thing == null || thing.Destroyed) return false;
+                if (entry.IsMinified)
+                    return thing is MinifiedThing mt && mt.InnerThing?.def == entry.DisplayDef;
+                return thing.def == entry.DisplayDef;
+            });
 
             if (itemToDrop == null)
             {
-                Logger.Warning($"Could not find {thingDef.defName} in network storage");
+                Logger.Warning($"Could not find {entry.DisplayDef.defName} in network storage");
                 return;
             }
 

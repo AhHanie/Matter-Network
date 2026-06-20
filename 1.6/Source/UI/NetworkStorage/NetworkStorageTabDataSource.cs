@@ -19,7 +19,9 @@ namespace SK_Matter_Network
                 return NetworkStorageTabDataSnapshot.Empty;
             }
 
-            Dictionary<ThingDef, GroupedItemEntry> groupedMap = new Dictionary<ThingDef, GroupedItemEntry>();
+            Dictionary<(ThingDef storedDef, ThingDef displayDef), GroupedItemEntry> groupedMap =
+                new Dictionary<(ThingDef, ThingDef), GroupedItemEntry>();
+
             foreach (Thing thing in network.ActiveController.innerContainer.InnerListForReading)
             {
                 if (thing.Destroyed)
@@ -30,21 +32,25 @@ namespace SK_Matter_Network
                 storedEntries.Add(new StoredThingEntry(thing));
                 totalUnits += thing.stackCount;
 
-                if (groupedMap.TryGetValue(thing.def, out GroupedItemEntry existing))
+                ThingDef displayDef = GetDisplayDef(thing);
+                bool isMinified = displayDef != thing.def;
+                var key = (thing.def, displayDef);
+
+                if (groupedMap.TryGetValue(key, out GroupedItemEntry existing))
                 {
                     existing.TotalCount += thing.stackCount;
                     existing.StackEntries++;
-                    groupedMap[thing.def] = existing;
+                    groupedMap[key] = existing;
                 }
                 else
                 {
-                    groupedMap.Add(thing.def, new GroupedItemEntry(thing.def, thing.stackCount, 1));
+                    groupedMap.Add(key, new GroupedItemEntry(thing.def, displayDef, isMinified, thing.stackCount, 1));
                 }
             }
 
             groupedEntries.AddRange(groupedMap.Values
                 .OrderByDescending(entry => entry.TotalCount)
-                .ThenBy(entry => entry.Def.label));
+                .ThenBy(entry => entry.DisplayDef.label));
             storedEntries.Sort(CompareStoredEntries);
 
             return new NetworkStorageTabDataSnapshot(
@@ -53,6 +59,13 @@ namespace SK_Matter_Network
                 totalUnits,
                 groupedEntries.Count,
                 storedEntries.Count);
+        }
+
+        private static ThingDef GetDisplayDef(Thing thing)
+        {
+            if (thing is MinifiedThing mt && mt.InnerThing != null)
+                return mt.InnerThing.def;
+            return thing.def;
         }
 
         internal List<GroupedItemEntry> FilterGroupedEntries(NetworkStorageTabDataSnapshot snapshot, string searchText)
@@ -64,9 +77,9 @@ namespace SK_Matter_Network
 
             string term = searchText.Trim();
             return snapshot.GroupedEntries
-                .Where(entry => ContainsIgnoreCase(entry.Def.LabelCap, term)
-                    || ContainsIgnoreCase(entry.Def.label, term)
-                    || ContainsIgnoreCase(entry.Def.defName, term))
+                .Where(entry => ContainsIgnoreCase(entry.DisplayDef.LabelCap, term)
+                    || ContainsIgnoreCase(entry.DisplayDef.label, term)
+                    || ContainsIgnoreCase(entry.DisplayDef.defName, term))
                 .ToList();
         }
 

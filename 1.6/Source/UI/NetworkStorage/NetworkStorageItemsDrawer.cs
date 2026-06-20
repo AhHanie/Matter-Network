@@ -133,13 +133,13 @@ namespace SK_Matter_Network
             Rect stackRect = new Rect(innerRect.x, countRect.yMax, innerRect.width, 16f);
             Rect buttonRect = new Rect(innerRect.x, rect.yMax - NetworkStorageUiConstants.DropButtonHeight - 8f, innerRect.width, NetworkStorageUiConstants.DropButtonHeight);
 
-            chromeDrawer.DrawThingDefIcon(iconRect, entry.Def);
+            chromeDrawer.DrawThingDefIcon(iconRect, entry.DisplayDef);
 
             Text.Font = GameFont.Small;
             GUI.color = NetworkStorageUiConstants.PrimaryTextColor;
-            Widgets.Label(infoRect, entry.Def.LabelCap.Truncate(infoRect.width));
+            Widgets.Label(infoRect, entry.DisplayDef.LabelCap.Truncate(infoRect.width));
 
-            Widgets.InfoCardButton(infoButtonRect, entry.Def);
+            Widgets.InfoCardButton(infoButtonRect, entry.DisplayDef);
 
             Text.Font = GameFont.Small;
             Text.Anchor = TextAnchor.MiddleLeft;
@@ -154,12 +154,12 @@ namespace SK_Matter_Network
 
             if (Widgets.ButtonText(buttonRect, "MN_NetworkStorageDropLabel".Translate()))
             {
-                actions.DropItemByDef(selectedInterface, entry.Def);
+                actions.DropItemByGroup(selectedInterface, entry);
             }
 
             if (!Mouse.IsOver(infoButtonRect))
             {
-                TooltipHandler.TipRegion(rect, "MN_NetworkStorageDropByDefTooltip".Translate(entry.Def.LabelCap, entry.StackEntries, dataSource.FormatItemCount(entry.TotalCount)));
+                TooltipHandler.TipRegion(rect, "MN_NetworkStorageDropByDefTooltip".Translate(entry.DisplayDef.LabelCap, entry.StackEntries, dataSource.FormatItemCount(entry.TotalCount)));
             }
         }
 

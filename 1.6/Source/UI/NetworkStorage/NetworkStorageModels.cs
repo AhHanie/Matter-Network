@@ -43,12 +43,16 @@ namespace SK_Matter_Network
     internal struct GroupedItemEntry
     {
         public ThingDef Def;
+        public ThingDef DisplayDef;
+        public bool IsMinified;
         public int TotalCount;
         public int StackEntries;
 
-        public GroupedItemEntry(ThingDef def, int totalCount, int stackEntries)
+        public GroupedItemEntry(ThingDef def, ThingDef displayDef, bool isMinified, int totalCount, int stackEntries)
         {
             Def = def;
+            DisplayDef = displayDef;
+            IsMinified = isMinified;
             TotalCount = totalCount;
             StackEntries = stackEntries;
         }
