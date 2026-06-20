@@ -169,6 +169,7 @@
     <Compile Include="Patches\Compat\AriandelLibraryCompat.cs" />
     <Compile Include="Patches\Compat\InfiniteReinforceCompat.cs" />
     <Compile Include="Patches\Compat\IsekaiLevelingCompat.cs" />
+    <Compile Include="Patches\Compat\VehicleFrameworkCompat.cs" />
     <Compile Include="Patches\Pawn_JobTracker.cs" />
     <Compile Include="Patches\Pawn_TradeTracker.cs" />
     <Compile Include="Patches\RefuelWorkGiverUtility.cs" />
