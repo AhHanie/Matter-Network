@@ -165,6 +165,7 @@
     <Compile Include="Patches\Compat\StellarLogisticsCompat.cs" />
     <Compile Include="Patches\Compat\OrbitalMarketCompat.cs" />
     <Compile Include="Patches\Compat\TradeNetworkCompat.cs" />
+    <Compile Include="Patches\Compat\EmpireCompat.cs" />
     <Compile Include="Patches\Compat\VanillaRacesExpandedAndroidCompat.cs" />
     <Compile Include="Patches\Compat\AriandelLibraryCompat.cs" />
     <Compile Include="Patches\Compat\InfiniteReinforceCompat.cs" />
