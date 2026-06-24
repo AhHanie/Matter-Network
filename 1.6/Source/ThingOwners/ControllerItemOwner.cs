@@ -100,6 +100,12 @@ namespace SK_Matter_Network
             return result;
         }
 
+        public override bool Remove(Thing item)
+        {
+            ctrl?.ParentNetwork?.storedItems?.Remove(item);
+            return base.Remove(item);
+        }
+
         private static bool CanMergeIntoNetworkStack(Thing existing, Thing item)
         {
             if (existing.def.stackLimit <= 1 || item.def.stackLimit <= 1)
