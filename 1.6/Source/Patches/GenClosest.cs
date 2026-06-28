@@ -274,9 +274,11 @@ namespace SK_Matter_Network.Patches
                 bool lookInHaulSources,
                 ref Thing __result)
             {
-                // thingReq.singleDef == null || thingReq.singleDef.defName.NullOrEmpty() was added for a weird edge case bug with a specific mod list 
+                // thingReq.singleDef == null || thingReq.singleDef.defName.NullOrEmpty() was added for a weird edge case bug with a specific mod list
                 if (thingReq.singleDef == null || thingReq.singleDef.defName.NullOrEmpty() || !thingReq.singleDef.EverStorable(false))
                 {
+                    CombatExtendedCompat.TryAddNetworkItemsForGroupSearch(
+                        root, map, peMode, traverseParams, thingReq, maxDistance, validator, ref __result);
                     return;
                 }
 
@@ -367,7 +369,7 @@ namespace SK_Matter_Network.Patches
             return closestDistSquared;
         }
 
-        private static float GetClosestReachableInterfaceDistanceSquared(IntVec3 center, Map map, PathEndMode peMode, TraverseParms traverseParams, DataNetwork network)
+        internal static float GetClosestReachableInterfaceDistanceSquared(IntVec3 center, Map map, PathEndMode peMode, TraverseParms traverseParams, DataNetwork network)
         {
             if (!network.IsOperational)
             {
@@ -399,7 +401,7 @@ namespace SK_Matter_Network.Patches
             return closestDistSquared;
         }
 
-        private static float GetThingDistanceSquared(IntVec3 center, Map map, PathEndMode peMode, TraverseParms traverseParams, Thing thing)
+        internal static float GetThingDistanceSquared(IntVec3 center, Map map, PathEndMode peMode, TraverseParms traverseParams, Thing thing)
         {
             NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
             if (mapComp.TryGetItemNetwork(thing, out DataNetwork network))
