@@ -219,14 +219,38 @@ namespace SK_Matter_Network
                 foreach (Gizmo g in StorageGroupUtility.StorageGroupMemberGizmos(this)) yield return g;
             }
 
-            if (Prefs.DevMode && HeldItems.Count > 0)
+            if (DebugSettings.ShowDevGizmos)
             {
-                yield return new Command_Action
+                if (HeldItems.Count > 0)
                 {
-                    defaultLabel = "Debug: drop random disk",
-                    defaultDesc = "Drop one random disk from this drive.",
-                    action = DropRandomDiskForDebug
-                };
+                    yield return new Command_Action
+                    {
+                        defaultLabel = "Debug: drop random disk",
+                        defaultDesc = "Drop one random disk from this drive.",
+                        action = DropRandomDiskForDebug
+                    };
+
+                    yield return new Command_Action
+                    {
+                        defaultLabel = "MN_DiskImport_Label".Translate(),
+                        defaultDesc = "MN_DiskImport_Desc".Translate(),
+                        action = OpenImportDialog
+                    };
+                }
+            }
+        }
+
+        private void OpenImportDialog()
+        {
+            Find.WindowStack.Add(new Dialog_NetworkItemExportFileList_Load(this));
+        }
+
+        public void NotifyDiskContentsImported(Thing disk)
+        {
+            ParentNetwork?.NotifyDiskCapacityChanged();
+            if (Spawned)
+            {
+                MapHeld.listerHaulables.Notify_HaulSourceChanged(this);
             }
         }
 

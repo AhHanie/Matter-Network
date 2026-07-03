@@ -11,6 +11,8 @@ namespace SK_Matter_Network
         private const float SlotGap = 8f;
         private const float SlotIconSize = 44f;
         private const float DropButtonSize = 24f;
+        private const float ActionButtonSize = 24f;
+        private const float ActionButtonGap = 4f;
 
         private readonly NetworkStorageChromeDrawer chromeDrawer = new NetworkStorageChromeDrawer();
         private Vector2 scrollPosition;
@@ -136,9 +138,13 @@ namespace SK_Matter_Network
             GUI.color = NetworkStorageUiConstants.MutedTextColor;
             Widgets.Label(numberRect, "MN_DiskDriveSlotsSlotNumber".Translate(slotNumber));
 
+            bool showImportButton = DebugSettings.ShowDevGizmos;
+
             Rect iconRect = new Rect(rect.x + 10f, rect.y + 28f, SlotIconSize, SlotIconSize);
             Rect dropButtonRect = new Rect(rect.xMax - DropButtonSize - 8f, rect.y + 29f, DropButtonSize, DropButtonSize);
-            Rect labelRect = new Rect(iconRect.xMax + 10f, rect.y + 22f, dropButtonRect.x - iconRect.xMax - 18f, 26f);
+            Rect importButtonRect = new Rect(dropButtonRect.x - ActionButtonGap - ActionButtonSize, rect.y + 29f, ActionButtonSize, ActionButtonSize);
+            float labelRightEdge = showImportButton ? importButtonRect.x : dropButtonRect.x;
+            Rect labelRect = new Rect(iconRect.xMax + 10f, rect.y + 22f, labelRightEdge - iconRect.xMax - 18f, 26f);
             Rect detailsRect = new Rect(labelRect.x, labelRect.yMax, labelRect.width, 38f);
 
             if (disk == null)
@@ -166,8 +172,16 @@ namespace SK_Matter_Network
             {
                 DropDisk(drive, disk);
             }
-
             TooltipHandler.TipRegion(dropButtonRect, "MN_NetworkStorageDropLabel".Translate());
+
+            if (showImportButton)
+            {
+                if (Widgets.ButtonText(importButtonRect, "MN_DiskImport_ButtonShort".Translate()))
+                {
+                    Find.WindowStack.Add(new Dialog_NetworkItemExportFileList_Load(drive, disk));
+                }
+                TooltipHandler.TipRegion(importButtonRect, "MN_DiskImport_ButtonTooltip".Translate());
+            }
         }
 
         private void DrawEmptySlot(Rect iconRect, Rect labelRect)

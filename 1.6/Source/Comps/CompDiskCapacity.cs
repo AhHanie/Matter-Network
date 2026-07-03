@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using RimWorld;
 using Verse;
 
 namespace SK_Matter_Network
@@ -112,6 +114,46 @@ namespace SK_Matter_Network
         public override bool AllowStackWith(Thing other)
         {
             return false;
+        }
+
+        public override IEnumerable<Gizmo> CompGetGizmosExtra()
+        {
+            foreach (Gizmo g in base.CompGetGizmosExtra())
+            {
+                yield return g;
+            }
+
+            if (!DebugSettings.ShowDevGizmos)
+            {
+                yield break;
+            }
+
+            yield return new Command_Action
+            {
+                defaultLabel = "MN_DiskImport_Label".Translate(),
+                defaultDesc = "MN_DiskImport_Desc".Translate(),
+                action = OpenImportDialog
+            };
+
+            if (HasArchivedItems)
+            {
+                yield return new Command_Action
+                {
+                    defaultLabel = "MN_DiskExport_Label".Translate(),
+                    defaultDesc = "MN_DiskExport_Desc".Translate(),
+                    action = OpenExportDialog
+                };
+            }
+        }
+
+        private void OpenImportDialog()
+        {
+            Find.WindowStack.Add(new Dialog_NetworkItemExportFileList_Load(null, parent));
+        }
+
+        private void OpenExportDialog()
+        {
+            Find.WindowStack.Add(new Dialog_NetworkItemExportFileList_Save(this));
         }
     }
 }

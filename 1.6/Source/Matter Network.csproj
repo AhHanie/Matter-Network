@@ -104,6 +104,10 @@
     <Compile Include="Networking\NetworkPowerMode.cs" />
     <Compile Include="Networking\NetworkPowerState.cs" />
     <Compile Include="Buildings\NetworkBuildingController.cs" />
+    <Compile Include="NetworkExport\NetworkExportPaths.cs" />
+    <Compile Include="NetworkExport\NetworkItemExportData.cs" />
+    <Compile Include="NetworkExport\DiskImportReport.cs" />
+    <Compile Include="NetworkExport\NetworkItemExportService.cs" />
     <Compile Include="ModSettings.cs" />
     <Compile Include="ModSettingsWindow.cs" />
     <Compile Include="Patches\ToilFailConditions.cs" />
@@ -212,6 +216,11 @@
     <Compile Include="UI\MatterIOPort\ITab_MatterIOPortFilter.cs" />
     <Compile Include="UI\MatterIOPort\MatterIOPortSettingsClipboard.cs" />
     <Compile Include="UI\NetworkStorage\Dialog_PerspectiveShiftNetworkStorage.cs" />
+    <Compile Include="UI\NetworkStorage\Dialog_NetworkItemExportFileList.cs" />
+    <Compile Include="UI\NetworkStorage\Dialog_NetworkItemExportFileList_Load.cs" />
+    <Compile Include="UI\NetworkStorage\Dialog_NetworkItemExportFileList_Save.cs" />
+    <Compile Include="UI\NetworkStorage\Dialog_DiskImportTargetDisk.cs" />
+    <Compile Include="UI\NetworkStorage\NetworkItemExportFileInfo.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageChromeDrawer.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageItemsDrawer.cs" />
     <Compile Include="UI\NetworkStorage\NetworkStorageModels.cs" />

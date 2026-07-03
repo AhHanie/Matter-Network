@@ -98,4 +98,22 @@
     <MN_DiskDriveSlotsDiskDetailsArchived>{0} bytes capacity | {1} archived in {2} stacks</MN_DiskDriveSlotsDiskDetailsArchived>
     <MN_CountSuffixK>k</MN_CountSuffixK>
     <MN_CountSuffixMil>mil</MN_CountSuffixMil>
+    <MN_ItemExport_ButtonLabel>Export</MN_ItemExport_ButtonLabel>
+    <MN_ItemExport_Saved>Exported items to {0}.</MN_ItemExport_Saved>
+    <MN_ItemExport_OverwriteConfirm>A file named {0} already exists. Overwrite it?</MN_ItemExport_OverwriteConfirm>
+    <MN_ItemExport_DeleteConfirm>Delete export file {0}? This cannot be undone.</MN_ItemExport_DeleteConfirm>
+    <MN_DiskExport_Label>DEV: export disk items...</MN_DiskExport_Label>
+    <MN_DiskExport_Desc>Export this disk's archived items to a file for testing or recovery.</MN_DiskExport_Desc>
+    <MN_DiskExport_NoItems>Disk has no archived items to export.</MN_DiskExport_NoItems>
+    <MN_DiskImport_Label>DEV: import items into disk...</MN_DiskImport_Label>
+    <MN_DiskImport_Desc>Import previously exported items into this disk's archived storage.</MN_DiskImport_Desc>
+    <MN_DiskImport_ButtonShort>Im</MN_DiskImport_ButtonShort>
+    <MN_DiskImport_ButtonTooltip>Import exported items into this disk's archived storage.</MN_DiskImport_ButtonTooltip>
+    <MN_DiskImport_NoCapacityComp>No inserted disk supports archived storage.</MN_DiskImport_NoCapacityComp>
+    <MN_DiskImport_Loaded>Imported {0} stacks ({1} units).</MN_DiskImport_Loaded>
+    <MN_DiskImport_NoFiles>No export files found.</MN_DiskImport_NoFiles>
+    <MN_DiskImport_LoadFailed>Failed to load export file: it may be corrupt or from an incompatible version. See the log for details.</MN_DiskImport_LoadFailed>
+    <MN_DiskImport_NoImportableItems>No importable items were found in this file.</MN_DiskImport_NoImportableItems>
+    <MN_DiskImport_MissingDefs>{0} item(s) skipped due to missing defs (mod not installed).</MN_DiskImport_MissingDefs>
+    <MN_DiskImport_CapacityLimited>{0} stacks ({1} units) skipped due to insufficient disk capacity.</MN_DiskImport_CapacityLimited>
 </LanguageData>
