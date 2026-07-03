@@ -73,8 +73,7 @@ namespace SK_Matter_Network.Patches
 
                 foreach (LocalTargetInfo target in queue)
                 {
-                    try { pawn.Reserve(target, job, 1, -1, null, errorOnFailed: false); }
-                    catch { }
+                    pawn.Reserve(target, job, 1, -1, null, errorOnFailed: false);
                 }
 
                 __result = true;

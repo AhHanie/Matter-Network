@@ -82,8 +82,7 @@ namespace SK_Matter_Network.Patches
 
         private static bool IsTranscendent()
         {
-            try { return xl_isTranscendentActive != null && (bool)xl_isTranscendentActive.GetValue(null); }
-            catch { return false; }
+            return xl_isTranscendentActive != null && (bool)xl_isTranscendentActive.GetValue(null);
         }
 
         // ════════════════════════════════════════════════════════════════════
