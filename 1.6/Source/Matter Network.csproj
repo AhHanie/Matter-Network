@@ -175,6 +175,7 @@
     <Compile Include="Patches\Compat\XVstarCompat.cs" />
     <Compile Include="Patches\Compat\ManipulatorBeamCompat.cs" />
     <Compile Include="Patches\Compat\UniqueWeaponsUnboundCompat.cs" />
+    <Compile Include="Patches\Compat\RimatomicsCompat.cs" />
     <Compile Include="Patches\Pawn_JobTracker.cs" />
     <Compile Include="Patches\Pawn_TradeTracker.cs" />
     <Compile Include="Patches\RefuelWorkGiverUtility.cs" />
