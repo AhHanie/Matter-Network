@@ -197,6 +197,7 @@
     <Compile Include="Patches\WorkGiver_HaulToAtomizer.cs" />
     <Compile Include="Patches\WorkGiver_HaulToBiosculpterPod.cs" />
     <Compile Include="Patches\WorkGiver_HaulToGeneBank.cs" />
+    <Compile Include="Patches\WorkGiver_HaulToSubcoreScanner.cs" />
     <Compile Include="Patches\Toils_Goto.cs" />
     <Compile Include="Patches\Toils_JobTransforms.cs" />
     <Compile Include="Patches\TradeDeal.cs" />
