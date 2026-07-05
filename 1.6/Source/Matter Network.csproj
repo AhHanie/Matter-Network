@@ -99,7 +99,7 @@
     <Compile Include="Inventory\MatterInventoryAdapterResolver.cs" />
     <Compile Include="Inventory\MatterSlotGroupInventoryAdapter.cs" />
     <Compile Include="Inventory\MatterThingOwnerInventoryAdapter.cs" />
-    <Compile Include="Networking\GravshipNetworkTransferTracker.cs" />
+    <Compile Include="Networking\NetworkBuildingTransferTracker.cs" />
     <Compile Include="Networking\INetworkTickable.cs" />
     <Compile Include="Networking\NetworkPowerMode.cs" />
     <Compile Include="Networking\NetworkPowerState.cs" />
@@ -180,6 +180,7 @@
     <Compile Include="Patches\Compat\ManipulatorBeamCompat.cs" />
     <Compile Include="Patches\Compat\UniqueWeaponsUnboundCompat.cs" />
     <Compile Include="Patches\Compat\RimatomicsCompat.cs" />
+    <Compile Include="Patches\Compat\SaveOurShip2Compat.cs" />
     <Compile Include="Patches\Pawn_JobTracker.cs" />
     <Compile Include="Patches\Pawn_TradeTracker.cs" />
     <Compile Include="Patches\RefuelWorkGiverUtility.cs" />

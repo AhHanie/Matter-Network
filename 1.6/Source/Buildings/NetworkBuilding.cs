@@ -16,7 +16,7 @@ namespace SK_Matter_Network
         public override void PreSwapMap()
         {
             base.PreSwapMap();
-            GravshipNetworkTransferTracker.RegisterForTransfer(this);
+            NetworkBuildingTransferTracker.RegisterForTransfer(this);
         }
 
         public override void DeSpawn(DestroyMode mode = DestroyMode.Vanish)
@@ -30,7 +30,7 @@ namespace SK_Matter_Network
             {
                 mapComp.RemoveBuilding(this);
             }
-            else if (network == null || !GravshipNetworkTransferTracker.IsFullNetworkMove(network))
+            else if (network == null || !NetworkBuildingTransferTracker.IsFullNetworkMove(network))
             {
                 // Partial move: capture original quotas before removing from the network.
                 wasFullNetworkMoveParticipant = false;

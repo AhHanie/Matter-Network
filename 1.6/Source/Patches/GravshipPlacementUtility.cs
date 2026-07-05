@@ -39,7 +39,7 @@ namespace SK_Matter_Network.Patches
                 }
             }
 
-            GravshipNetworkTransferTracker.Clear();
+            NetworkBuildingTransferTracker.Clear();
         }
     }
 }

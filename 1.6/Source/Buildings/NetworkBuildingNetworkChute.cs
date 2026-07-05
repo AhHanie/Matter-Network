@@ -116,7 +116,9 @@ namespace SK_Matter_Network
                 storageGroup.RemoveMember(this);
                 storageGroup = null;
             }
-            if (mode != DestroyMode.WillReplace)
+            bool preserveContents = mode == DestroyMode.WillReplace
+                || NetworkBuildingTransferTracker.ShouldPreserveDuringTransfer(this);
+            if (!preserveContents)
                 fallbackContainer.TryDropAll(base.Position, base.Map, ThingPlaceMode.Near);
             base.DeSpawn(mode);
         }
