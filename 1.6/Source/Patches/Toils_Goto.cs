@@ -43,6 +43,17 @@ namespace SK_Matter_Network.Patches
                     }
 
                     originalToil.debugName = "GotoCell";
+
+                    // Toil objects are drawn from a global, shared pool (SimplePool<Toil> via
+                    // ToilMaker), and under heavy concurrent hauling we've observed this toil's
+                    // defaultCompleteMode read back as Never instead of the PatherArrival that
+                    // Toils_Goto.GotoThing sets at creation - matching the mode used by an unrelated
+                    // later toil in this same job's chain (PossiblyDelay). When that happens,
+                    // Notify_PatherArrived becomes a no-op and the pawn never advances past this toil
+                    // even though it did arrive. Re-assert the correct mode every time this initAction
+                    // runs, right before we rely on it, regardless of how it got clobbered.
+                    originalToil.defaultCompleteMode = ToilCompleteMode.PatherArrival;
+
                     NetworkBuildingNetworkInterface closestInterface = FindClosestReachableInterface(actor, network);
 
                     if (closestInterface != null)
