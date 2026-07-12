@@ -14,8 +14,11 @@ namespace SK_Matter_Network.Patches
         {
             public static bool Prefix(Thing thing, ref bool __result)
             {
-                NetworksMapComponent mapComp = thing.MapHeld.GetComponent<NetworksMapComponent>();
-                if (!mapComp.TryGetItemNetwork(thing, out DataNetwork _)) return true;
+                Map map = thing?.MapHeld;
+                if (map == null) return true;
+
+                NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
+                if (mapComp == null || !mapComp.TryGetItemNetwork(thing, out DataNetwork _)) return true;
 
                 __result = true;
                 return false;
