@@ -21,6 +21,48 @@ namespace SK_Matter_Network.Patches
             AccessTools.TypeByName("ManipulatorBeam.BeamTransfer");
         private static readonly System.Type BeamClaimUtilityType =
             AccessTools.TypeByName("ManipulatorBeam.BeamClaimUtility");
+        private static readonly System.Type BeamManipulatorType =
+            AccessTools.TypeByName("ManipulatorBeam.Building_BeamManipulator");
+        private static readonly System.Type BeamManipulatorAutoType =
+            AccessTools.TypeByName("ManipulatorBeam.Building_BeamManipulatorAuto");
+
+        private static readonly System.Type BeamTransferListType =
+            BeamTransferType != null ? typeof(List<>).MakeGenericType(BeamTransferType) : null;
+
+        // Both FillTransferQueue/FillTransferQueueAuto have a public delegator and an
+        // internal worker overload; the worker is the one JobDriver_OperateBeamManipulator
+        // and Building_BeamManipulatorAuto actually call, and the one whose queue we need
+        // to postfix. AccessTools.Method(type, name) - name only - is ambiguous between the
+        // two overloads and throws AmbiguousMatchException during PatchAll, so both worker
+        // overloads are resolved here by their exact current parameter lists instead. The
+        // public delegators are deliberately never patched: they just forward into the
+        // worker overload below, so patching both would run our postfix twice per call.
+
+        // Manual worker (9 params): adds a HashSet<IntVec3>/List<IntVec3> candidate-cell
+        // scratch pair after the public delegator's 7 params (pawn, manipulator,
+        // desiredCount, destinationQueue, excludedThings, excludedDestinations, preferredThing).
+        private static readonly MethodInfo FillTransferQueueMethod =
+            (BeamManipulatorUtilityType != null && BeamManipulatorType != null && BeamTransferListType != null)
+                ? AccessTools.Method(BeamManipulatorUtilityType, "FillTransferQueue", new[]
+                    {
+                        typeof(Pawn), BeamManipulatorType, typeof(int), BeamTransferListType,
+                        typeof(HashSet<Thing>), typeof(HashSet<IntVec3>), typeof(Thing),
+                        typeof(HashSet<IntVec3>), typeof(List<IntVec3>)
+                    })
+                : null;
+
+        // Automatic worker (7 params): same scratch pair appended after the public
+        // delegator's 5 params (building, desiredCount, destinationQueue, excludedThings,
+        // excludedDestinations).
+        private static readonly MethodInfo FillTransferQueueAutoMethod =
+            (BeamManipulatorUtilityType != null && BeamManipulatorAutoType != null && BeamTransferListType != null)
+                ? AccessTools.Method(BeamManipulatorUtilityType, "FillTransferQueueAuto", new[]
+                    {
+                        BeamManipulatorAutoType, typeof(int), BeamTransferListType,
+                        typeof(HashSet<Thing>), typeof(HashSet<IntVec3>),
+                        typeof(HashSet<IntVec3>), typeof(List<IntVec3>)
+                    })
+                : null;
 
         private static readonly ConstructorInfo BeamTransferCtor =
             BeamTransferType?.GetConstructor(new[] { typeof(Thing), typeof(IntVec3), typeof(Thing), typeof(int) });
@@ -177,10 +219,9 @@ namespace SK_Matter_Network.Patches
         public static class Patch_FillTransferQueue
         {
             [HarmonyPrepare]
-            public static bool Prepare() => IsAvailable();
+            public static bool Prepare() => IsAvailable() && FillTransferQueueMethod != null;
 
-            public static MethodBase TargetMethod() =>
-                AccessTools.Method(BeamManipulatorUtilityType, "FillTransferQueue");
+            public static MethodBase TargetMethod() => FillTransferQueueMethod;
 
             public static void Postfix(object[] __args)
             {
@@ -213,10 +254,9 @@ namespace SK_Matter_Network.Patches
         public static class Patch_FillTransferQueueAuto
         {
             [HarmonyPrepare]
-            public static bool Prepare() => IsAvailable();
+            public static bool Prepare() => IsAvailable() && FillTransferQueueAutoMethod != null;
 
-            public static MethodBase TargetMethod() =>
-                AccessTools.Method(BeamManipulatorUtilityType, "FillTransferQueueAuto");
+            public static MethodBase TargetMethod() => FillTransferQueueAutoMethod;
 
             public static void Postfix(object[] __args)
             {
