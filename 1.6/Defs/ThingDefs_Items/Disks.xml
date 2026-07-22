@@ -199,6 +199,32 @@
             <ComponentSpacer>4</ComponentSpacer>
             <Gold>2</Gold>
         </costList>
+    </ThingDef>
+
+    <ThingDef ParentName="CraftableDiskBase">
+        <defName>MN_Disk64k</defName>
+        <label>64k disk</label>
+        <description>A data storage disk that can hold up to 65536 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Item/Disk_64k</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+        </graphicData>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_DiskCapacity">
+                <maxBytes>65536</maxBytes>
+            </li>
+        </comps>
+        <recipeMaker>
+            <skillRequirements>
+                <Crafting>17</Crafting>
+            </skillRequirements>
+        </recipeMaker>
+        <costList>
+            <Plasteel>250</Plasteel>
+            <ComponentSpacer>4</ComponentSpacer>
+            <Gold>2</Gold>
+            <Uranium>50</Uranium>
+        </costList>
         <tradeTags>
             <li>ExoticMisc</li>
         </tradeTags>
