@@ -6,12 +6,6 @@ using Verse;
 
 namespace SK_Matter_Network.Patches
 {
-    // Soft compat: Better Workbench Management's additional-output filter counts physical
-    // map items, pawn inventories/equipment, and the vanilla resource counter, but never
-    // enumerates IHaulSource containers - so a non-resource filtered output stored in the
-    // network never counts toward the bill's target. No compile-time reference to BWM's
-    // assembly; everything below is resolved via reflection and skipped if BWM isn't loaded
-    // or its internal API no longer matches.
     public static class BetterWorkbenchManagementCompat
     {
         private const string PackageId = "falconne.BWM";
@@ -56,10 +50,6 @@ namespace SK_Matter_Network.Patches
                 ThingDef productThingDef, Bill_Production bill, RecipeWorkerCounter recipeWorkerCounter,
                 bool defaultProduct, ref int __result)
             {
-                // The default product is already counted by RimWorld's base counter
-                // (including Matter Network's own duplicate-count correction), a bill
-                // restricted to a physical stockpile must keep ignoring the network, and
-                // resource defs are already included once via Patch_ResourceCounter.
                 if (defaultProduct || productThingDef.CountAsResource || bill.GetIncludeSlotGroup() != null)
                 {
                     return;

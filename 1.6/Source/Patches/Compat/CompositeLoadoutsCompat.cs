@@ -10,15 +10,6 @@ using Verse.AI;
 
 namespace SK_Matter_Network.Patches
 {
-    // Composite Loadouts (Wiri.compositableloadouts) resolves its required equipment via
-    // Inventory.Item.ThingsOnMap(Map), which only enumerates map.listerThings.ThingsOfDef,
-    // and its apparel path via map.listerThings.ThingsInGroup(Apparel). Matter Network's
-    // items are held unspawned inside the active controller's ControllerItemOwner, so
-    // neither lister ever sees them - none of Matter Network's own GenClosest/ListerThings
-    // patches help here, since Composite Loadouts never calls those RimWorld helpers.
-    //
-    // Verified against the mod's public source (simplyWiri/Loadout-Compositing,
-    // Source/AI/ThinkNode_LoadoutRealisation.cs and Source/Utility/Utility.cs).
     public static class CompositeLoadoutsCompat
     {
         private const string PackageId = "wiri.compositableloadouts";
@@ -80,12 +71,6 @@ namespace SK_Matter_Network.Patches
             return available;
         }
 
-        // Postfix: append network items to Item.ThingsOnMap so Composite Loadouts' non-apparel
-        // resolver (FindItem) can see and select them, respecting the item's own def/stuff/
-        // quality/hitpoint Filter. Reachability, reservation, forbiddance, and haul toils for
-        // the resulting TakeInventory/Equip job are already covered by Matter Network's
-        // existing generic patches (ForbidUtility, Reachability, Toils_Goto, Toils_Haul,
-        // JobDriver_TakeInventory, JobDriver_Equip).
         [HarmonyPatch]
         public static class Patch_ThingsOnMap
         {
@@ -131,17 +116,6 @@ namespace SK_Matter_Network.Patches
             }
         }
 
-        // FindItem sorts single-item candidates via DecideItemPriority, whose final fallback
-        // sorts by t.InteractionCell.DistanceToSquared(pawn.InteractionCell). That's a lambda
-        // capturing `pawn`, so the compiler emits it as its own method on a generated display
-        // class (Inventory.ThinkNode_LoadoutRealisation+<>c__DisplayClassNN_0.<DecideItemPriority>b__2),
-        // not as part of DecideItemPriority's own IL - patching DecideItemPriority itself replaces
-        // nothing. InteractionCell resolves from the thing's raw Position/Map, which are
-        // invalid/null for our unspawned network items, and crashes with a NullReferenceException
-        // deep in GenGrid.Walkable. Rather than patch the (extremely hot) vanilla
-        // Thing.InteractionCell getter globally, find that specific generated lambda by scanning
-        // ThinkNode_LoadoutRealisation's nested display-class methods for the one that actually
-        // calls InteractionCell, and replace just that call site with a safe equivalent.
         [HarmonyPatch]
         public static class Patch_DecideItemPriorityLambda
         {
@@ -234,10 +208,6 @@ namespace SK_Matter_Network.Patches
             return ThingUtility.InteractionCellWhenAt(t.def, t.PositionHeld, t.Rotation, map);
         }
 
-        // Postfix: when Composite Loadouts' own clothing search (over listerThings.ThingsInGroup)
-        // finds nothing - it never will for network apparel, since network items are never spawned -
-        // fall back to a network-aware search reproducing SatisfyLoadoutClothingJob/ValidApparelFor's
-        // own selection (outfit policy + loadout item filter + ShouldAttemptToEquip + ApparelScoreGain).
         [HarmonyPatch]
         public static class Patch_SatisfyLoadoutClothingJob
         {
@@ -330,9 +300,7 @@ namespace SK_Matter_Network.Patches
 
             return false;
         }
-
-        // Mirrors Composite Loadouts' own ValidApparelFor (outfit policy, gender, HasPartsToWear,
-        // ShouldAttemptToEquip), substituting network extraction viability for a plain reach check.
+        
         private static bool ValidNetworkApparelFor(Apparel apparel, Pawn pawn)
         {
             if (!pawn.outfits.CurrentApparelPolicy.filter.Allows(apparel))
