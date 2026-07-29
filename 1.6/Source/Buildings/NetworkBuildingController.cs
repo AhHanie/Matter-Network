@@ -67,7 +67,12 @@ namespace SK_Matter_Network
 
         public bool RemoveApparel(Apparel apparel)
         {
-            return innerContainer.Remove(apparel);
+            bool removed = innerContainer.Remove(apparel);
+            if (removed)
+            {
+                ParentNetwork?.MarkBytesDirty();
+            }
+            return removed;
         }
 
         public void Notify_ItemAdded(Thing item)

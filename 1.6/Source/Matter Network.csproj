@@ -154,6 +154,7 @@
     <Compile Include="Patches\JobDriver_DoBill.cs" />
     <Compile Include="Patches\JobDriver_Refuel.cs" />
     <Compile Include="Patches\JobDriver_TakeInventory.cs" />
+    <Compile Include="Patches\JobDriver_Equip.cs" />
     <Compile Include="Patches\GenClosest.cs" />
     <Compile Include="Patches\Designator_Build.cs" />
     <Compile Include="Patches\ItemAvailability.cs" />
@@ -184,6 +185,7 @@
     <Compile Include="Patches\Compat\VanillaTradingExpandedCompat.cs" />
     <Compile Include="Patches\Compat\RimDarkMankindsFinestCompat.cs" />
     <Compile Include="Patches\Compat\BetterWorkbenchManagementCompat.cs" />
+    <Compile Include="Patches\Compat\CompositeLoadoutsCompat.cs" />
     <Compile Include="Patches\Pawn_JobTracker.cs" />
     <Compile Include="Patches\Pawn_TradeTracker.cs" />
     <Compile Include="Patches\RefuelWorkGiverUtility.cs" />
