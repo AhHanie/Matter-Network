@@ -23,14 +23,13 @@ namespace SK_Matter_Network.Patches
                     LocalTargetInfo dest = actor.jobs.curJob.GetTarget(ind);
                     Thing thing = dest.Thing;
 
-                    if (thing == null || thing.MapHeld == null)
+                    if (thing == null || actor.Map == null)
                     {
                         originalInitAction();
                         return;
                     }
 
-                    NetworksMapComponent mapComp = thing.MapHeld.GetComponent<NetworksMapComponent>();
-                    if (!mapComp.TryGetItemNetwork(thing, out DataNetwork network))
+                    if (!NetworkItemSearchUtility.TryResolveNetworkItem(actor.Map, thing, out DataNetwork network))
                     {
                         originalInitAction();
                         return;

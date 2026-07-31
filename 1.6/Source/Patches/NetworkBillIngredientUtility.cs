@@ -65,10 +65,9 @@ namespace SK_Matter_Network.Patches
             if (pawn?.Map == null)
                 return false;
 
-            NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
             for (int i = 0; i < targetQueue.Count; i++)
             {
-                if (targetQueue[i].HasThing && mapComp.TryGetItemNetwork(targetQueue[i].Thing, out _))
+                if (targetQueue[i].HasThing && NetworkItemSearchUtility.TryResolveNetworkItem(pawn.Map, targetQueue[i].Thing, out _))
                     return true;
             }
 
@@ -80,7 +79,6 @@ namespace SK_Matter_Network.Patches
             if (pawn?.Map == null)
                 return;
 
-            NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
             List<int> countQueue = job.countQueue;
 
             for (int i = 0; i < targetQueue.Count; i++)
@@ -91,7 +89,7 @@ namespace SK_Matter_Network.Patches
 
                 int desiredCount = (countQueue != null && i < countQueue.Count) ? countQueue[i] : -1;
 
-                if (!mapComp.TryGetItemNetwork(target.Thing, out _))
+                if (!NetworkItemSearchUtility.TryResolveNetworkItem(pawn.Map, target.Thing, out _))
                 {
                     pawn.Map.reservationManager.Reserve(pawn, job, target, 1, -1, null, false, false, false);
                     continue;

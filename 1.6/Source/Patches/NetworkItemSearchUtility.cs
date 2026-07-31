@@ -154,11 +154,37 @@ namespace SK_Matter_Network.Patches
             return closestDistanceSquared;
         }
 
-        public static bool TryGetPawnMapNetwork(Pawn pawn, Thing item, out DataNetwork network)
+        public static bool TryResolveNetworkItem(Map map, Thing item, out DataNetwork network)
         {
             network = null;
-            NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
-            return mapComp.TryGetItemNetwork(item, out network);
+            if (map == null || item == null)
+            {
+                return false;
+            }
+
+            NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
+            if (mapComp.TryGetItemNetwork(item, out network))
+            {
+                return true;
+            }
+
+            if (item.ParentHolder is NetworkBuildingController controller &&
+                controller.Spawned &&
+                controller.Map == map &&
+                controller.innerContainer != null &&
+                controller.innerContainer.Contains(item) &&
+                controller.ParentNetwork != null)
+            {
+                network = controller.ParentNetwork;
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool TryGetPawnMapNetwork(Pawn pawn, Thing item, out DataNetwork network)
+        {
+            return TryResolveNetworkItem(pawn.Map, item, out network);
         }
 
         public static bool IsUsableNetworkItemForExtraction(Pawn pawn, Thing item, out DataNetwork network)
