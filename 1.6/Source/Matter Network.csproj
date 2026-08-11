@@ -187,6 +187,7 @@
     <Compile Include="Patches\Compat\BetterWorkbenchManagementCompat.cs" />
     <Compile Include="Patches\Compat\CompositeLoadoutsCompat.cs" />
     <Compile Include="Patches\Compat\DragonsDescentCompat.cs" />
+    <Compile Include="Patches\Compat\CommonSenseCompat.cs" />
     <Compile Include="Patches\Pawn_JobTracker.cs" />
     <Compile Include="Patches\Pawn_TradeTracker.cs" />
     <Compile Include="Patches\RefuelWorkGiverUtility.cs" />
