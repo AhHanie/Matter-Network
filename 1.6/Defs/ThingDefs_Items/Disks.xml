@@ -233,7 +233,7 @@
     <ThingDef ParentName="DiskBase">
         <defName>MN_Disk256k</defName>
         <label>256k disk</label>
-        <description>A data storage disk that can hold up to 32768 bytes of information. Each stored item consumes 1 byte per unit.</description>
+        <description>A data storage disk that can hold up to 262144 bytes of information. Each stored item consumes 1 byte per unit.</description>
         <graphicData>
             <texPath>MatterNetwork/Things/Item/Disk_256k</texPath>
             <graphicClass>Graphic_Single</graphicClass>
