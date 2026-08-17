@@ -24,13 +24,17 @@ namespace SK_Matter_Network.Patches
             AccessTools.TypeByName("UniqueWeaponsUnbound.HaulPlanning.IngredientReservation");
         private static readonly Type haulCandidateType =
             AccessTools.TypeByName("UniqueWeaponsUnbound.HaulPlanning.HaulCandidate");
+        private static readonly Type haulPlannerType =
+            AccessTools.TypeByName("UniqueWeaponsUnbound.HaulPlanning.IHaulPlanner");
         private static readonly Type jobDriverType =
             AccessTools.TypeByName("UniqueWeaponsUnbound.JobDriver_CustomizeWeapon");
 
         private static readonly MethodInfo countAvailableMethod = ingredientReservationType == null ? null :
             AccessTools.Method(ingredientReservationType, "CountAvailable", new[] { typeof(Map), typeof(ThingDef), typeof(Pawn) });
-        private static readonly MethodInfo buildHaulPoolMethod = ingredientReservationType == null ? null :
-            AccessTools.Method(ingredientReservationType, "BuildHaulPool", new[] { typeof(Pawn), typeof(Dictionary<ThingDef, int>), typeof(float), typeof(int) });
+        private static readonly MethodInfo buildHaulPoolMethod = ingredientReservationType == null || haulPlannerType == null ? null :
+            AccessTools.Method(ingredientReservationType, "BuildHaulPool",
+                new[] { typeof(Pawn), typeof(Dictionary<ThingDef, int>), haulPlannerType });
+
         private static readonly MethodInfo gotoIngredientFailConditionMethod = jobDriverType == null ? null :
             AccessTools.Method(jobDriverType, "GotoIngredientFailCondition");
         private static readonly MethodInfo doCarryTrackerPickupMethod = jobDriverType == null ? null :
@@ -58,41 +62,142 @@ namespace SK_Matter_Network.Patches
             AccessTools.Field(haulCandidateType, "AvailableCount");
         private static readonly FieldInfo candidateMassPerUnitField = haulCandidateType == null ? null :
             AccessTools.Field(haulCandidateType, "MassPerUnit");
+        private static readonly FieldInfo candidateGroupIdField = haulCandidateType == null ? null :
+            AccessTools.Field(haulCandidateType, "GroupId");
 
-        private static bool _warnedMissingApi;
+        private static readonly PropertyInfo plannerMultiplierProperty = haulPlannerType == null ? null :
+            AccessTools.Property(haulPlannerType, "CandidatePoolMultiplier");
+        private static readonly PropertyInfo plannerCapProperty = haulPlannerType == null ? null :
+            AccessTools.Property(haulPlannerType, "CandidatePoolCap");
+        private static readonly PropertyInfo plannerGroupPoolProperty = haulPlannerType == null ? null :
+            AccessTools.Property(haulPlannerType, "GroupPoolBySlotGroup");
 
-        private static bool IsAvailable()
+        private static readonly HashSet<string> warnedCapabilities = new HashSet<string>();
+
+        private static bool CapCounting => countAvailableMethod != null;
+
+        private static bool CapPlanner =>
+            ingredientReservationType != null
+            && haulCandidateType != null
+            && haulPlannerType != null
+            && buildHaulPoolMethod != null
+            && candidateThingField != null
+            && candidatePositionField != null
+            && candidateAvailableCountField != null
+            && candidateMassPerUnitField != null
+            && candidateGroupIdField != null
+            && plannerMultiplierProperty != null
+            && plannerCapProperty != null
+            && plannerGroupPoolProperty != null;
+
+        private static bool CapFailCondition =>
+            jobDriverType != null
+            && gotoIngredientFailConditionMethod != null
+            && setBailMessageMethod != null
+            && weaponLabelProperty != null;
+
+        private static bool CapCarryPickup =>
+            jobDriverType != null
+            && doCarryTrackerPickupMethod != null
+            && pickupDestinationsField != null
+            && pickupLastInTripField != null
+            && currentPickupLastInTripField != null
+            && setBailMessageMethod != null
+            && weaponLabelProperty != null;
+
+        private static bool CapInventoryPickup =>
+            jobDriverType != null
+            && doInventoryPickupMethod != null
+            && currentTripInvLoadField != null
+            && setBailMessageMethod != null
+            && weaponLabelProperty != null;
+
+        private static bool CapDialogAndPlan => CapCounting && CapPlanner && CapFailCondition;
+
+        private static string DescribeMissing(params (string label, bool present)[] checks)
         {
-            return ingredientReservationType != null
-                && haulCandidateType != null
-                && jobDriverType != null
-                && countAvailableMethod != null
-                && buildHaulPoolMethod != null
-                && gotoIngredientFailConditionMethod != null
-                && doCarryTrackerPickupMethod != null
-                && doInventoryPickupMethod != null
-                && setBailMessageMethod != null
-                && weaponLabelProperty != null
-                && currentTripInvLoadField != null
-                && pickupDestinationsField != null
-                && pickupLastInTripField != null
-                && currentPickupLastInTripField != null
-                && candidateThingField != null
-                && candidatePositionField != null
-                && candidateAvailableCountField != null
-                && candidateMassPerUnitField != null;
+            List<string> missing = new List<string>();
+            foreach ((string label, bool present) in checks)
+            {
+                if (!present) missing.Add(label);
+            }
+            return missing.Count > 0 ? string.Join(", ", missing) : "(unknown)";
         }
 
-        private static bool Prepare()
+        private static void WarnMissingCapability(string capability, string missingMembers)
         {
-            bool active = ModsConfig.IsActive(PackageId);
-            bool available = active && IsAvailable();
-            if (active && !available && !_warnedMissingApi)
-            {
-                _warnedMissingApi = true;
-                Logger.Warning("[UWU Compat] Unique Weapons Unbound is loaded but expected API was not found. UWU network-hauling compat disabled.");
-            }
-            return available;
+            if (!warnedCapabilities.Add(capability)) return;
+
+            Assembly uwuAssembly = ingredientReservationType?.Assembly ?? jobDriverType?.Assembly;
+            string version = uwuAssembly?.GetName().Version?.ToString() ?? "unknown";
+            Logger.Warning("[UWU Compat] Unique Weapons Unbound (assembly v" + version
+                + ") is loaded but is missing: " + missingMembers
+                + ". Network-hauling compatibility for '" + capability + "' is disabled.");
+        }
+
+        private static bool Prepare_DialogAndPlan()
+        {
+            if (!ModsConfig.IsActive(PackageId)) return false;
+            if (CapDialogAndPlan) return true;
+
+            WarnMissingCapability("dialog count / haul planner", DescribeMissing(
+                ("IngredientReservation type", ingredientReservationType != null),
+                ("HaulCandidate type", haulCandidateType != null),
+                ("IHaulPlanner type", haulPlannerType != null),
+                ("IngredientReservation.CountAvailable(Map,ThingDef,Pawn)", countAvailableMethod != null),
+                ("IngredientReservation.BuildHaulPool(Pawn,Dictionary<ThingDef,int>,IHaulPlanner)", buildHaulPoolMethod != null),
+                ("HaulCandidate.Thing/Position/AvailableCount/MassPerUnit/GroupId fields",
+                    candidateThingField != null && candidatePositionField != null
+                        && candidateAvailableCountField != null && candidateMassPerUnitField != null
+                        && candidateGroupIdField != null),
+                ("IHaulPlanner.CandidatePoolMultiplier/CandidatePoolCap/GroupPoolBySlotGroup",
+                    plannerMultiplierProperty != null && plannerCapProperty != null && plannerGroupPoolProperty != null),
+                ("JobDriver_CustomizeWeapon.GotoIngredientFailCondition (required as the baseline extraction path)",
+                    CapFailCondition)));
+            return false;
+        }
+
+        private static bool Prepare_FailCondition()
+        {
+            if (!ModsConfig.IsActive(PackageId)) return false;
+            if (CapFailCondition) return true;
+
+            WarnMissingCapability("ingredient goto fail condition", DescribeMissing(
+                ("JobDriver_CustomizeWeapon type", jobDriverType != null),
+                ("JobDriver_CustomizeWeapon.GotoIngredientFailCondition", gotoIngredientFailConditionMethod != null),
+                ("JobDriver_CustomizeWeapon.SetBailMessage", setBailMessageMethod != null),
+                ("JobDriver_CustomizeWeapon.WeaponLabel", weaponLabelProperty != null)));
+            return false;
+        }
+
+        private static bool Prepare_CarryPickup()
+        {
+            if (!ModsConfig.IsActive(PackageId)) return false;
+            if (CapCarryPickup) return true;
+
+            WarnMissingCapability("carry-tracker hybrid pickup", DescribeMissing(
+                ("JobDriver_CustomizeWeapon type", jobDriverType != null),
+                ("JobDriver_CustomizeWeapon.DoCarryTrackerPickup", doCarryTrackerPickupMethod != null),
+                ("JobDriver_CustomizeWeapon.pickupDestinations", pickupDestinationsField != null),
+                ("JobDriver_CustomizeWeapon.pickupLastInTrip", pickupLastInTripField != null),
+                ("JobDriver_CustomizeWeapon.currentPickupLastInTrip", currentPickupLastInTripField != null),
+                ("JobDriver_CustomizeWeapon.SetBailMessage", setBailMessageMethod != null),
+                ("JobDriver_CustomizeWeapon.WeaponLabel", weaponLabelProperty != null)));
+            return false;
+        }
+
+        private static bool Prepare_InventoryPickup()
+        {
+            if (!ModsConfig.IsActive(PackageId)) return false;
+            if (CapInventoryPickup) return true;
+
+            WarnMissingCapability("inventory hybrid pickup", DescribeMissing(
+                ("JobDriver_CustomizeWeapon type", jobDriverType != null),
+                ("JobDriver_CustomizeWeapon.DoInventoryPickup", doInventoryPickupMethod != null),
+                ("JobDriver_CustomizeWeapon.currentTripInvLoad", currentTripInvLoadField != null),
+                ("JobDriver_CustomizeWeapon.SetBailMessage", setBailMessageMethod != null),
+                ("JobDriver_CustomizeWeapon.WeaponLabel", weaponLabelProperty != null)));
+            return false;
         }
 
         // ---- shared helpers ----
@@ -156,7 +261,7 @@ namespace SK_Matter_Network.Patches
         public static class Patch_CountAvailable
         {
             [HarmonyPrepare]
-            public static bool Prepare() => UniqueWeaponsUnboundCompat.Prepare();
+            public static bool Prepare() => Prepare_DialogAndPlan();
 
             public static MethodBase TargetMethod() => countAvailableMethod;
 
@@ -179,37 +284,57 @@ namespace SK_Matter_Network.Patches
         public static class Patch_BuildHaulPool
         {
             [HarmonyPrepare]
-            public static bool Prepare() => UniqueWeaponsUnboundCompat.Prepare();
+            public static bool Prepare() => Prepare_DialogAndPlan();
 
             public static MethodBase TargetMethod() => buildHaulPoolMethod;
 
-            public static void Postfix(Pawn pawn, Dictionary<ThingDef, int> demand, float multiplier, int capPerDef, ref object __result)
+            public static void Postfix(Pawn pawn, Dictionary<ThingDef, int> demand, object planner, object __result)
             {
                 if (pawn?.Map == null || demand == null || demand.Count == 0) return;
+                if (planner == null) return;
                 if (!(__result is IDictionary pool)) return;
 
                 Map map = pawn.Map;
                 NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
                 if (mapComp == null || mapComp.Networks.Count == 0) return;
 
+                float multiplier = (float)plannerMultiplierProperty.GetValue(planner);
+                int cap = (int)plannerCapProperty.GetValue(planner);
+                bool grouped = (bool)plannerGroupPoolProperty.GetValue(planner);
+
                 foreach (KeyValuePair<ThingDef, int> entry in demand)
                 {
                     ThingDef def = entry.Key;
                     int needed = entry.Value;
                     if (needed <= 0) continue;
+                    if (!pool.Contains(def)) continue;
+                    if (!(pool[def] is IList list)) continue;
 
-                    IList list = GetOrCreateCandidateList(pool, def);
-                    if (list == null) continue;
+                    int targetCount = Mathf.CeilToInt(needed * multiplier);
 
                     int cumulative = 0;
                     foreach (object existing in list)
                     {
                         cumulative += (int)candidateAvailableCountField.GetValue(existing);
                     }
-
-                    int targetCount = Mathf.CeilToInt(needed * multiplier);
                     if (cumulative >= targetCount) continue;
-                    if (list.Count >= capPerDef) continue;
+
+                    int representedGroups = 0;
+                    HashSet<int> seenGroupIds = null;
+                    if (grouped)
+                    {
+                        seenGroupIds = new HashSet<int>();
+                        foreach (object existing in list)
+                        {
+                            int gid = (int)candidateGroupIdField.GetValue(existing);
+                            if (gid < 0 || seenGroupIds.Add(gid)) representedGroups++;
+                        }
+                        if (representedGroups >= cap) continue;
+                    }
+                    else if (list.Count >= cap)
+                    {
+                        continue;
+                    }
 
                     List<Thing> candidates = new List<Thing>();
                     foreach (Thing item in NetworkItemSearchUtility.AllNetworkItems(map))
@@ -227,7 +352,7 @@ namespace SK_Matter_Network.Patches
                     foreach (Thing item in candidates)
                     {
                         if (cumulative >= targetCount) break;
-                        if (list.Count >= capPerDef) break;
+                        if (grouped ? representedGroups >= cap : list.Count >= cap) break;
 
                         if (!mapComp.TryGetItemNetwork(item, out DataNetwork network)) continue;
 
@@ -243,23 +368,13 @@ namespace SK_Matter_Network.Patches
                         candidatePositionField.SetValue(candidate, closestInterface.InteractionCell);
                         candidateAvailableCountField.SetValue(candidate, reservable);
                         candidateMassPerUnitField.SetValue(candidate, item.GetStatValue(StatDefOf.Mass));
+                        candidateGroupIdField.SetValue(candidate, -1);
 
                         list.Add(candidate);
                         cumulative += reservable;
+                        if (grouped) representedGroups++;
                     }
                 }
-            }
-
-            private static IList GetOrCreateCandidateList(IDictionary pool, ThingDef def)
-            {
-                if (pool.Contains(def))
-                {
-                    return pool[def] as IList;
-                }
-
-                object newList = Activator.CreateInstance(typeof(List<>).MakeGenericType(haulCandidateType));
-                pool[def] = newList;
-                return newList as IList;
             }
         }
 
@@ -269,7 +384,7 @@ namespace SK_Matter_Network.Patches
         public static class Patch_GotoIngredientFailCondition
         {
             [HarmonyPrepare]
-            public static bool Prepare() => UniqueWeaponsUnboundCompat.Prepare();
+            public static bool Prepare() => Prepare_FailCondition();
 
             public static MethodBase TargetMethod() => gotoIngredientFailConditionMethod;
 
@@ -296,7 +411,7 @@ namespace SK_Matter_Network.Patches
         public static class Patch_DoCarryTrackerPickup
         {
             [HarmonyPrepare]
-            public static bool Prepare() => UniqueWeaponsUnboundCompat.Prepare();
+            public static bool Prepare() => Prepare_CarryPickup();
 
             public static MethodBase TargetMethod() => doCarryTrackerPickupMethod;
 
@@ -361,7 +476,7 @@ namespace SK_Matter_Network.Patches
         public static class Patch_DoInventoryPickup
         {
             [HarmonyPrepare]
-            public static bool Prepare() => UniqueWeaponsUnboundCompat.Prepare();
+            public static bool Prepare() => Prepare_InventoryPickup();
 
             public static MethodBase TargetMethod() => doInventoryPickupMethod;
 
