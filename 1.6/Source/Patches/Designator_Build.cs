@@ -36,6 +36,15 @@ namespace SK_Matter_Network.Patches
 
                 Map map = __instance.Map;
 
+                if (BetterArchitectCompat.TryGetSelectedFloorStuff(__instance, thingDef, map, out ThingDef bamStuffDef))
+                {
+                    __instance.CurActivateSound?.PlayOneShotOnCamera();
+                    Find.DesignatorManager.Select(__instance);
+                    __instance.SetStuffDef(bamStuffDef);
+                    WriteStuffRef(__instance) = true;
+                    return false;
+                }
+
                 List<ThingDef> availableStuffDefs = GetAvailableStuffDefs(map, thingDef);
                 if (availableStuffDefs.Count == 0)
                 {
@@ -107,7 +116,7 @@ namespace SK_Matter_Network.Patches
                 .ToList();
         }
 
-        private static bool HasUsableStuff(Map map, ThingDef stuffDef)
+        internal static bool HasUsableStuff(Map map, ThingDef stuffDef)
         {
             if (map.listerThings.ThingsOfDef(stuffDef).Count > 0)
             {
