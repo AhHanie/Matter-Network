@@ -129,38 +129,69 @@ namespace SK_Matter_Network.Patches
                     return;
                 }
 
-                if (!(designatorBuild.PlacingDef is ThingDef buildingDef) || !buildingDef.MadeFromStuff)
-                {
-                    return;
-                }
-
+                // BAM's Floors tab groups both terrain floors (TerrainDef) and modded buildable
+                // floors (ThingDef) by material, not just stuff-made ThingDef buildings.
+                BuildableDef floorDef = designatorBuild.PlacingDef as BuildableDef;
                 Map map = Find.CurrentMap;
-                if (map == null)
+                if (floorDef == null || map == null)
                 {
                     return;
                 }
 
-                HashSet<ThingDef> seenStuffDefs = new HashSet<ThingDef>();
+                HashSet<ThingDef> seenMaterialDefs = new HashSet<ThingDef>();
                 foreach (Thing item in NetworkItemSearchUtility.AllNetworkItems(map))
                 {
-                    ThingDef stuffDef = item.def;
-                    if (!seenStuffDefs.Add(stuffDef))
+                    ThingDef materialDef = item.def;
+                    if (!seenMaterialDefs.Add(materialDef))
                     {
                         continue;
                     }
 
-                    if (!stuffDef.IsStuff || stuffDef.stuffProps == null || !stuffDef.stuffProps.CanMake(buildingDef))
+                    if (!MatchesFloorCost(floorDef, materialDef))
                     {
                         continue;
                     }
 
                     object materialInfo = materialInfoConstructor.Invoke(new object[]
                     {
-                        (string)stuffDef.LabelCap, stuffDef.uiIcon, stuffDef.uiIconColor, stuffDef
+                        (string)materialDef.LabelCap, materialDef.uiIcon, materialDef.uiIconColor, materialDef
                     });
 
                     AddDesignatorToMaterial(floorsByMaterial, materialInfo, designatorBuild);
                 }
+            }
+
+            // Mirrors BAM's GetFloorCosts: a floor's material rows come from either its fixed
+            // costList (e.g. wood/steel floors, no IsStuff requirement) or, for variable-stuff
+            // floors, any stuff whose stuffProps.categories overlaps costStuffCount/stuffCategories.
+            private static bool MatchesFloorCost(BuildableDef floorDef, ThingDef materialDef)
+            {
+                List<ThingDefCountClass> costList = floorDef.costList;
+                if (costList != null)
+                {
+                    for (int i = 0; i < costList.Count; i++)
+                    {
+                        if (costList[i].thingDef == materialDef)
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                List<StuffCategoryDef> stuffCategories = floorDef.stuffCategories;
+                if (floorDef.costStuffCount > 0 && !stuffCategories.NullOrEmpty()
+                    && materialDef.IsStuff && materialDef.stuffProps?.categories != null)
+                {
+                    for (int i = 0; i < stuffCategories.Count; i++)
+                    {
+                        if (materialDef.stuffProps.categories.Contains(stuffCategories[i]))
+                        {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
             }
 
             private static void AddDesignatorToMaterial(IDictionary floorsByMaterial, object materialKey, Designator designator)
