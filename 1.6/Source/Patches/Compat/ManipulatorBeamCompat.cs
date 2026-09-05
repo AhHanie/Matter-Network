@@ -11,8 +11,9 @@ namespace SK_Matter_Network.Patches
 {
     // Soft compat: lets Manipulator Beam Emitter buildings beam ordinary map haulables
     // into Matter Network interfaces/chutes when the network is the best storage
-    // destination. No compile-time reference to ManipulatorBeam.dll; everything below
-    // is resolved via reflection and skipped entirely if the mod isn't loaded.
+    // destination, and lets them extract network-stored items back onto the map for
+    // delivery elsewhere. No compile-time reference to ManipulatorBeam.dll; everything
+    // below is resolved via reflection and skipped entirely if the mod isn't loaded.
     public static class ManipulatorBeamCompat
     {
         private static readonly System.Type BeamManipulatorUtilityType =
@@ -21,44 +22,25 @@ namespace SK_Matter_Network.Patches
             AccessTools.TypeByName("ManipulatorBeam.BeamTransfer");
         private static readonly System.Type BeamClaimUtilityType =
             AccessTools.TypeByName("ManipulatorBeam.BeamClaimUtility");
-        private static readonly System.Type BeamManipulatorType =
-            AccessTools.TypeByName("ManipulatorBeam.Building_BeamManipulator");
-        private static readonly System.Type BeamManipulatorAutoType =
-            AccessTools.TypeByName("ManipulatorBeam.Building_BeamManipulatorAuto");
+        private static readonly System.Type BeamOperatorType =
+            AccessTools.TypeByName("ManipulatorBeam.IBeamOperator");
 
         private static readonly System.Type BeamTransferListType =
             BeamTransferType != null ? typeof(List<>).MakeGenericType(BeamTransferType) : null;
 
-        // Both FillTransferQueue/FillTransferQueueAuto have a public delegator and an
-        // internal worker overload; the worker is the one JobDriver_OperateBeamManipulator
-        // and Building_BeamManipulatorAuto actually call, and the one whose queue we need
-        // to postfix. AccessTools.Method(type, name) - name only - is ambiguous between the
-        // two overloads and throws AmbiguousMatchException during PatchAll, so both worker
-        // overloads are resolved here by their exact current parameter lists instead. The
-        // public delegators are deliberately never patched: they just forward into the
-        // worker overload below, so patching both would run our postfix twice per call.
-
-        // Manual worker (9 params): adds a HashSet<IntVec3>/List<IntVec3> candidate-cell
-        // scratch pair after the public delegator's 7 params (pawn, manipulator,
-        // desiredCount, destinationQueue, excludedThings, excludedDestinations, preferredThing).
+        // Both emitter variants now share a single queue-fill worker keyed on the
+        // IBeamOperator abstraction: Building_BeamManipulator.TickOperated(IBeamOperator)
+        // calls it directly for both BeamPawnOperator (manual) and BeamAutoOperator
+        // (automatic). There's only one overload today, but this is resolved by its
+        // exact parameter list rather than name-only AccessTools.Method for the same
+        // reason as the rest of this file: a prior Beam update proved overload
+        // ambiguity is a real failure mode, and an exact match fails closed (null)
+        // instead of throwing if the signature ever changes again.
         private static readonly MethodInfo FillTransferQueueMethod =
-            (BeamManipulatorUtilityType != null && BeamManipulatorType != null && BeamTransferListType != null)
+            (BeamManipulatorUtilityType != null && BeamOperatorType != null && BeamTransferListType != null)
                 ? AccessTools.Method(BeamManipulatorUtilityType, "FillTransferQueue", new[]
                     {
-                        typeof(Pawn), BeamManipulatorType, typeof(int), BeamTransferListType,
-                        typeof(HashSet<Thing>), typeof(HashSet<IntVec3>), typeof(Thing),
-                        typeof(HashSet<IntVec3>), typeof(List<IntVec3>)
-                    })
-                : null;
-
-        // Automatic worker (7 params): same scratch pair appended after the public
-        // delegator's 5 params (building, desiredCount, destinationQueue, excludedThings,
-        // excludedDestinations).
-        private static readonly MethodInfo FillTransferQueueAutoMethod =
-            (BeamManipulatorUtilityType != null && BeamManipulatorAutoType != null && BeamTransferListType != null)
-                ? AccessTools.Method(BeamManipulatorUtilityType, "FillTransferQueueAuto", new[]
-                    {
-                        BeamManipulatorAutoType, typeof(int), BeamTransferListType,
+                        BeamOperatorType, typeof(int), BeamTransferListType,
                         typeof(HashSet<Thing>), typeof(HashSet<IntVec3>),
                         typeof(HashSet<IntVec3>), typeof(List<IntVec3>)
                     })
@@ -83,23 +65,46 @@ namespace SK_Matter_Network.Patches
             AccessTools.Method(BeamClaimUtilityType, "TryClaimStorageDestination", new[] { BeamTransferType, typeof(int) });
         private static readonly MethodInfo ReleaseClaimMethod =
             AccessTools.Method(BeamClaimUtilityType, "ReleaseClaim", new[] { BeamTransferType, typeof(int) });
+        private static readonly MethodInfo ReleaseAllClaimsForOwnerMethod =
+            AccessTools.Method(BeamClaimUtilityType, "ReleaseAllClaimsForOwner", new[] { typeof(Map), typeof(int) });
         private static readonly MethodInfo IsThingClaimedByOtherMethod =
             AccessTools.Method(BeamClaimUtilityType, "IsThingClaimedByOther", new[] { typeof(Thing), typeof(int) });
 
+        // ManipulatorBeam.IBeamOperator members - the shared abstraction BeamPawnOperator
+        // and BeamAutoOperator both implement. Reading these by reflection lets one
+        // code path serve both emitter kinds instead of the old separate manual/auto
+        // queue methods and manual pawn-vs-faction branching: CanReserve/IsForbidden
+        // already resolve correctly per operator (pawn reservation/forbid checks for
+        // manual, faction-based ones for automatic), and Faction already falls back
+        // to Faction.OfPlayer for the automatic operator.
+        private static readonly PropertyInfo OperatorMapProperty = AccessTools.Property(BeamOperatorType, "Map");
+        private static readonly PropertyInfo OperatorPositionProperty = AccessTools.Property(BeamOperatorType, "Position");
+        private static readonly PropertyInfo OperatorOwnerKeyProperty = AccessTools.Property(BeamOperatorType, "OwnerKey");
+        private static readonly PropertyInfo OperatorPawnProperty = AccessTools.Property(BeamOperatorType, "Pawn");
+        private static readonly PropertyInfo OperatorFactionProperty = AccessTools.Property(BeamOperatorType, "Faction");
+        private static readonly MethodInfo OperatorCanReserveMethod =
+            AccessTools.Method(BeamOperatorType, "CanReserve", new[] { typeof(Thing), typeof(int), typeof(int) });
+        private static readonly MethodInfo OperatorIsForbiddenMethod =
+            AccessTools.Method(BeamOperatorType, "IsForbidden", new[] { typeof(Thing) });
+
         // Beam's own individual sub-checks - used to mirror its real eligibility gate
-        // (CanAutoTransferThingForOwner / IsBeamHaulCandidateForOwner) minus the one
-        // sub-check that's actively hostile to this feature (see IsEligibleCandidate).
+        // (CanBeamTransferThing) minus the one sub-check that's actively hostile to
+        // this feature (see IsEligibleCandidate). Both cooldown methods now take a
+        // Map in addition to the Thing.
         private static readonly MethodInfo IsThingLockedForBillWorkMethod =
             AccessTools.Method(BeamManipulatorUtilityType, "IsThingLockedForBillWork", new[] { typeof(Map), typeof(Thing) });
         private static readonly MethodInfo IsPrisonCellFoodMethod =
             AccessTools.Method(BeamManipulatorUtilityType, "IsPrisonCellFood", new[] { typeof(Thing) });
         private static readonly MethodInfo IsSourceUnavailableCoolingDownMethod =
-            AccessTools.Method(BeamManipulatorUtilityType, "IsSourceUnavailableCoolingDown", new[] { typeof(Thing) });
+            AccessTools.Method(BeamManipulatorUtilityType, "IsSourceUnavailableCoolingDown", new[] { typeof(Map), typeof(Thing) });
+        private static readonly MethodInfo IsStorageRetryCoolingDownMethod =
+            AccessTools.Method(BeamManipulatorUtilityType, "IsStorageRetryCoolingDown", new[] { typeof(Map), typeof(Thing) });
 
         private static bool IsAvailable() =>
             BeamManipulatorUtilityType != null
             && BeamTransferType != null
             && BeamClaimUtilityType != null
+            && BeamOperatorType != null
             && BeamTransferCtor != null
             && BeamTransferCtorCell != null
             && ThingClaimedField != null
@@ -108,6 +113,13 @@ namespace SK_Matter_Network.Patches
             && TryClaimStorageDestinationMethod != null
             && ReleaseClaimMethod != null
             && IsThingClaimedByOtherMethod != null
+            && OperatorMapProperty != null
+            && OperatorPositionProperty != null
+            && OperatorOwnerKeyProperty != null
+            && OperatorPawnProperty != null
+            && OperatorFactionProperty != null
+            && OperatorCanReserveMethod != null
+            && OperatorIsForbiddenMethod != null
             && (DefDatabase<ThingDef>.GetNamedSilentFail("MB_ManipulatorBeamEmitter") != null
                 || DefDatabase<ThingDef>.GetNamedSilentFail("MB_ManipulatorBeamEmitterAuto") != null);
 
@@ -126,6 +138,18 @@ namespace SK_Matter_Network.Patches
         private static bool IsThingClaimedByOtherWrapper(Thing thing, int ownerKey) =>
             (bool)IsThingClaimedByOtherMethod.Invoke(null, new object[] { thing, ownerKey });
 
+        private static Map GetOperatorMap(object op) => OperatorMapProperty.GetValue(op) as Map;
+        private static IntVec3 GetOperatorPosition(object op) => (IntVec3)OperatorPositionProperty.GetValue(op);
+        private static int GetOperatorOwnerKey(object op) => (int)OperatorOwnerKeyProperty.GetValue(op);
+        private static Pawn GetOperatorPawn(object op) => OperatorPawnProperty.GetValue(op) as Pawn;
+        private static Faction GetOperatorFaction(object op) => OperatorFactionProperty.GetValue(op) as Faction;
+
+        private static bool OperatorCanReserveWrapper(object op, Thing thing) =>
+            (bool)OperatorCanReserveMethod.Invoke(op, new object[] { thing, 1, thing.stackCount });
+
+        private static bool OperatorIsForbiddenWrapper(object op, Thing thing) =>
+            (bool)OperatorIsForbiddenMethod.Invoke(op, new object[] { thing });
+
         private static bool IsThingLockedForBillWorkWrapper(Map map, Thing thing) =>
             IsThingLockedForBillWorkMethod != null
             && (bool)IsThingLockedForBillWorkMethod.Invoke(null, new object[] { map, thing });
@@ -134,9 +158,9 @@ namespace SK_Matter_Network.Patches
             IsPrisonCellFoodMethod != null
             && (bool)IsPrisonCellFoodMethod.Invoke(null, new object[] { thing });
 
-        private static bool IsSourceUnavailableCoolingDownWrapper(Thing thing) =>
+        private static bool IsSourceUnavailableCoolingDownWrapper(Map map, Thing thing) =>
             IsSourceUnavailableCoolingDownMethod != null
-            && (bool)IsSourceUnavailableCoolingDownMethod.Invoke(null, new object[] { thing });
+            && (bool)IsSourceUnavailableCoolingDownMethod.Invoke(null, new object[] { map, thing });
 
         private static bool IsNetworkDestination(Thing t) =>
             t is NetworkBuildingNetworkInterface || t is NetworkBuildingNetworkChute;
@@ -148,32 +172,56 @@ namespace SK_Matter_Network.Patches
         // can believe capacity is free that's really already spoken for, queue a
         // second transfer, and have it rejected on arrival - Beam then just drops
         // the item back at its source cell, which looks like "the beam did nothing".
+        // The stored ownerKey lets a bulk release (see Patch_ReleaseAllClaimsForOwner)
+        // find every reservation belonging to one emitter without Beam handing us the
+        // list of transfers it's discarding.
         private static readonly Dictionary<DataNetwork, int> pendingReservedCounts = new Dictionary<DataNetwork, int>();
-        private static readonly Dictionary<object, (DataNetwork network, int count)> pendingTransferReservations =
-            new Dictionary<object, (DataNetwork, int)>();
+        private static readonly Dictionary<object, (DataNetwork network, int count, int ownerKey)> pendingTransferReservations =
+            new Dictionary<object, (DataNetwork, int, int)>();
 
-        // thingIDNumbers we currently have an active/queued network transfer for.
-        // Beam's own pre-transport gate (inline in Tick(), right before a channel
-        // starts carrying an item) re-runs its FULL, unmodified
-        // CanAutoTransferThingForOwner - including the vanilla storage-retry cooldown
-        // we deliberately don't check ourselves (see IsEligibleCandidate). Beam's own
-        // vanilla-destination search independently scans the same haulables and can
-        // mark that cooldown at any moment, even after we've already found the item
-        // a network destination, so the re-check aborts the transfer right as the
-        // beam locks onto it - before pickup ever starts. Patch_IsStorageRetryCoolingDown
-        // suppresses just that one check for things tracked here.
+        // thingIDNumbers we currently have an active/queued outgoing network transfer
+        // for. Beam's own pre-transport gate (inline in Tick(), right before a channel
+        // starts carrying an item) re-runs its FULL, unmodified CanBeamTransferThing -
+        // including the vanilla storage-retry cooldown we deliberately don't check
+        // ourselves (see IsEligibleCandidate). Beam's own vanilla-destination search
+        // independently scans the same haulables and can mark that cooldown at any
+        // moment, even after we've already found the item a network destination, so
+        // the re-check aborts the transfer right as the beam locks onto it - before
+        // pickup ever starts. Patch_IsStorageRetryCoolingDown suppresses just that one
+        // check for things tracked here.
         private static readonly HashSet<int> networkClaimedThingIds = new HashSet<int>();
+
+        // Shared cleanup for one outgoing network transfer, used both when Beam
+        // releases it individually (ReleaseClaim) and when Beam discards its whole
+        // queue for one owner at once (ReleaseAllClaimsForOwner). Idempotent: a
+        // transfer already cleaned up by one path is simply not found by the other.
+        private static void CleanupPendingTransfer(object transfer)
+        {
+            Thing destContainer = TransferDestinationContainerField?.GetValue(transfer) as Thing;
+            if (IsNetworkDestination(destContainer))
+            {
+                Thing sourceThing = TransferThingField?.GetValue(transfer) as Thing;
+                if (sourceThing != null) networkClaimedThingIds.Remove(sourceThing.thingIDNumber);
+            }
+
+            if (!pendingTransferReservations.TryGetValue(transfer, out (DataNetwork network, int count, int ownerKey) entry)) return;
+
+            pendingTransferReservations.Remove(transfer);
+            pendingReservedCounts.TryGetValue(entry.network, out int current);
+            int updated = current - entry.count;
+            if (updated > 0) pendingReservedCounts[entry.network] = updated;
+            else pendingReservedCounts.Remove(entry.network);
+        }
 
         [HarmonyPatch]
         public static class Patch_IsStorageRetryCoolingDown
         {
             [HarmonyPrepare]
-            public static bool Prepare() => IsAvailable();
+            public static bool Prepare() => IsAvailable() && IsStorageRetryCoolingDownMethod != null;
 
-            public static MethodBase TargetMethod() =>
-                AccessTools.Method(BeamManipulatorUtilityType, "IsStorageRetryCoolingDown", new[] { typeof(Thing) });
+            public static MethodBase TargetMethod() => IsStorageRetryCoolingDownMethod;
 
-            public static bool Prefix(Thing thing, ref bool __result)
+            public static bool Prefix(Map map, Thing thing, ref bool __result)
             {
                 if (thing == null || !networkClaimedThingIds.Contains(thing.thingIDNumber)) return true;
                 __result = false;
@@ -187,34 +235,47 @@ namespace SK_Matter_Network.Patches
             [HarmonyPrepare]
             public static bool Prepare() => IsAvailable();
 
-            public static MethodBase TargetMethod() =>
-                AccessTools.Method(BeamClaimUtilityType, "ReleaseClaim", new[] { BeamTransferType, typeof(int) });
+            public static MethodBase TargetMethod() => ReleaseClaimMethod;
 
             public static void Postfix(object __0)
             {
                 if (__0 == null) return;
-
-                Thing destContainer = TransferDestinationContainerField?.GetValue(__0) as Thing;
-                if (IsNetworkDestination(destContainer))
-                {
-                    Thing sourceThing = TransferThingField?.GetValue(__0) as Thing;
-                    if (sourceThing != null) networkClaimedThingIds.Remove(sourceThing.thingIDNumber);
-                }
-
-                if (!pendingTransferReservations.TryGetValue(__0, out (DataNetwork network, int count) entry)) return;
-
-                pendingTransferReservations.Remove(__0);
-                pendingReservedCounts.TryGetValue(entry.network, out int current);
-                int updated = current - entry.count;
-                if (updated > 0) pendingReservedCounts[entry.network] = updated;
-                else pendingReservedCounts.Remove(entry.network);
+                CleanupPendingTransfer(__0);
             }
         }
 
-        // ── PATCH 1 ───────────────────────────────────────────────────────────
-        // Fill remaining manual-queue slots with network destinations after Beam's
-        // own destination search (construction, transporters, storage cells, etc.)
-        // has had first pick.
+        [HarmonyPatch]
+        public static class Patch_ReleaseAllClaimsForOwner
+        {
+            [HarmonyPrepare]
+            public static bool Prepare() => IsAvailable() && ReleaseAllClaimsForOwnerMethod != null;
+
+            public static MethodBase TargetMethod() => ReleaseAllClaimsForOwnerMethod;
+
+            // Building_BeamManipulator.ResetBeamRuntime() calls this directly (rather
+            // than ReleaseClaim per queued transfer) when manual operation ends, the
+            // emitter loses power, is forbidden/deconstructed, or on save/load
+            // recovery. Without this hook Matter Network would retain capacity
+            // reservations and stale cooldown-bypass entries indefinitely whenever one
+            // of those bulk-clear paths fires instead of an individual release.
+            public static void Postfix(Map map, int ownerKey)
+            {
+                List<object> matching = null;
+                foreach (KeyValuePair<object, (DataNetwork network, int count, int ownerKey)> kvp in pendingTransferReservations)
+                {
+                    if (kvp.Value.ownerKey != ownerKey) continue;
+                    (matching ?? (matching = new List<object>())).Add(kvp.Key);
+                }
+                if (matching == null) return;
+                for (int i = 0; i < matching.Count; i++) CleanupPendingTransfer(matching[i]);
+            }
+        }
+
+        // ── PATCH ─────────────────────────────────────────────────────────────
+        // Fill remaining queue slots with network destinations/extractions after
+        // Beam's own destination search (strip, construction, special containers,
+        // transporters, bioferrite, ordinary storage cells) has had first pick, for
+        // both the manual and automatic operator.
         [HarmonyPatch]
         public static class Patch_FillTransferQueue
         {
@@ -225,61 +286,30 @@ namespace SK_Matter_Network.Patches
 
             public static void Postfix(object[] __args)
             {
-                if (__args == null || __args.Length < 6) return;
-                Pawn pawn = __args[0] as Pawn;
-                Thing manipulator = __args[1] as Thing;
-                if (pawn == null || manipulator == null || pawn.Map == null) return;
-
-                int desiredCount = (int)__args[2];
-                IList destinationQueue = __args[3] as IList;
-                HashSet<Thing> excludedThings = __args[4] as HashSet<Thing>;
-                HashSet<IntVec3> excludedDestinations = __args[5] as HashSet<IntVec3>;
-                Thing preferredThing = __args.Length > 6 ? __args[6] as Thing : null;
-
-                FillQueueWithNetworkDestinations(
-                    pawn.Map, manipulator.Position, manipulator.thingIDNumber, desiredCount,
-                    destinationQueue, excludedThings, excludedDestinations,
-                    pawn, pawn.Faction, preferredThing, manual: true);
-
-                FillQueueWithNetworkExtractions(
-                    pawn.Map, manipulator.Position, manipulator.thingIDNumber, desiredCount,
-                    destinationQueue, excludedThings, excludedDestinations,
-                    pawn, pawn.Faction, manual: true);
-            }
-        }
-
-        // ── PATCH 2 ───────────────────────────────────────────────────────────
-        // Same, for the automatic emitter's queue fill.
-        [HarmonyPatch]
-        public static class Patch_FillTransferQueueAuto
-        {
-            [HarmonyPrepare]
-            public static bool Prepare() => IsAvailable() && FillTransferQueueAutoMethod != null;
-
-            public static MethodBase TargetMethod() => FillTransferQueueAutoMethod;
-
-            public static void Postfix(object[] __args)
-            {
                 if (__args == null || __args.Length < 5) return;
-                Thing building = __args[0] as Thing;
-                if (building == null || building.Map == null) return;
+                object op = __args[0];
+                if (op == null) return;
+
+                Map map = GetOperatorMap(op);
+                if (map == null) return;
 
                 int desiredCount = (int)__args[1];
                 IList destinationQueue = __args[2] as IList;
                 HashSet<Thing> excludedThings = __args[3] as HashSet<Thing>;
                 HashSet<IntVec3> excludedDestinations = __args[4] as HashSet<IntVec3>;
+                if (destinationQueue == null || excludedThings == null || excludedDestinations == null) return;
 
-                Faction faction = building.Faction ?? Faction.OfPlayer;
+                IntVec3 origin = GetOperatorPosition(op);
+                int ownerKey = GetOperatorOwnerKey(op);
+                Pawn pawn = GetOperatorPawn(op);
+                Faction faction = GetOperatorFaction(op);
+                bool manual = pawn != null;
 
-                FillQueueWithNetworkDestinations(
-                    building.Map, building.Position, building.thingIDNumber, desiredCount,
-                    destinationQueue, excludedThings, excludedDestinations,
-                    null, faction, null, manual: false);
+                FillQueueWithNetworkDestinations(map, origin, ownerKey, desiredCount, destinationQueue,
+                    excludedThings, excludedDestinations, op);
 
-                FillQueueWithNetworkExtractions(
-                    building.Map, building.Position, building.thingIDNumber, desiredCount,
-                    destinationQueue, excludedThings, excludedDestinations,
-                    null, faction, manual: false);
+                FillQueueWithNetworkExtractions(map, origin, ownerKey, desiredCount, destinationQueue,
+                    excludedThings, excludedDestinations, pawn, faction, manual);
             }
         }
 
@@ -287,11 +317,8 @@ namespace SK_Matter_Network.Patches
 
         private static void FillQueueWithNetworkDestinations(
             Map map, IntVec3 origin, int ownerKey, int desiredCount, IList destinationQueue,
-            HashSet<Thing> excludedThings, HashSet<IntVec3> excludedDestinations,
-            Pawn pawn, Faction faction, Thing preferredThing, bool manual)
+            HashSet<Thing> excludedThings, HashSet<IntVec3> excludedDestinations, object op)
         {
-            if (map == null || destinationQueue == null || excludedThings == null || excludedDestinations == null)
-                return;
             if (destinationQueue.Count >= desiredCount)
                 return;
 
@@ -301,17 +328,6 @@ namespace SK_Matter_Network.Patches
             // ControllerItemOwner.TryAdd still re-validates capacity at deposit time.
             Dictionary<DataNetwork, int> reservedThisCall = new Dictionary<DataNetwork, int>();
 
-            if (manual && preferredThing != null && destinationQueue.Count < desiredCount
-                && !excludedThings.Contains(preferredThing)
-                && IsEligibleCandidate(preferredThing, map, pawn, faction, manual, ownerKey))
-            {
-                TryQueueNetworkTransfer(preferredThing, map, ownerKey, pawn, faction, manual,
-                    destinationQueue, excludedThings, excludedDestinations, reservedThisCall);
-            }
-
-            if (destinationQueue.Count >= desiredCount)
-                return;
-
             ICollection<Thing> haulables = map.listerHaulables.ThingsPotentiallyNeedingHauling();
             if (haulables == null || haulables.Count == 0)
                 return;
@@ -319,9 +335,8 @@ namespace SK_Matter_Network.Patches
             List<Thing> candidates = new List<Thing>();
             foreach (Thing thing in haulables)
             {
-                if (ReferenceEquals(thing, preferredThing)) continue;
                 if (excludedThings.Contains(thing)) continue;
-                if (!IsEligibleCandidate(thing, map, pawn, faction, manual, ownerKey)) continue;
+                if (!IsEligibleCandidate(thing, map, op, ownerKey)) continue;
                 candidates.Add(thing);
             }
 
@@ -331,20 +346,19 @@ namespace SK_Matter_Network.Patches
             for (int i = 0; i < candidates.Count; i++)
             {
                 if (destinationQueue.Count >= desiredCount) break;
-                TryQueueNetworkTransfer(candidates[i], map, ownerKey, pawn, faction, manual,
+                TryQueueNetworkTransfer(candidates[i], map, ownerKey, op,
                     destinationQueue, excludedThings, excludedDestinations, reservedThisCall);
             }
         }
 
-        // Mirrors Beam's own eligibility gates (CanAutoTransferThingForOwner /
-        // IsBeamHaulCandidateForOwner) - bill-ingredient locks, prisoner food, claim
-        // state, reservation - EXCEPT their vanilla storage-retry cooldown check.
-        // That cooldown means "no ordinary stockpile cell was found for this thing
-        // recently", which Beam's own vanilla search re-arms every ~30 ticks whenever
-        // it fails again. Including it here would make the network permanently
-        // unreachable for exactly the items this feature exists for: things that
-        // don't fit anywhere in ordinary storage.
-        private static bool IsEligibleCandidate(Thing thing, Map map, Pawn pawn, Faction faction, bool manual, int ownerKey)
+        // Mirrors Beam's own eligibility gate (CanBeamTransferThing) - bill-ingredient
+        // locks, prisoner food, claim state, reservation - EXCEPT its vanilla
+        // storage-retry cooldown check. That cooldown means "no ordinary stockpile
+        // cell was found for this thing recently", which Beam's own vanilla search
+        // re-arms every ~30 ticks whenever it fails again. Including it here would
+        // make the network permanently unreachable for exactly the items this feature
+        // exists for: things that don't fit anywhere in ordinary storage.
+        private static bool IsEligibleCandidate(Thing thing, Map map, object op, int ownerKey)
         {
             if (thing == null || thing.Destroyed || !thing.Spawned || thing.Map != map) return false;
             if (!thing.def.EverHaulable) return false;
@@ -352,29 +366,20 @@ namespace SK_Matter_Network.Patches
             if (thing.Position.Fogged(map)) return false;
             if (IsThingLockedForBillWorkWrapper(map, thing)) return false;
             if (IsPrisonCellFoodWrapper(thing)) return false;
-            if (IsSourceUnavailableCoolingDownWrapper(thing)) return false;
+            if (IsSourceUnavailableCoolingDownWrapper(map, thing)) return false;
             if (IsThingClaimedByOtherWrapper(thing, ownerKey)) return false;
-
-            if (manual)
-            {
-                if (pawn == null) return false;
-                if (thing.IsForbidden(pawn)) return false;
-                if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation)) return false;
-                return pawn.CanReserve(thing, 1, thing.stackCount);
-            }
-
-            if (thing.IsForbidden(faction)) return false;
-            return !map.reservationManager.IsReservedAndRespected(thing, faction);
+            if (OperatorIsForbiddenWrapper(op, thing)) return false;
+            return OperatorCanReserveWrapper(op, thing);
         }
 
         private static bool TryQueueNetworkTransfer(
-            Thing thing, Map map, int ownerKey, Pawn pawn, Faction faction, bool manual,
+            Thing thing, Map map, int ownerKey, object op,
             IList destinationQueue, HashSet<Thing> excludedThings, HashSet<IntVec3> excludedDestinations,
             Dictionary<DataNetwork, int> reservedThisCall)
         {
             StoragePriority currentPriority = StoreUtility.CurrentStoragePriorityOf(thing);
 
-            if (!TryFindNetworkDestination(thing, map, currentPriority, excludedDestinations, faction, pawn, manual,
+            if (!TryFindNetworkDestination(thing, map, currentPriority, excludedDestinations, op,
                     reservedThisCall, out Thing endpointThing, out DataNetwork network, out int count))
             {
                 return false;
@@ -401,7 +406,7 @@ namespace SK_Matter_Network.Patches
 
             pendingReservedCounts.TryGetValue(network, out int pendingExisting);
             pendingReservedCounts[network] = pendingExisting + count;
-            pendingTransferReservations[transfer] = (network, count);
+            pendingTransferReservations[transfer] = (network, count, ownerKey);
             networkClaimedThingIds.Add(thing.thingIDNumber);
 
             return true;
@@ -409,7 +414,7 @@ namespace SK_Matter_Network.Patches
 
         private static bool TryFindNetworkDestination(
             Thing thing, Map map, StoragePriority currentPriority, HashSet<IntVec3> excludedDestinations,
-            Faction viewerFaction, Pawn pawn, bool manual, Dictionary<DataNetwork, int> reservedThisCall,
+            object op, Dictionary<DataNetwork, int> reservedThisCall,
             out Thing endpointThing, out DataNetwork network, out int count)
         {
             endpointThing = null;
@@ -439,7 +444,7 @@ namespace SK_Matter_Network.Patches
                 if (!(hd is Thing endpoint) || endpoint.Destroyed || !endpoint.Spawned) continue;
                 if (!hd.HaulDestinationEnabled) continue;
                 if (excludedDestinations != null && excludedDestinations.Contains(endpoint.Position)) continue;
-                if (manual ? endpoint.IsForbidden(pawn) : endpoint.IsForbidden(viewerFaction)) continue;
+                if (OperatorIsForbiddenWrapper(op, endpoint)) continue;
 
                 StoragePriority destPriority = hd.GetStoreSettings().Priority;
                 if ((int)destPriority <= (int)currentPriority) continue;
@@ -494,8 +499,6 @@ namespace SK_Matter_Network.Patches
             HashSet<Thing> excludedThings, HashSet<IntVec3> excludedDestinations,
             Pawn pawn, Faction faction, bool manual)
         {
-            if (map == null || destinationQueue == null || excludedThings == null || excludedDestinations == null)
-                return;
             if (destinationQueue.Count >= desiredCount)
                 return;
 
