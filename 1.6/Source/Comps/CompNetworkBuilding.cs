@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using RimWorld;
 using Verse;
 
@@ -27,6 +28,50 @@ namespace SK_Matter_Network
             }
 
             return "MN_NetworkBuildingPowerUsage".Translate(PowerUsageWatts);
+        }
+
+        public override IEnumerable<Gizmo> CompGetGizmosExtra()
+        {
+            foreach (Gizmo g in base.CompGetGizmosExtra())
+            {
+                yield return g;
+            }
+
+            if (!(parent is NetworkBuilding networkBuilding))
+            {
+                yield break;
+            }
+
+            if (!ModSettings.EnableNetworkReconnectGizmo && !DebugSettings.ShowDevGizmos)
+            {
+                yield break;
+            }
+
+            yield return new Command_Action
+            {
+                defaultLabel = "Debug: reconnect adjacent networks",
+                defaultDesc = "Merges this building's network with every distinct, cardinally adjacent Matter Network's network.",
+                action = delegate
+                {
+                    bool merged = NetworkManager.TryReconnectAdjacentNetworks(networkBuilding);
+                    if (merged)
+                    {
+                        Messages.Message(
+                            "Adjacent networks merged.",
+                            networkBuilding,
+                            MessageTypeDefOf.PositiveEvent,
+                            historical: false);
+                    }
+                    else
+                    {
+                        Messages.Message(
+                            "No distinct adjacent network to merge.",
+                            networkBuilding,
+                            MessageTypeDefOf.RejectInput,
+                            historical: false);
+                    }
+                }
+            };
         }
     }
 }

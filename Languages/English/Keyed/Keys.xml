@@ -5,6 +5,8 @@
     <MN_SettingsEnableLoggingDescription>When enabled, Matter Network will write message and warning logs. Errors and exceptions are always logged.</MN_SettingsEnableLoggingDescription>
     <MN_SettingsDisableNetworkItemsForWealthLabel>Disable wealth for network items</MN_SettingsDisableNetworkItemsForWealthLabel>
     <MN_SettingsDisableNetworkItemsForWealthDescription>When enabled, items stored inside Matter Network do not add to colony wealth. When disabled, network items are still counted once each instead of once per interface/controller path.</MN_SettingsDisableNetworkItemsForWealthDescription>
+    <MN_SettingsEnableNetworkReconnectGizmoLabel>Enable network reconnect gizmo</MN_SettingsEnableNetworkReconnectGizmoLabel>
+    <MN_SettingsEnableNetworkReconnectGizmoDescription>When enabled, every Matter Network building shows a recovery command that merges its network with cardinally adjacent networks, even outside developer/god mode. Useful for repairing networks that failed to merge.</MN_SettingsEnableNetworkReconnectGizmoDescription>
     <MN_SettingsEnableStoredItemPowerDrawLabel>Require power for stored items</MN_SettingsEnableStoredItemPowerDrawLabel>
     <MN_SettingsEnableStoredItemPowerDrawDescription>When enabled, networks draw extra power based on the amount of stored matter. The configured value is charged once per started 100 bytes.</MN_SettingsEnableStoredItemPowerDrawDescription>
     <MN_SettingsStoredItemPowerDrawPer100Bytes>Stored item draw per 100 bytes</MN_SettingsStoredItemPowerDrawPer100Bytes>

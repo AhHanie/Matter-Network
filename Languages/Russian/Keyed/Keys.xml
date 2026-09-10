@@ -5,6 +5,8 @@
     <MN_SettingsEnableLoggingDescription>При включении МЭ-сеть будет записывать сообщения и предупреждения. Ошибки и исключения записываются всегда.</MN_SettingsEnableLoggingDescription>
     <MN_SettingsDisableNetworkItemsForWealthLabel>Не учитывать предметы в МЭ-сети для богатства</MN_SettingsDisableNetworkItemsForWealthLabel>
     <MN_SettingsDisableNetworkItemsForWealthDescription>При включении предметы, хранящиеся в МЭ-сети, не увеличивают богатство колонии. Если отключено, предметы всё равно считаются однократно, а не для каждого интерфейса/контроллера.</MN_SettingsDisableNetworkItemsForWealthDescription>
+    <MN_SettingsEnableNetworkReconnectGizmoLabel>Включить команду переподключения сети</MN_SettingsEnableNetworkReconnectGizmoLabel>
+    <MN_SettingsEnableNetworkReconnectGizmoDescription>При включении у каждого устройства МЭ-сети появляется команда восстановления, объединяющая его сеть с соседними по сторонам света сетями, даже вне режима разработчика/бога. Полезно для восстановления сетей, которые не объединились автоматически.</MN_SettingsEnableNetworkReconnectGizmoDescription>
     <MN_SettingsEnableStoredItemPowerDrawLabel>Расход энергии за хранимые предметы</MN_SettingsEnableStoredItemPowerDrawLabel>
     <MN_SettingsEnableStoredItemPowerDrawDescription>При включении МЭ-сеть потребляет дополнительную энергию в зависимости от объёма хранимой материи. Указанное значение взимается за каждые начатые 100 байт.</MN_SettingsEnableStoredItemPowerDrawDescription>
     <MN_SettingsStoredItemPowerDrawPer100Bytes>Расход за 100 байт хранимой материи</MN_SettingsStoredItemPowerDrawPer100Bytes>

@@ -65,6 +65,54 @@ namespace SK_Matter_Network
             }
         }
 
+        public static bool TryReconnectAdjacentNetworks(NetworkBuilding building)
+        {
+            if (building == null || building.Destroyed || !building.Spawned || building.Map == null)
+            {
+                return false;
+            }
+
+            NetworksMapComponent mapComp = building.Map.GetComponent<NetworksMapComponent>();
+            if (mapComp == null)
+            {
+                return false;
+            }
+
+            HashSet<DataNetwork> participants = new HashSet<DataNetwork>();
+            if (building.ParentNetwork != null)
+            {
+                participants.Add(building.ParentNetwork);
+            }
+
+            foreach (NetworkBuilding adj in GetAdjacentNetworkBuildings(building, mapComp))
+            {
+                if (adj.ParentNetwork != null)
+                {
+                    participants.Add(adj.ParentNetwork);
+                }
+            }
+
+            if (participants.Count < 2)
+            {
+                return false;
+            }
+
+            DataNetwork primaryNetwork = SelectPrimaryNetwork(participants);
+            List<DataNetwork> networksToMerge = participants
+                .Where(network => network != primaryNetwork)
+                .OrderBy(network => network.NetworkId, StringComparer.Ordinal)
+                .ToList();
+
+            foreach (DataNetwork toMerge in networksToMerge)
+                MergeNetworks(primaryNetwork, toMerge, mapComp);
+
+            primaryNetwork.ValidateControllerConflicts();
+            primaryNetwork.NotifyDiskCapacityChanged();
+            Logger.Message($"Reconnected {networksToMerge.Count + 1} networks at {building.Position} into {primaryNetwork.NetworkId}");
+
+            return true;
+        }
+
         private static DataNetwork SelectPrimaryNetwork(IEnumerable<DataNetwork> networks)
         {
             return networks

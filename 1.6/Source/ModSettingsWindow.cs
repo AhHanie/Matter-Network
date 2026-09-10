@@ -20,7 +20,7 @@ namespace SK_Matter_Network
 
         public static void Draw(Rect parent)
         {
-            Rect topRect = new Rect(parent.x, parent.y, parent.width, 82f);
+            Rect topRect = new Rect(parent.x, parent.y, parent.width, 118f);
             Listing_Standard listing = new Listing_Standard();
             listing.Begin(topRect);
             listing.CheckboxLabeled(
@@ -32,6 +32,11 @@ namespace SK_Matter_Network
                 "MN_SettingsDisableNetworkItemsForWealthLabel".Translate(),
                 ref ModSettings.DisableNetworkItemsForWealth,
                 "MN_SettingsDisableNetworkItemsForWealthDescription".Translate());
+            listing.GapLine();
+            listing.CheckboxLabeled(
+                "MN_SettingsEnableNetworkReconnectGizmoLabel".Translate(),
+                ref ModSettings.EnableNetworkReconnectGizmo,
+                "MN_SettingsEnableNetworkReconnectGizmoDescription".Translate());
             float listedHeight = listing.CurHeight;
             listing.End();
 

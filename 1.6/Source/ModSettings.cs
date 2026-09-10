@@ -16,6 +16,7 @@ namespace SK_Matter_Network
 
         public static bool EnableLogging = false;
         public static bool DisableNetworkItemsForWealth = false;
+        public static bool EnableNetworkReconnectGizmo = false;
         public static bool EnableStoredItemPowerDraw = true;
         public static int StoredItemPowerDrawPer100Bytes = 5;
         public static Dictionary<string, int> NetworkBuildingPowerUsageOverrides = new Dictionary<string, int>();
@@ -26,6 +27,7 @@ namespace SK_Matter_Network
         {
             Scribe_Values.Look(ref EnableLogging, "EnableLogging", false);
             Scribe_Values.Look(ref DisableNetworkItemsForWealth, "DisableNetworkItemsForWealth", false);
+            Scribe_Values.Look(ref EnableNetworkReconnectGizmo, "EnableNetworkReconnectGizmo", false);
             Scribe_Values.Look(ref EnableStoredItemPowerDraw, "EnableStoredItemPowerDraw", true);
             Scribe_Values.Look(ref StoredItemPowerDrawPer100Bytes, "StoredItemPowerDrawPer100Bytes", 5);
             Scribe_Collections.Look(ref NetworkBuildingPowerUsageOverrides, "NetworkBuildingPowerUsageOverrides", LookMode.Value, LookMode.Value);
