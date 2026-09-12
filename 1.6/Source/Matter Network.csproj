@@ -155,6 +155,7 @@
     <Compile Include="Patches\JobDriver_Refuel.cs" />
     <Compile Include="Patches\JobDriver_TakeInventory.cs" />
     <Compile Include="Patches\JobDriver_Equip.cs" />
+    <Compile Include="Patches\JobDriver_HaulToContainer.cs" />
     <Compile Include="Patches\GenClosest.cs" />
     <Compile Include="Patches\Designator_Build.cs" />
     <Compile Include="Patches\ItemAvailability.cs" />

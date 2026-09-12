@@ -33,7 +33,14 @@ namespace SK_Matter_Network
                 return false;
             }
 
-            return ParentNetwork.CanAccept(t);
+            // HaulDestinationEnabled is always false below, so this controller is never registered
+            // as a haul destination and GenPlace/UI/direct placement never reach this method. The
+            // only real callers are vanilla's "is this already-stored item's current location still
+            // valid" checks (StoreUtility.IsInValidStorage and friends), reached via Thing.ParentHolder
+            // resolving straight to this controller for every item sitting in innerContainer. That is
+            // a haul-search-shaped query, so the positive-only cache is safe and appropriate here -
+            // unlike the interface/chute endpoints, which stay on the exact CanAccept path.
+            return ParentNetwork.CanAcceptForHaulSearch(t);
         }
 
         public void Notify_HaulDestinationChangedPriority() { }
@@ -172,6 +179,12 @@ namespace SK_Matter_Network
                     ParentNetwork.RequiredPowerDrawWatts,
                     ParentNetwork.StoredReserveEnergyWd.ToString("F0"),
                     ParentNetwork.MaxReserveEnergyWd.ToString("F0")));
+
+                if (Prefs.DevMode)
+                {
+                    sb.AppendLineIfNotEmpty();
+                    sb.Append(ParentNetwork.GetAcceptanceCacheDebugString());
+                }
             }
             else if (Spawned)
             {

@@ -181,13 +181,17 @@ namespace SK_Matter_Network.Patches
 
         private static bool CanUseMatterNetworkOutputDestination(Pawn actor, Thing product, IHaulDestination dest)
         {
-            if (!(dest is NetworkBuildingNetworkInterface) && !(dest is NetworkBuildingNetworkChute))
+            DataNetwork network = (dest as NetworkBuildingNetworkInterface)?.ParentNetwork
+                ?? (dest as NetworkBuildingNetworkChute)?.ParentNetwork;
+            if (network == null)
                 return false;
 
             if (!dest.HaulDestinationEnabled)
                 return false;
 
-            if (!dest.Accepts(product))
+            // This scan is a mod-owned haul-search caller (only Matter Network endpoints reach this
+            // point), so the positive-only cache is safe to use here instead of the exact check.
+            if (!network.CanAcceptForHaulSearch(product))
                 return false;
 
             Thing destThing = (Thing)dest;

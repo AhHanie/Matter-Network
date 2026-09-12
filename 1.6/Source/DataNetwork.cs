@@ -87,6 +87,34 @@ namespace SK_Matter_Network
         private NetworkPowerState power;
         private int lastPowerUpdateTick = -1;
 
+        private const int AcceptanceCacheCleanupIntervalTicks = 600; // 10 seconds
+        private const int AcceptanceCacheEntryLifetimeTicks = 3600;  // 1 game minute
+        // A full linear scan (EvictOneIfAtCap, cleanup LRU eviction) is still cheap at this size,
+        // so raising the cap doesn't change the "simple scan beats an LRU structure" tradeoff.
+        private const int MaxAcceptanceCacheEntries = 1024;
+
+        private struct AcceptanceCacheEntry
+        {
+            public int LastAccessTick;
+        }
+
+        // Positive-only acceptance decision cache for audited haul-search callers. Never holds false
+        // results: a stale cached true is self-corrected by ValidateCachedCanAccept and the exact
+        // final-deposit check, but a stale cached false could hide a valid haul indefinitely.
+        private readonly Dictionary<Thing, AcceptanceCacheEntry> acceptanceCache = new Dictionary<Thing, AcceptanceCacheEntry>();
+        private readonly List<Thing> acceptanceCacheRemovalScratch = new List<Thing>();
+        private int nextAcceptanceCacheCleanupTick;
+        private int acceptanceCacheRevision;
+
+        private int acceptanceCacheHits;
+        private int acceptanceCacheMisses;
+        private int acceptanceCachePositiveInserts;
+        private int acceptanceCacheLiveValidations;
+        private int acceptanceCacheStaleMismatches;
+        private int acceptanceCacheInvalidations;
+        private int acceptanceCacheExpired;
+        private int acceptanceCacheEvicted;
+
         public List<NetworkBuilding> Buildings => buildings;
         public string NetworkId => networkId;
         public int BuildingCount => buildings.Count;
@@ -212,6 +240,7 @@ namespace SK_Matter_Network
             bytesDirty = true;
             power.RefreshControllerPowerOutput();
             RefreshUI();
+            InvalidateAcceptanceCache();
         }
 
         public void SetMap(Map map)
@@ -247,6 +276,8 @@ namespace SK_Matter_Network
 
         public void NetworkTick(int currentTick)
         {
+            CleanupAcceptanceCacheIfDue();
+
             for (int i = 0; i < buildings.Count; i++)
             {
                 NetworkBuilding building = buildings[i];
@@ -261,6 +292,7 @@ namespace SK_Matter_Network
             power.RecalculateReserveCapacity();
             power.RefreshControllerPowerOutput();
             RefreshUI();
+            InvalidateAcceptanceCache();
         }
 
         public void NotifyPowerControllerStateChanged()
@@ -268,6 +300,7 @@ namespace SK_Matter_Network
             EnsurePowerState();
             power.RefreshControllerPowerOutput();
             RefreshUI();
+            InvalidateAcceptanceCache();
         }
 
         public void NotifyPowerModeChanged(NetworkPowerMode oldMode, NetworkPowerMode newMode)
@@ -275,6 +308,7 @@ namespace SK_Matter_Network
             RefreshHaulRegistrations();
             NotifyIOPortVisualStatesChanged();
             RefreshUI();
+            InvalidateAcceptanceCache();
         }
 
         public void RefreshUIForPower()
@@ -362,18 +396,203 @@ namespace SK_Matter_Network
             {
                 cachedTotalCapacityBytes += drive.GetTotalCapacityBytes();
             }
+
+            InvalidateAcceptanceCache();
         }
 
+        // Exact, uncached final acceptance predicate. Used by endpoint Accepts() implementations
+        // (GenPlace, UI, direct transfers, compatibility) where a stale result must never appear.
         public bool CanAccept(Thing item)
         {
-            return CanAcceptCount(item) > 0;
+            return item != null && CanAcceptUncached(item);
+        }
+
+        private bool CanAcceptUncached(Thing item)
+        {
+            return CanAcceptCountUncached(item) > 0;
         }
 
         public int CanAcceptCount(Thing item)
         {
+            return CanAcceptCountUncached(item);
+        }
+
+        private int CanAcceptCountUncached(Thing item)
+        {
             if (item.Destroyed || item.stackCount <= 0 || !IsOperational) return 0;
             if (!storageSettings.AllowedToAccept(item)) return 0;
             return RemainingStorageFor(item.def, cachedTotalCapacityBytes);
+        }
+
+        // Positive-only cached acceptance check for narrowly targeted haul-search callers, plus
+        // NetworkBuildingController.Accepts (safe there only because that controller is never a
+        // registered haul destination - see the comment on that method). Never call this from the
+        // interface/chute endpoint Accepts()/GenPlace/UI/direct-transfer paths - see CanAccept.
+        internal bool CanAcceptForHaulSearch(Thing item)
+        {
+            if (item == null) return false;
+            if (!CanUseAcceptanceCache(item)) return CanAcceptUncached(item);
+
+            CleanupAcceptanceCacheIfDue();
+
+            if (acceptanceCache.TryGetValue(item, out AcceptanceCacheEntry entry))
+            {
+                int currentTick = Find.TickManager.TicksGame;
+                if (currentTick - entry.LastAccessTick > AcceptanceCacheEntryLifetimeTicks)
+                {
+                    acceptanceCache.Remove(item);
+                    acceptanceCacheExpired++;
+                    return CanAcceptUncachedAndMaybeCache(item);
+                }
+
+                entry.LastAccessTick = currentTick;
+                acceptanceCache[item] = entry; // structs must be written back
+                acceptanceCacheHits++;
+                return true;
+            }
+
+            acceptanceCacheMisses++;
+            return CanAcceptUncachedAndMaybeCache(item);
+        }
+
+        // Live validator for the job path. Always bypasses CanAcceptForHaulSearch and performs the
+        // exact check; clears the whole cache on a cached-true/live-false mismatch.
+        public bool ValidateCachedCanAccept(Thing item, out bool cacheMismatch)
+        {
+            acceptanceCacheLiveValidations++;
+
+            if (item == null)
+            {
+                cacheMismatch = false;
+                return false;
+            }
+
+            cacheMismatch = acceptanceCache.ContainsKey(item);
+            bool actual = CanAcceptUncached(item);
+
+            if (cacheMismatch && !actual)
+            {
+                acceptanceCacheStaleMismatches++;
+                InvalidateAcceptanceCache();
+                return false;
+            }
+
+            cacheMismatch = false;
+            if (actual)
+                AddOrRefreshAcceptedItem(item);
+            return actual;
+        }
+
+        private bool CanAcceptUncachedAndMaybeCache(Thing item)
+        {
+            bool accepted = CanAcceptUncached(item);
+            if (accepted)
+                AddOrRefreshAcceptedItem(item);
+            return accepted;
+        }
+
+        private bool CanUseAcceptanceCache(Thing item)
+        {
+            return item != null && !item.Destroyed && Current.ProgramState == ProgramState.Playing && Find.TickManager != null;
+        }
+
+        private void AddOrRefreshAcceptedItem(Thing item)
+        {
+            if (!CanUseAcceptanceCache(item)) return;
+
+            if (!acceptanceCache.ContainsKey(item))
+            {
+                EvictOneIfAtCap();
+                acceptanceCachePositiveInserts++;
+            }
+
+            acceptanceCache[item] = new AcceptanceCacheEntry { LastAccessTick = Find.TickManager.TicksGame };
+        }
+
+        private void EvictOneIfAtCap()
+        {
+            if (acceptanceCache.Count < MaxAcceptanceCacheEntries) return;
+
+            Thing oldestKey = null;
+            int oldestTick = int.MaxValue;
+            foreach (KeyValuePair<Thing, AcceptanceCacheEntry> kv in acceptanceCache)
+            {
+                if (kv.Value.LastAccessTick < oldestTick)
+                {
+                    oldestTick = kv.Value.LastAccessTick;
+                    oldestKey = kv.Key;
+                }
+            }
+
+            if (oldestKey != null)
+            {
+                acceptanceCache.Remove(oldestKey);
+                acceptanceCacheEvicted++;
+            }
+        }
+
+        // Clears the whole per-network cache. Simpler and safer than per-item invalidation, since a
+        // single mutation (settings, capacity, power, topology) can affect many cached items at once.
+        public void InvalidateAcceptanceCache()
+        {
+            acceptanceCache.Clear();
+            acceptanceCacheRevision++;
+            acceptanceCacheInvalidations++;
+        }
+
+        public void CleanupAcceptanceCacheIfDue()
+        {
+            if (Current.ProgramState != ProgramState.Playing || Find.TickManager == null) return;
+
+            int currentTick = Find.TickManager.TicksGame;
+            if (currentTick < nextAcceptanceCacheCleanupTick) return;
+
+            nextAcceptanceCacheCleanupTick = currentTick + AcceptanceCacheCleanupIntervalTicks;
+
+            if (acceptanceCache.Count == 0) return;
+
+            acceptanceCacheRemovalScratch.Clear();
+            foreach (KeyValuePair<Thing, AcceptanceCacheEntry> kv in acceptanceCache)
+            {
+                Thing key = kv.Key;
+                if (key == null || key.Destroyed || currentTick - kv.Value.LastAccessTick > AcceptanceCacheEntryLifetimeTicks)
+                {
+                    acceptanceCacheRemovalScratch.Add(key);
+                }
+            }
+
+            for (int i = 0; i < acceptanceCacheRemovalScratch.Count; i++)
+            {
+                acceptanceCache.Remove(acceptanceCacheRemovalScratch[i]);
+                acceptanceCacheExpired++;
+            }
+            acceptanceCacheRemovalScratch.Clear();
+
+            while (acceptanceCache.Count > MaxAcceptanceCacheEntries)
+            {
+                Thing oldestKey = null;
+                int oldestTick = int.MaxValue;
+                foreach (KeyValuePair<Thing, AcceptanceCacheEntry> kv in acceptanceCache)
+                {
+                    if (kv.Value.LastAccessTick < oldestTick)
+                    {
+                        oldestTick = kv.Value.LastAccessTick;
+                        oldestKey = kv.Key;
+                    }
+                }
+
+                if (oldestKey == null) break;
+                acceptanceCache.Remove(oldestKey);
+                acceptanceCacheEvicted++;
+            }
+        }
+
+        public string GetAcceptanceCacheDebugString()
+        {
+            return $"MN acceptance cache: {acceptanceCache.Count}/{MaxAcceptanceCacheEntries} entries, rev {acceptanceCacheRevision}\n" +
+                   $"hits {acceptanceCacheHits}, misses {acceptanceCacheMisses}, inserts {acceptanceCachePositiveInserts}\n" +
+                   $"live checks {acceptanceCacheLiveValidations}, stale mismatches {acceptanceCacheStaleMismatches}\n" +
+                   $"invalidations {acceptanceCacheInvalidations}, expired {acceptanceCacheExpired}, evicted {acceptanceCacheEvicted}";
         }
 
         public int ControllerCanAcceptCount(Thing item)
@@ -415,17 +634,22 @@ namespace SK_Matter_Network
         public void SetItemQuota(ThingDef def, int quota)
         {
             itemQuotaByDef[def] = ClampItemQuota(quota);
-            RefreshHaulRegistrations();
-            RefreshUI();
+            NotifyQuotaChanged();
         }
 
         public void ClearItemQuota(ThingDef def)
         {
             if (itemQuotaByDef.Remove(def))
             {
-                RefreshHaulRegistrations();
-                RefreshUI();
+                NotifyQuotaChanged();
             }
+        }
+
+        private void NotifyQuotaChanged()
+        {
+            RefreshHaulRegistrations();
+            RefreshUI();
+            InvalidateAcceptanceCache();
         }
 
         public int GetConfiguredItemQuotaOrUnlimited(ThingDef def)
@@ -464,8 +688,7 @@ namespace SK_Matter_Network
                 }
             }
 
-            RefreshHaulRegistrations();
-            RefreshUI();
+            NotifyQuotaChanged();
         }
 
         public void MergeMissingQuotasFrom(Dictionary<ThingDef, int> sourceQuotas)
@@ -482,8 +705,7 @@ namespace SK_Matter_Network
             }
             if (changed)
             {
-                RefreshHaulRegistrations();
-                RefreshUI();
+                NotifyQuotaChanged();
             }
         }
 
@@ -495,8 +717,7 @@ namespace SK_Matter_Network
                 itemQuotaByDef[entry.Key] = ClampItemQuota(entry.Value);
             }
 
-            RefreshHaulRegistrations();
-            RefreshUI();
+            NotifyQuotaChanged();
         }
 
         public bool ItemInNetwork(Thing item) => storedItems.Contains(item);
@@ -588,6 +809,7 @@ namespace SK_Matter_Network
                 {
                     storageSettings.CopyFrom(iface.GetStandaloneSettings());
                     storageSettingsSeeded = true;
+                    InvalidateAcceptanceCache();
                 }
                 else
                 {
@@ -602,6 +824,7 @@ namespace SK_Matter_Network
                 {
                     storageSettings.CopyFrom(chute.GetStandaloneSettings());
                     storageSettingsSeeded = true;
+                    InvalidateAcceptanceCache();
                 }
                 else
                 {
@@ -720,6 +943,7 @@ namespace SK_Matter_Network
             else if (ctrl.ControllerConflictDisabled)
             {
                 ctrl.ControllerConflictDisabled = false;
+                InvalidateAcceptanceCache();
             }
 
             EnsurePowerState();
@@ -883,6 +1107,8 @@ namespace SK_Matter_Network
 
                 cachedTotalCapacityBytes += drive.GetTotalCapacityBytes();
             }
+
+            InvalidateAcceptanceCache();
         }
 
         private int ArchiveOverflowToDisks(int requiredBytes)
@@ -1118,6 +1344,7 @@ namespace SK_Matter_Network
             {
                 storageSettings.CopyFrom(interfaceSettings);
                 storageSettingsSeeded = true;
+                InvalidateAcceptanceCache();
 
                 foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
                     iface.NotifyNetworkSettingsChanged();
@@ -1185,6 +1412,8 @@ namespace SK_Matter_Network
 
         public void ValidateControllerConflicts()
         {
+            InvalidateAcceptanceCache();
+
             List<NetworkBuildingController> controllers = new List<NetworkBuildingController>();
             foreach (NetworkBuilding b in buildings)
             {
@@ -1415,6 +1644,7 @@ namespace SK_Matter_Network
             }
 
             storageSettings.CopyFrom(settingsSource.GetStoreSettings());
+            InvalidateAcceptanceCache();
 
             isBroadcastingSettingsChange = true;
             try
@@ -1551,6 +1781,7 @@ namespace SK_Matter_Network
         public void RefreshAfterMapChange(Map newMap)
         {
             this.map = newMap;
+            InvalidateAcceptanceCache();
 
             // Drop buildings that aren't alive and spawned on this map.
             // Clean up stale per-map registrations for removed buildings before dropping them.

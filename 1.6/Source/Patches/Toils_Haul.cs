@@ -45,6 +45,39 @@ namespace SK_Matter_Network.Patches
             }
         }
 
+        // Queued container destinations can replace TargetIndex.B mid-job via
+        // Toils_Haul.JumpToCarryToNextContainerIfPossible, which jumps back into this same toil and
+        // bypasses the one-time pre-pickup validation toil added by Patch_JobDriver_HaulToContainer.
+        // Re-validate here too so a stale cached acceptance for the *new* destination is caught
+        // before the pawn walks there.
+        [HarmonyPatch(typeof(Toils_Haul), nameof(Toils_Haul.CarryHauledThingToContainer))]
+        public static class CarryHauledThingToContainer
+        {
+            public static void Postfix(ref Toil __result)
+            {
+                Toil toil = __result;
+                Action originalInitAction = toil.initAction;
+                toil.initAction = delegate
+                {
+                    Pawn actor = toil.actor;
+                    Job curJob = actor.jobs.curJob;
+                    Thing container = curJob.GetTarget(TargetIndex.B).Thing;
+                    Thing carryThing = actor.carryTracker.CarriedThing;
+
+                    if (Patch_JobDriver_HaulToContainer.TryGetInboundNetwork(container, out DataNetwork network)
+                        && carryThing != null && !carryThing.Destroyed
+                        && !network.ValidateCachedCanAccept(carryThing, out bool cacheMismatch))
+                    {
+                        Patch_JobDriver_HaulToContainer.LogStaleAcceptanceIfNeeded(cacheMismatch, carryThing, container);
+                        actor.jobs.curDriver.EndJobWith(JobCondition.Incompletable);
+                        return;
+                    }
+
+                    originalInitAction?.Invoke();
+                };
+            }
+        }
+
         [HarmonyPatch(typeof(Toils_Haul), nameof(Toils_Haul.DepositHauledThingInContainer))]
         public static class DepositHauledThingInContainer
         {
