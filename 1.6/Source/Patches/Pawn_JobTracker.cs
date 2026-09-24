@@ -16,6 +16,11 @@ namespace SK_Matter_Network.Patches
         [HarmonyPatch(typeof(Pawn_JobTracker), "StartJob")]
         public static class StartJob
         {
+            public static bool Prepare()
+            {
+                return ModSettings.EnableLogging;
+            }
+
             public static void Prefix(Job newJob, Pawn ___pawn)
             {
                 RecordStartedJob(newJob, ___pawn);
