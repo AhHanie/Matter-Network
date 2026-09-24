@@ -86,4 +86,7 @@
     <MN_PowerModeControllerDisabled>Controller disabled</MN_PowerModeControllerDisabled>
     <MN_PowerModeOffline>Offline</MN_PowerModeOffline>
     <MN_PowerModeNoController>No controller</MN_PowerModeNoController>
+    <MN_CantEquipForbiddenNetworkItem>Item is forbidden</MN_CantEquipForbiddenNetworkItem>
+    <MN_CantEquipUnreachableNetworkItem>Item is in an unreachable or offline Matter Network</MN_CantEquipUnreachableNetworkItem>
+    <MN_CantEquipReservedNetworkItem>Item is reserved by someone else</MN_CantEquipReservedNetworkItem>
 </LanguageData>
