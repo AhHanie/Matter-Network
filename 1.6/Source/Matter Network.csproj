@@ -165,6 +165,7 @@
     <Compile Include="Patches\PlayerItemAccessibilityUtility.cs" />
     <Compile Include="Patches\Pawn_CarryTracker.cs" />
     <Compile Include="Patches\Compat\PickupAndHaulCompat.cs" />
+    <Compile Include="Patches\Compat\SimpleSidearmsCompat.cs" />
     <Compile Include="Patches\Compat\BetterArchitectCompat.cs" />
     <Compile Include="Patches\Compat\BulkLoadForTransportersCompat.cs" />
     <Compile Include="Patches\Compat\ChooseYourMedicineCompat.cs" />
