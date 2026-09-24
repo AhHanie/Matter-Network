@@ -201,6 +201,7 @@
     <Compile Include="Patches\RecipeWorkerCounter.cs" />
     <Compile Include="Patches\ResourceCounter.cs" />
     <Compile Include="Patches\Reachability.cs" />
+    <Compile Include="Patches\RitualObligationTargetWorker_SkyLanterns.cs" />
     <Compile Include="Patches\StorageSettings.cs" />
     <Compile Include="Patches\ThingDef.cs" />
     <Compile Include="Patches\Toils_Haul.cs" />
