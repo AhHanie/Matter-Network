@@ -10,12 +10,18 @@ namespace SK_Matter_Network
     [StaticConstructorOnStartup]
     public class NetworkBuildingDiskDrive : NetworkBuilding,
         IThingHolderEvents<Thing>, IHaulEnroute, ILoadReferenceable, IStorageGroupMember,
-        IHaulDestination, IStoreSettingsParent, IHaulSource, IThingHolder, ISearchableContents
+        IHaulDestination, IStoreSettingsParent, IHaulSource, IThingHolder, IThingHolderTickable, ISearchableContents
     {
         private ThingOwner<Thing> innerContainer;
         private StorageSettings settings;
         private StorageGroup storageGroup;
         private bool locked = false;
+
+        // innerContainer is constructed with dontTickContents = true - held disks are inert storage
+        // media, never ticked. Without this, Thing.DoTick() would still call
+        // GetChildHolders()/GetDirectlyHeldThings() on this building every tick just to discover
+        // that ThingOwner.DoTick() is a no-op.
+        public bool ShouldTickContents => false;
 
         public int MaximumItems => def.building.maxItemsInCell * def.size.Area;
         public IReadOnlyList<Thing> HeldItems => innerContainer.InnerListForReading;

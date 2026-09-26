@@ -6,9 +6,15 @@ using Verse;
 namespace SK_Matter_Network
 {
     public class NetworkBuildingController : NetworkBuilding,
-        IThingHolder, IThingHolderEvents<Thing>, IHaulDestination, IStoreSettingsParent, IHaulEnroute, IApparelSource, IHaulSource
+        IThingHolder, IThingHolderTickable, IThingHolderEvents<Thing>, IHaulDestination, IStoreSettingsParent, IHaulEnroute, IApparelSource, IHaulSource
     {
         public ControllerItemOwner innerContainer;
+
+        // innerContainer is constructed with dontTickContents = true - stored items are inert
+        // "data", never ticked. Without this, Thing.DoTick() would still call
+        // GetChildHolders()/GetDirectlyHeldThings() on this building every tick just to discover
+        // that ThingOwner.DoTick() is a no-op.
+        public bool ShouldTickContents => false;
         private StorageSettings storageSettings;
         private bool controllerConflictDisabled = false;
 
@@ -28,19 +34,32 @@ namespace SK_Matter_Network
 
         public bool Accepts(Thing t)
         {
-            if (!HasValidStorage || ParentNetwork == null)
+            if (t == null || t.Destroyed || !HasValidStorage || ParentNetwork == null)
             {
                 return false;
             }
 
             // HaulDestinationEnabled is always false below, so this controller is never registered
             // as a haul destination and GenPlace/UI/direct placement never reach this method. The
-            // only real callers are vanilla's "is this already-stored item's current location still
+            // real callers are vanilla's "is this already-stored item's current location still
             // valid" checks (StoreUtility.IsInValidStorage and friends), reached via Thing.ParentHolder
-            // resolving straight to this controller for every item sitting in innerContainer. That is
-            // a haul-search-shaped query, so the positive-only cache is safe and appropriate here -
-            // unlike the interface/chute endpoints, which stay on the exact CanAccept path.
-            return ParentNetwork.CanAcceptForHaulSearch(t);
+            // resolving straight to this controller for every item sitting in innerContainer.
+            //
+            // For a resident item, capacity and quota are irrelevant to whether its current location
+            // remains valid - only the filter matters. Answering with the full CanAccept/haul-search
+            // capacity check here would mark every resident stack as invalid storage the moment the
+            // network fills up or a quota is hit, flooding the haulable list for items that aren't
+            // actually misplaced. A resident that the filter now disallows still correctly returns
+            // false here and remains eligible for vanilla priority hauling.
+            if (ReferenceEquals(t.holdingOwner, innerContainer))
+            {
+                return ParentNetwork.StorageSettingsAllow(t);
+            }
+
+            // Any other caller (compat code, direct queries against an item not actually held by
+            // this controller) gets the exact, uncached admission check rather than the
+            // positive-only haul-search cache.
+            return ParentNetwork.CanAccept(t);
         }
 
         public void Notify_HaulDestinationChangedPriority() { }

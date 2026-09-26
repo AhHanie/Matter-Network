@@ -424,10 +424,12 @@ namespace SK_Matter_Network
             return RemainingStorageFor(item.def, cachedTotalCapacityBytes);
         }
 
-        // Positive-only cached acceptance check for narrowly targeted haul-search callers, plus
-        // NetworkBuildingController.Accepts (safe there only because that controller is never a
-        // registered haul destination - see the comment on that method). Never call this from the
-        // interface/chute endpoint Accepts()/GenPlace/UI/direct-transfer paths - see CanAccept.
+        // Positive-only cached acceptance check for narrowly targeted haul-search callers (currently
+        // Toils_Recipe's bill-product output search across interface/chute endpoints). Never call
+        // this from the interface/chute endpoint Accepts()/GenPlace/UI/direct-transfer paths - see
+        // CanAccept. NetworkBuildingController.Accepts no longer uses this: a resident item's current
+        // location validity depends only on the filter (StorageSettingsAllow), not capacity/quota, so
+        // it never needs the capacity-sensitive result this cache serves.
         internal bool CanAcceptForHaulSearch(Thing item)
         {
             if (item == null) return false;
@@ -1351,6 +1353,16 @@ namespace SK_Matter_Network
 
                 foreach (NetworkBuildingNetworkChute chute in networkChutes)
                     chute.NotifyNetworkSettingsChanged();
+
+                // Each interface above notifies the lister via Notify_HaulSourceChanged(iface), which
+                // only happens to revalidate every resident item today because the interface presents
+                // the controller's own shared container while online. Patch_ListerHaulables skips that
+                // call as a duplicate of the controller's own pass whenever the controller is already
+                // registered, so it no longer runs the resident revalidation as a side effect. Notify
+                // the controller directly here so a live filter/priority change still flags newly
+                // disallowed resident stacks as haulable.
+                if (activeController != null && activeController.Spawned && activeController.Map != null)
+                    activeController.Map.listerHaulables.Notify_HaulSourceChanged(activeController);
             }
             finally
             {
@@ -1767,7 +1779,13 @@ namespace SK_Matter_Network
                 }
                 else if (!haulSource.HaulSourceEnabled && registered)
                 {
+                    // HaulDestinationManager.RemoveHaulSource does not itself recalculate lister
+                    // entries, so without this call a resident item's stale "haulable" entry (added
+                    // while this source was still enabled) would linger until something else happens
+                    // to recheck it. Notifying here lets ShouldBeHaulable's HaulSourceEnabled: false
+                    // check drop it immediately.
                     building.Map.haulDestinationManager.RemoveHaulSource(haulSource);
+                    building.Map.listerHaulables.Notify_HaulSourceChanged(haulSource);
                 }
                 else
                 {

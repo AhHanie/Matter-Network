@@ -10,9 +10,15 @@ namespace SK_Matter_Network
     [StaticConstructorOnStartup]
     public class NetworkBuildingNetworkInterface : NetworkBuilding,
         IHaulEnroute, ILoadReferenceable, IStorageGroupMember,
-        IHaulDestination, IStoreSettingsParent, IHaulSource, IThingHolder, ISearchableContents
+        IHaulDestination, IStoreSettingsParent, IHaulSource, IThingHolder, IThingHolderTickable, ISearchableContents
     {
         private ThingOwner<Thing> fallbackContainer;
+
+        // Both fallbackContainer and (while online) the controller's shared innerContainer are
+        // constructed with dontTickContents = true - stored items are inert "data", never ticked.
+        // Without this, Thing.DoTick() would still call GetChildHolders()/GetDirectlyHeldThings()
+        // on this building every tick just to discover that ThingOwner.DoTick() is a no-op.
+        public bool ShouldTickContents => false;
 
         private StorageSettings settings;
         private StorageGroup storageGroup;

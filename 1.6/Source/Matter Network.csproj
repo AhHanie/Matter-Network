@@ -111,6 +111,7 @@
     <Compile Include="ModSettings.cs" />
     <Compile Include="ModSettingsWindow.cs" />
     <Compile Include="Patches\ToilFailConditions.cs" />
+    <Compile Include="Patches\ListerHaulables.cs" />
     <Compile Include="PlaceWorker_OneControllerPerNetwork.cs" />
     <!-- Retained (emptied) files - kept for reference, produce no symbols -->
     <!-- Core system -->
