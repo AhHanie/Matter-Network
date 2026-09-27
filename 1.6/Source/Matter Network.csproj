@@ -143,10 +143,12 @@
     <Compile Include="Patches\JobDriver_Wear.cs" />
     <Compile Include="Patches\JobGiver_DyeHair.cs" />
     <Compile Include="Patches\JobGiver_BingeDrug.cs" />
+    <Compile Include="Patches\JobGiver_GatherOfferingsForPsychicRitual.cs" />
     <Compile Include="Patches\JobGiver_SatisfyChemicalNeed.cs" />
     <Compile Include="Patches\JobGiver_SatifyChemicalDependency.cs" />
     <Compile Include="Patches\JobGiver_TakeDrugsForDrugPolicy.cs" />
     <Compile Include="Patches\PaintUtility.cs" />
+    <Compile Include="Patches\PsychicRitualDef.cs" />
     <Compile Include="Patches\WealthWatcher.cs" />
     <Compile Include="Patches\WorkGiver_PaintBuilding.cs" />
     <Compile Include="Patches\WorkGiver_PaintFloor.cs" />
@@ -206,6 +208,7 @@
     <Compile Include="Patches\RecipeWorkerCounter.cs" />
     <Compile Include="Patches\ResourceCounter.cs" />
     <Compile Include="Patches\Reachability.cs" />
+    <Compile Include="Patches\ReservationUtility.cs" />
     <Compile Include="Patches\RitualObligationTargetWorker_SkyLanterns.cs" />
     <Compile Include="Patches\StorageSettings.cs" />
     <Compile Include="Patches\ThingDef.cs" />
