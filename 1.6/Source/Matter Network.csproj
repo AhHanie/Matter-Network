@@ -169,6 +169,8 @@
     <Compile Include="Patches\Compat\SimpleSidearmsCompat.cs" />
     <Compile Include="Patches\Compat\EquipmentManagerCompat.cs" />
     <Compile Include="Patches\Compat\GravshipBlueprintsCompat.cs" />
+    <Compile Include="Patches\Compat\SilverPaymentUtility.cs" />
+    <Compile Include="Patches\Compat\UniversalTradeHubCompat.cs" />
     <Compile Include="Patches\Compat\BetterArchitectCompat.cs" />
     <Compile Include="Patches\Compat\BulkLoadForTransportersCompat.cs" />
     <Compile Include="Patches\Compat\ChooseYourMedicineCompat.cs" />

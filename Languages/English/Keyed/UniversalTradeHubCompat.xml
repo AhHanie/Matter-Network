@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<LanguageData>
+    <MN_UTH_NotEnoughSilverForPurchase>Not enough silver to complete this purchase: need {0}, have {1} available (beacon + network).</MN_UTH_NotEnoughSilverForPurchase>
+</LanguageData>
