@@ -1354,13 +1354,13 @@ namespace SK_Matter_Network
                 foreach (NetworkBuildingNetworkChute chute in networkChutes)
                     chute.NotifyNetworkSettingsChanged();
 
-                // Each interface above notifies the lister via Notify_HaulSourceChanged(iface), which
-                // only happens to revalidate every resident item today because the interface presents
-                // the controller's own shared container while online. Patch_ListerHaulables skips that
-                // call as a duplicate of the controller's own pass whenever the controller is already
-                // registered, so it no longer runs the resident revalidation as a side effect. Notify
-                // the controller directly here so a live filter/priority change still flags newly
-                // disallowed resident stacks as haulable.
+                // Each interface above notifies the lister via Notify_HaulSourceChanged(iface). While
+                // isBroadcastingSettingsChange is true, Patch_ListerHaulables skips that call as a
+                // duplicate of the controller's own pass, but only for an interface currently
+                // presenting the controller's own shared container while the controller is registered
+                // - so the explicit controller notification below always covers what those skipped
+                // calls would have. Any interface with a distinct container (offline/fallback) is not
+                // skipped and revalidates itself normally.
                 if (activeController != null && activeController.Spawned && activeController.Map != null)
                     activeController.Map.listerHaulables.Notify_HaulSourceChanged(activeController);
             }
@@ -1676,6 +1676,11 @@ namespace SK_Matter_Network
                         chute.NotifyNetworkSettingsChanged();
                     }
                 }
+
+                // Same reasoning as Notify_SettingsChanged: interfaces skipped above as duplicates of
+                // the controller's own pass rely on this explicit notification for resident revalidation.
+                if (activeController != null && activeController.Spawned && activeController.Map != null)
+                    activeController.Map.listerHaulables.Notify_HaulSourceChanged(activeController);
             }
             finally
             {
