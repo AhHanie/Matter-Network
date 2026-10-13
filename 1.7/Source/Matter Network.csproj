@@ -1,0 +1,65 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Library</OutputType>
+    <AssemblyName>Matter Network</AssemblyName>
+    <RootNamespace>SK_Matter_Network</RootNamespace>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
+    <OutputPath>..\Assemblies\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <RimWorldDir Condition="'$(RimWorldDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\RimWorld</RimWorldDir>
+    <HarmonyDll Condition="'$(HarmonyDll)' == ''">C:\Me\Games\Rimworld\Harmony\1.7\0Harmony.dll</HarmonyDll>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>embedded</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="bin\**;obj\**;packages\**" />
+    <None Remove="bin\**;obj\**;packages\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Krafs.Publicizer" Version="2.3.2" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <Publicize Include="Assembly-CSharp:Verse.AI.Pawn_PathFollower.pawn" />
+    <Publicize Include="Assembly-CSharp:RimWorld.Pawn_TraderTracker.pawn" />
+    <Publicize Include="Assembly-CSharp:RimWorld.Pawn_TraderTracker.ReachableForTrade" />
+    <Publicize Include="Assembly-CSharp:RimWorld.GeneCreationDialogBase.arc" />
+    <Publicize Include="Assembly-CSharp:RimWorld.Dialog_CreateXenogerm.geneAssembler" />
+    <Publicize Include="Assembly-CSharp:RimWorld.Dialog_SelectXenogerm.selected" />
+    <Publicize Include="Assembly-CSharp:RimWorld.Dialog_SelectXenogerm.xenogerms" />
+    <Publicize Include="Assembly-CSharp:RimWorld.ItemAvailability.map" />
+    <Publicize Include="Assembly-CSharp:RimWorld.ResourceCounter.map" />
+    <Publicize Include="Assembly-CSharp:RimWorld.WealthWatcher.map" />
+    <Publicize Include="Assembly-CSharp:Verse.AI.JobDriver.Map" />
+    <Publicize Include="Assembly-CSharp:Verse.AI.JobDriver.TargetThingA" />
+    <Publicize Include="Assembly-CSharp:Verse.AI.JobDriver.SetupToils" />
+    <Publicize Include="Assembly-CSharp:Verse.AI.HaulAIUtility.BurningLowerTrans" />
+    <Publicize Include="Assembly-CSharp:Verse.AI.HaulAIUtility.ReservedForPrisonersTrans" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp"><HintPath>$(RimWorldDir)\Assembly-CSharp.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityStubs"><HintPath>$(RimWorldDir)\UnityStubs.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="Waylith"><HintPath>$(RimWorldDir)\Waylith.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="0Harmony"><HintPath>$(HarmonyDll)</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  <Target Name="CheckGameReferences" BeforeTargets="ResolveAssemblyReferences;CoreCompile">
+    <Error Condition="!Exists('$(RimWorldDir)\Assembly-CSharp.dll')" Text="RimWorldDir does not contain Assembly-CSharp.dll: $(RimWorldDir)" />
+    <Error Condition="!Exists('$(RimWorldDir)\UnityStubs.dll')" Text="RimWorldDir does not contain UnityStubs.dll: $(RimWorldDir)" />
+    <Error Condition="!Exists('$(RimWorldDir)\Waylith.dll')" Text="RimWorldDir does not contain Waylith.dll: $(RimWorldDir)" />
+    <Error Condition="!Exists('$(HarmonyDll)')" Text="HarmonyDll is not a Harmony 3 0Harmony.dll: $(HarmonyDll)" />
+  </Target>
+</Project>

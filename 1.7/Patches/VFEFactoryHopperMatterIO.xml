@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+    <Operation Class="PatchOperationFindMod">
+        <mods>
+            <li>Vanilla Furniture Expanded - Factory</li>
+        </mods>
+        <match Class="PatchOperationAdd">
+            <xpath>Defs/ThingDef[defName="VFEFactory_FactoryHopper"]/comps</xpath>
+            <value>
+                <li Class="SK_Matter_Network.CompProperties_MatterSlotGroupAdapter">
+                    <useDirectForbiddenCheckForInput>true</useDirectForbiddenCheckForInput>
+                </li>
+            </value>
+        </match>
+    </Operation>
+</Patch>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+    <Operation Class="PatchOperationFindMod">
+        <mods>
+            <li>Save Our Ship 2</li>
+        </mods>
+        <match Class="PatchOperationAddModExtension">
+            <xpath>/Defs/ThingDef[defName="MN_NetworkCable" or defName="MN_DiskDrive" or defName="MN_NetworkInterface" or defName="MN_NetworkChute" or defName="MN_NetworkController" or defName="MN_NetworkControllerLarge" or defName="MN_MatterIOPort" or defName="MN_NetworkPowerStorage" or defName="MN_AdvancedNetworkPowerStorage" or defName="MN_NetworkRefueler" or defName="MN_AdvancedNetworkRefueler"]</xpath>
+            <value>
+                <li Class="SaveOurShip2.SoSSpawnOverride" />
+            </value>
+        </match>
+    </Operation>
+</Patch>

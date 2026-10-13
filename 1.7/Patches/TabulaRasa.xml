@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+    <Operation Class="PatchOperationFindMod">
+        <mods>
+            <li>Tabula Rasa</li>
+        </mods>
+        <match Class="PatchOperationAddModExtension">
+            <xpath>Defs/DesignationCategoryDef[defName="MN_MatterNetwork"]</xpath>
+            <value>
+                <li Class="TabulaRasa.DefModExt_SubcategoryDisplay" />
+            </value>
+        </match>
+    </Operation>
+</Patch>

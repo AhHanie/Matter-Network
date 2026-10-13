@@ -1,0 +1,838 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Defs>
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkCable</defName>
+        <label>network cable</label>
+        <description>A bundle of network cables for moving data around. Can be placed under walls and other buildings.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <category>Building</category>
+        <noRightClickDraftAttack>true</noRightClickDraftAttack>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>0</powerUsage>
+            </li>
+        </comps>
+        <graphicData>
+            <texPath>Things/Building/Linked/PowerConduit_Atlas</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <linkType>Transmitter</linkType>
+            <linkFlags>
+                <li>PowerConduit</li>
+            </linkFlags>
+            <damageData>
+                <rect>(0,0.35,1,0.3)</rect>
+            </damageData>
+            <color>(0,0,0,0)</color>
+            <shaderType>Transparent</shaderType>
+        </graphicData>
+        <uiIconPath>Things/Building/Linked/PowerConduit_MenuIcon</uiIconPath>
+        <uiIconScale>0.7</uiIconScale>
+        <building>
+            <isPowerConduit>false</isPowerConduit>
+            <ai_chillDestination>false</ai_chillDestination>
+            <isInert>true</isInert>
+            <isEdifice>false</isEdifice>
+            <canLandGravshipOn>true</canLandGravshipOn>
+            <blueprintGraphicData>
+                <texPath>Things/Building/Linked/PowerConduit_Blueprint_Atlas</texPath>
+            </blueprintGraphicData>
+            <canConstructInCorner>true</canConstructInCorner>
+            <ai_neverTrashThis>true</ai_neverTrashThis>
+            <isTargetable>false</isTargetable>
+            <expandHomeArea>false</expandHomeArea>
+            <canBeDamagedByAttacks>false</canBeDamagedByAttacks>
+        </building>
+        <drawerType>MapMeshOnly</drawerType>
+        <altitudeLayer>Conduits</altitudeLayer>
+        <passability>Standable</passability>
+        <leaveResourcesWhenKilled>false</leaveResourcesWhenKilled>
+        <resourcesFractionWhenDeconstructed>0</resourcesFractionWhenDeconstructed>
+        <statBases>
+            <MaxHitPoints>100</MaxHitPoints>
+            <WorkToBuild>100</WorkToBuild>
+            <Flammability>0</Flammability>
+            <Beauty>-2</Beauty>
+        </statBases>
+        <drawStyleCategory>Conduits</drawStyleCategory>
+        <costList>
+            <Steel>4</Steel>
+        </costList>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <rotatable>false</rotatable>
+        <selectable>true</selectable>
+        <neverMultiSelect>true</neverMultiSelect>
+        <soundImpactDefault>BulletImpact_Metal</soundImpactDefault>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+        <researchPrerequisites>
+            <li>MN_MatterNetwork</li>
+        </researchPrerequisites>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <uiOrder>2000</uiOrder>
+        <constructEffect>ConstructMetal</constructEffect>
+        <clearBuildingArea>false</clearBuildingArea>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_DiskDrive</defName>
+        <label>disk drive</label>
+        <description>Holds matter disks that provide storage capacity to a connected data network. Can hold up to 6 disks. Add more drives or larger disks to increase how much the network can store.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/DiskDriveFull</texPath>
+            <graphicClass>Graphic_Multi</graphicClass>
+            <drawSize>(3, 3)</drawSize>
+            <shaderType>CutoutComplex</shaderType>
+            <shadowData>
+                <volume>(0.55, 0.30, 0.40)</volume>
+            </shadowData>
+        </graphicData>
+        <category>Building</category>
+        <statBases>
+            <MaxHitPoints>300</MaxHitPoints>
+            <WorkToBuild>1000</WorkToBuild>
+            <Flammability>0.5</Flammability>
+            <Mass>12</Mass>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <thingClass>SK_Matter_Network.NetworkBuildingDiskDrive</thingClass>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>200</powerUsage>
+            </li>
+        </comps>
+        <costList>
+            <Steel>200</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+        </costList>
+        <building>
+            <storageGroupTag>DiskDrive</storageGroupTag>
+            <fixedStorageSettings>
+                <filter>
+                    <categories>
+                        <li>MN_Disks</li>
+                    </categories>
+                </filter>
+            </fixedStorageSettings>
+            <defaultStorageSettings>
+                <priority>Preferred</priority>
+                <filter>
+                    <categories>
+                        <li>MN_Disks</li>
+                    </categories>
+                </filter>
+            </defaultStorageSettings>
+            <preventDeteriorationOnTop>true</preventDeteriorationOnTop>
+            <ignoreStoredThingsBeauty>true</ignoreStoredThingsBeauty>
+            <maxItemsInCell>6</maxItemsInCell>
+            <blueprintClass>Blueprint_Storage</blueprintClass>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <altitudeLayer>Building</altitudeLayer>
+        <minifiedDef>MinifiedThing</minifiedDef>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.4</fillPercent>
+        <pathCost>50</pathCost>
+        <inspectorTabs>
+            <li>ITab_Storage</li>
+            <li>SK_Matter_Network.ITab_DiskDriveSlots</li>
+        </inspectorTabs>
+        <surfaceType>None</surfaceType>
+        <canOverlapZones>false</canOverlapZones>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <researchPrerequisites>
+            <li>MN_MatterNetwork</li>
+        </researchPrerequisites>
+        <uiOrder>2050</uiOrder>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <preventDroppingThingsOn>true</preventDroppingThingsOn>
+        <defaultPlacingRot>South</defaultPlacingRot>
+        <uiIconScale>0.8</uiIconScale>
+        <thingCategories>
+            <li>BuildingsMisc</li>
+        </thingCategories>
+        <tradeTags>
+            <li>ExoticMisc</li>
+        </tradeTags>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkInterface</defName>
+        <label>network interface</label>
+        <description>A storage access point for a data network. Pawns can upload and extract allowed items here when the network has an active controller, and the selected storage filter is shared across the network.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/Terminal</texPath>
+            <graphicClass>Graphic_Multi</graphicClass>
+            <drawSize>(1, 1)</drawSize>
+            <shaderType>CutoutComplex</shaderType>
+            <shadowData>
+                <volume>(0.3, 0.30, 0.40)</volume>
+            </shadowData>
+        </graphicData>
+        <category>Building</category>
+        <noRightClickDraftAttack>true</noRightClickDraftAttack>
+        <statBases>
+            <MaxHitPoints>200</MaxHitPoints>
+            <WorkToBuild>500</WorkToBuild>
+            <Mass>12</Mass>
+            <StyleDominance MayRequire="Ludeon.RimWorld.Ideology">5</StyleDominance>
+            <Flammability>0.5</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <thingClass>SK_Matter_Network.NetworkBuildingNetworkInterface</thingClass>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>400</powerUsage>
+            </li>
+        </comps>
+        <costList>
+            <Steel>400</Steel>
+            <ComponentSpacer>2</ComponentSpacer>
+            <Plasteel>50</Plasteel>
+        </costList>
+        <building>
+            <fixedStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Root</li>
+                    </categories>
+                    <disallowedCategories>
+                        <li>Animals</li>
+                        <li>Plants</li>
+                        <li>MN_Disks</li>
+                    </disallowedCategories>
+                </filter>
+            </fixedStorageSettings>
+            <defaultStorageSettings>
+                <priority>Preferred</priority>
+                <filter>
+                    <categories>
+                        <li>Foods</li>
+                        <li>Manufactured</li>
+                        <li>ResourcesRaw</li>
+                        <li>Items</li>
+                        <li>Weapons</li>
+                        <li>Apparel</li>
+                        <li>BodyParts</li>
+                    </categories>
+                </filter>
+            </defaultStorageSettings>
+            <preventDeteriorationOnTop>true</preventDeteriorationOnTop>
+            <ignoreStoredThingsBeauty>true</ignoreStoredThingsBeauty>
+            <maxItemsInCell>500</maxItemsInCell>
+            <blueprintClass>Blueprint_Storage</blueprintClass>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <altitudeLayer>Building</altitudeLayer>
+        <minifiedDef>MinifiedThing</minifiedDef>
+        <thingCategories>
+            <li>BuildingsMisc</li>
+        </thingCategories>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.4</fillPercent>
+        <pathCost>50</pathCost>
+        <inspectorTabs>
+            <li>ITab_Storage</li>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <surfaceType>None</surfaceType>
+        <canOverlapZones>false</canOverlapZones>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <researchPrerequisites>
+            <li>MN_MatterNetwork</li>
+        </researchPrerequisites>
+        <uiOrder>2050</uiOrder>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <preventDroppingThingsOn>true</preventDroppingThingsOn>
+        <hasInteractionCell>true</hasInteractionCell>
+        <interactionCellOffset>(0,0,-1)</interactionCellOffset>
+        <uiIconScale>0.8</uiIconScale>
+        <tradeTags>
+            <li>ExoticMisc</li>
+        </tradeTags>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkChute</defName>
+        <label>network chute</label>
+        <description>An input-only access point for a data network. Pawns can upload allowed items here when the network has an active controller, but stored items cannot be extracted through this building.</description>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/TerminalBasic</texPath>
+            <graphicClass>Graphic_Multi</graphicClass>
+            <drawSize>(1, 1)</drawSize>
+            <shaderType>CutoutComplex</shaderType>
+            <shadowData>
+                <volume>(0.3, 0.30, 0.35)</volume>
+            </shadowData>
+        </graphicData>
+        <category>Building</category>
+        <noRightClickDraftAttack>true</noRightClickDraftAttack>
+        <statBases>
+            <MaxHitPoints>160</MaxHitPoints>
+            <WorkToBuild>300</WorkToBuild>
+            <Mass>8</Mass>
+            <StyleDominance MayRequire="Ludeon.RimWorld.Ideology">3</StyleDominance>
+            <Flammability>0.5</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <thingClass>SK_Matter_Network.NetworkBuildingNetworkChute</thingClass>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>150</powerUsage>
+            </li>
+        </comps>
+        <costList>
+            <Steel>150</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+        </costList>
+        <building>
+            <fixedStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Root</li>
+                    </categories>
+                    <disallowedCategories>
+                        <li>Animals</li>
+                        <li>Plants</li>
+                        <li>MN_Disks</li>
+                    </disallowedCategories>
+                </filter>
+            </fixedStorageSettings>
+            <defaultStorageSettings>
+                <priority>Preferred</priority>
+                <filter>
+                    <categories>
+                        <li>Foods</li>
+                        <li>Manufactured</li>
+                        <li>ResourcesRaw</li>
+                        <li>Items</li>
+                        <li>Weapons</li>
+                        <li>Apparel</li>
+                        <li>BodyParts</li>
+                    </categories>
+                </filter>
+            </defaultStorageSettings>
+            <preventDeteriorationOnTop>true</preventDeteriorationOnTop>
+            <ignoreStoredThingsBeauty>true</ignoreStoredThingsBeauty>
+            <maxItemsInCell>500</maxItemsInCell>
+            <blueprintClass>Blueprint_Storage</blueprintClass>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <altitudeLayer>Building</altitudeLayer>
+        <minifiedDef>MinifiedThing</minifiedDef>
+        <thingCategories>
+            <li>BuildingsMisc</li>
+        </thingCategories>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.3</fillPercent>
+        <pathCost>35</pathCost>
+        <inspectorTabs>
+            <li>ITab_Storage</li>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <surfaceType>None</surfaceType>
+        <canOverlapZones>false</canOverlapZones>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <researchPrerequisites>
+            <li>MN_MatterNetwork</li>
+        </researchPrerequisites>
+        <uiOrder>2051</uiOrder>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <preventDroppingThingsOn>true</preventDroppingThingsOn>
+        <hasInteractionCell>true</hasInteractionCell>
+        <interactionCellOffset>(0,0,-1)</interactionCellOffset>
+        <uiIconScale>0.8</uiIconScale>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkController</defName>
+        <label>network controller (legacy)</label>
+        <description>The central hub of a data network. Stores all items digitally. A network can have only one active controller.</description>
+        <thingClass>SK_Matter_Network.NetworkBuildingController</thingClass>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>500</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkPowerController">
+                <basePowerConsumption>500</basePowerConsumption>
+                <updateIntervalTicks>60</updateIntervalTicks>
+                <chargeEfficiency>1</chargeEfficiency>
+                <chargingSurplusBufferWatts>50</chargingSurplusBufferWatts>
+            </li>
+            <li Class="CompProperties_Flickable"/>
+            <li Class="CompProperties_Breakdownable"/>
+        </comps>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/Controller</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(3, 3)</drawSize>
+            <shaderType>CutoutComplex</shaderType>
+            <shadowData>
+                <volume>(0.55, 0.30, 0.40)</volume>
+            </shadowData>
+        </graphicData>
+        <rotatable>false</rotatable>
+        <altitudeLayer>Building</altitudeLayer>
+        <minifiedDef>MinifiedThing</minifiedDef>
+        <thingCategories>
+            <li>BuildingsMisc</li>
+        </thingCategories>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.2</fillPercent>
+        <statBases>
+            <MaxHitPoints>400</MaxHitPoints>
+            <WorkToBuild>2000</WorkToBuild>
+            <Mass>18</Mass>
+            <Flammability>0.5</Flammability>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>500</Steel>
+            <ComponentSpacer>4</ComponentSpacer>
+            <Plasteel>50</Plasteel>
+            <Gold>20</Gold>
+        </costList>
+        <building>
+            <fixedStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Root</li>
+                    </categories>
+                    <disallowedCategories>
+                        <li>Animals</li>
+                        <li>Plants</li>
+                        <li>MN_Disks</li>
+                    </disallowedCategories>
+                </filter>
+            </fixedStorageSettings>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
+        <uiIconScale>1</uiIconScale>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkControllerLarge</defName>
+        <label>network controller</label>
+        <description>The central hub of a data network. Stores all items digitally. A network can have only one active controller.</description>
+        <thingClass>SK_Matter_Network.NetworkBuildingController</thingClass>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>500</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkPowerController">
+                <basePowerConsumption>500</basePowerConsumption>
+                <updateIntervalTicks>60</updateIntervalTicks>
+                <chargeEfficiency>1</chargeEfficiency>
+                <chargingSurplusBufferWatts>50</chargingSurplusBufferWatts>
+            </li>
+            <li Class="CompProperties_Flickable"/>
+            <li Class="CompProperties_Breakdownable"/>
+        </comps>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/ControllerBig</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(5, 5)</drawSize>
+            <shaderType>CutoutComplex</shaderType>
+            <shadowData>
+                <volume>(0.55, 0.30, 0.40)</volume>
+            </shadowData>
+        </graphicData>
+        <rotatable>false</rotatable>
+        <altitudeLayer>Building</altitudeLayer>
+        <minifiedDef>MinifiedThing</minifiedDef>
+        <thingCategories>
+            <li>BuildingsMisc</li>
+        </thingCategories>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.2</fillPercent>
+        <statBases>
+            <MaxHitPoints>400</MaxHitPoints>
+            <WorkToBuild>2000</WorkToBuild>
+            <Mass>18</Mass>
+            <Flammability>0.5</Flammability>
+        </statBases>
+        <size>(3,3)</size>
+        <costList>
+            <Steel>500</Steel>
+            <ComponentSpacer>4</ComponentSpacer>
+            <Plasteel>50</Plasteel>
+            <Gold>20</Gold>
+        </costList>
+        <building>
+            <fixedStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Root</li>
+                    </categories>
+                    <disallowedCategories>
+                        <li>Animals</li>
+                        <li>Plants</li>
+                        <li>MN_Disks</li>
+                    </disallowedCategories>
+                </filter>
+            </fixedStorageSettings>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <constructionSkillPrerequisite>8</constructionSkillPrerequisite>
+        <researchPrerequisites>
+            <li>MN_MatterNetwork</li>
+        </researchPrerequisites>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <uiIconScale>1</uiIconScale>
+        <tradeTags>
+            <li>ExoticMisc</li>
+        </tradeTags>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_MatterIOPort</defName>
+        <label>matter IO port</label>
+        <description>Automatically imports or exports items between a connected Matter Network and one adjacent storage target. Its filter controls which items may move, and its selected arrow shows the active side.</description>
+        <thingClass>SK_Matter_Network.NetworkBuildingMatterIOPort</thingClass>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/MatterIOPort</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+            <shaderType>CutoutComplex</shaderType>
+        </graphicData>
+        <castEdgeShadows>True</castEdgeShadows>
+        <category>Building</category>
+        <noRightClickDraftAttack>true</noRightClickDraftAttack>
+        <statBases>
+            <MaxHitPoints>180</MaxHitPoints>
+            <WorkToBuild>750</WorkToBuild>
+            <Mass>12</Mass>
+            <Flammability>0.2</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>150</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+            <ComponentSpacer>1</ComponentSpacer>
+            <Plasteel>20</Plasteel>
+        </costList>
+        <comps>
+            <li Class="CompProperties_Forbiddable"/>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>300</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_MatterIOPort">
+                <defaultTickInterval>600</defaultTickInterval>
+                <minTickInterval>60</minTickInterval>
+                <maxTickInterval>6000</maxTickInterval>
+                <maxInputStacksPerTick>1</maxInputStacksPerTick>
+                <defaultMode>Input</defaultMode>
+            </li>
+        </comps>
+        <building>
+            <fixedStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Root</li>
+                    </categories>
+                    <disallowedCategories>
+                        <li>Animals</li>
+                        <li>Plants</li>
+                        <li>MN_Disks</li>
+                    </disallowedCategories>
+                </filter>
+            </fixedStorageSettings>
+            <defaultStorageSettings>
+                <filter>
+                    <categories>
+                        <li>Foods</li>
+                        <li>Manufactured</li>
+                        <li>ResourcesRaw</li>
+                        <li>Items</li>
+                        <li>Weapons</li>
+                        <li>Apparel</li>
+                        <li>BodyParts</li>
+                    </categories>
+                </filter>
+            </defaultStorageSettings>
+            <ai_chillDestination>false</ai_chillDestination>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <altitudeLayer>Building</altitudeLayer>
+        <minifiedDef>MinifiedThing</minifiedDef>
+        <thingCategories>
+            <li>BuildingsMisc</li>
+        </thingCategories>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.25</fillPercent>
+        <pathCost>20</pathCost>
+        <surfaceType>None</surfaceType>
+        <canOverlapZones>false</canOverlapZones>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_MatterIOPort</li>
+            <li>SK_Matter_Network.ITab_MatterIOPortFilter</li>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <researchPrerequisites>
+            <li>MN_NetworkIO</li>
+        </researchPrerequisites>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <defaultPlacingRot>North</defaultPlacingRot>
+        <rotatable>false</rotatable>
+        <uiIconScale>1</uiIconScale>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkPowerStorage</defName>
+        <label>network capacitor</label>
+        <description>A compact capacitor bank that stores backup power for a connected network. Its stored energy is shared across the network, keeping digitized storage online through brief outages and unstable grids.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/Capacitor</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <category>Building</category>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>0</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkPowerStorage">
+                <capacity>1000</capacity>
+            </li>
+        </comps>
+        <statBases>
+            <MaxHitPoints>150</MaxHitPoints>
+            <WorkToBuild>700</WorkToBuild>
+            <Mass>5</Mass>
+            <Flammability>0.35</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>100</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+        </costList>
+        <altitudeLayer>BuildingOnTop</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.2</fillPercent>
+        <pathCost>14</pathCost>
+        <building>
+            <isInert>true</isInert>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <researchPrerequisites>
+            <li>MN_NetworkPowerStorage</li>
+        </researchPrerequisites>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <defaultPlacingRot>North</defaultPlacingRot>
+        <rotatable>false</rotatable>
+        <uiIconScale>1</uiIconScale>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_AdvancedNetworkPowerStorage</defName>
+        <label>network reserve cell</label>
+        <description>A high-density reserve cell for network infrastructure. It stores a large shared charge for long outages, solar flares, and other disruptions that would otherwise cut access to digitized matter.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/ReserveCell</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+        </graphicData>
+        <category>Building</category>
+        <comps>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>0</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkPowerStorage">
+                <capacity>2000</capacity>
+            </li>
+        </comps>
+        <statBases>
+            <MaxHitPoints>200</MaxHitPoints>
+            <WorkToBuild>1200</WorkToBuild>
+            <Mass>8</Mass>
+            <Flammability>0.35</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>150</Steel>
+            <Plasteel>50</Plasteel>
+            <ComponentSpacer>2</ComponentSpacer>
+            <Gold>10</Gold>
+        </costList>
+        <altitudeLayer>BuildingOnTop</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.25</fillPercent>
+        <pathCost>20</pathCost>
+        <building>
+            <isInert>true</isInert>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkStorage</li>
+        </inspectorTabs>
+        <researchPrerequisites>
+            <li>MN_NetworkPowerStorage</li>
+        </researchPrerequisites>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <defaultPlacingRot>North</defaultPlacingRot>
+        <rotatable>false</rotatable>
+        <uiIconScale>1</uiIconScale>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_NetworkRefueler</defName>
+        <label>fuel relay</label>
+        <description>Draws suitable fuel from a connected network and distributes it to nearby machines that need refueling. Forbidding this building disables automatic refueling.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/FuelRelayBasic</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+            <shadowData>
+                <volume>(0.35,0.30,0.35)</volume>
+            </shadowData>
+        </graphicData>
+        <category>Building</category>
+        <comps>
+            <li Class="CompProperties_Forbiddable"/>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>150</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkRefueler">
+                <radius>5.9</radius>
+                <defaultTickInterval>3600</defaultTickInterval>
+            </li>
+        </comps>
+        <statBases>
+            <MaxHitPoints>100</MaxHitPoints>
+            <WorkToBuild>300</WorkToBuild>
+            <Mass>6</Mass>
+            <Flammability>0</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>100</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+        </costList>
+        <altitudeLayer>Building</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.25</fillPercent>
+        <pathCost>20</pathCost>
+        <building>
+            <ai_chillDestination>false</ai_chillDestination>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkRefueler</li>
+        </inspectorTabs>
+        <researchPrerequisites>
+            <li>MN_NetworkRefueling</li>
+        </researchPrerequisites>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <defaultPlacingRot>North</defaultPlacingRot>
+        <rotatable>false</rotatable>
+        <uiIconScale>1</uiIconScale>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+        <specialDisplayRadius>5.9</specialDisplayRadius>
+    </ThingDef>
+
+    <ThingDef ParentName="BuildingBase">
+        <defName>MN_AdvancedNetworkRefueler</defName>
+        <label>advanced fuel relay</label>
+        <description>Draws suitable fuel from a connected network and distributes it to machines that need refueling over a wider area. Forbidding this building disables automatic refueling.</description>
+        <thingClass>SK_Matter_Network.NetworkBuilding</thingClass>
+        <graphicData>
+            <texPath>MatterNetwork/Things/Building/FuelRelayAdvanced</texPath>
+            <graphicClass>Graphic_Single</graphicClass>
+            <drawSize>(1,1)</drawSize>
+            <shadowData>
+                <volume>(0.35,0.35,0.40)</volume>
+            </shadowData>
+        </graphicData>
+        <category>Building</category>
+        <comps>
+            <li Class="CompProperties_Forbiddable"/>
+            <li Class="SK_Matter_Network.CompProperties_NetworkBuilding">
+                <powerUsage>250</powerUsage>
+            </li>
+            <li Class="SK_Matter_Network.CompProperties_NetworkRefueler">
+                <radius>7.9</radius>
+                <defaultTickInterval>3600</defaultTickInterval>
+            </li>
+        </comps>
+        <statBases>
+            <MaxHitPoints>200</MaxHitPoints>
+            <WorkToBuild>500</WorkToBuild>
+            <Mass>8</Mass>
+            <Flammability>0</Flammability>
+            <Beauty>-1</Beauty>
+        </statBases>
+        <size>(1,1)</size>
+        <costList>
+            <Steel>150</Steel>
+            <ComponentIndustrial>2</ComponentIndustrial>
+            <Gold>10</Gold>
+        </costList>
+        <altitudeLayer>Building</altitudeLayer>
+        <passability>PassThroughOnly</passability>
+        <fillPercent>0.25</fillPercent>
+        <pathCost>20</pathCost>
+        <building>
+            <ai_chillDestination>false</ai_chillDestination>
+            <destroySound>BuildingDestroyed_Metal_Small</destroySound>
+        </building>
+        <placeWorkers>
+            <li>SK_Matter_Network.PlaceWorker_OneControllerPerNetwork</li>
+        </placeWorkers>
+        <inspectorTabs>
+            <li>SK_Matter_Network.ITab_NetworkRefueler</li>
+        </inspectorTabs>
+        <researchPrerequisites>
+            <li>MN_NetworkRefueling</li>
+        </researchPrerequisites>
+        <designationCategory>MN_MatterNetwork</designationCategory>
+        <defaultPlacingRot>North</defaultPlacingRot>
+        <rotatable>false</rotatable>
+        <uiIconScale>1</uiIconScale>
+        <terrainAffordanceNeeded>Light</terrainAffordanceNeeded>
+        <specialDisplayRadius>7.9</specialDisplayRadius>
+    </ThingDef>
+</Defs>

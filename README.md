@@ -28,7 +28,7 @@ Place this repository or release package in your RimWorld `Mods` directory:
 RimWorld/Mods/Matter Network/
 ```
 
-The playable mod content is organized under `About/`, `1.6/`, `Languages/`, and `Textures/`.
+The playable mod content is organized under `About/`, `1.6/`, `1.7/`, `Languages/`, and `Textures/`. RimWorld loads the version folder that matches the running game plus the shared root content (`Languages/`, `Textures/`).
 
 ## Basic Usage
 
@@ -41,23 +41,21 @@ The playable mod content is organized under `About/`, `1.6/`, `Languages/`, and 
 
 ## Development
 
-The C# project is in `1.6/Source/` and targets .NET Framework 4.7.2.
+The C# project is `1.7/Source/Matter Network.csproj`, an SDK-style `net10.0` project. It requires the .NET 10 SDK, a RimWorld 1.7 installation, and a Harmony 3 `0Harmony.dll`.
 
 ```powershell
-cd "1.6/Source"
-nuget restore "Matter Network.sln"
-msbuild "Matter Network.sln" /p:Configuration=Debug
-msbuild "Matter Network.sln" /p:Configuration=Release
+dotnet build "1.7/Source/Matter Network.csproj" -c Release -p:RimWorldDir="<RimWorld install folder>" -p:HarmonyDll="<path to Harmony 3 0Harmony.dll>"
 ```
 
-Build output is written to `1.6/Assemblies/Matter Network.dll`. The project references RimWorld assemblies from the default Steam install path and expects `0Harmony.dll` at the configured relative path.
+Build output is written to `1.7/Assemblies/Matter Network.dll`.
 
 ## Repository Layout
 
 - `About/` - mod metadata, preview image, Workshop tags, and published file ID.
 - `1.6/Defs/` - XML defs for buildings, items, research, and categories.
 - `1.6/Patches/` - XML mod compatibility patches.
-- `1.6/Source/` - C# source, Harmony patches, UI, network logic, and project files.
+- `1.6/Source/`, `1.7/Source/` - C# source, Harmony patches, UI, network logic, and project files for each RimWorld version.
+- `1.7/Defs/`, `1.7/Patches/` - the 1.7 copies of the XML defs and patches.
 - `Languages/` - English and Russian translations.
 - `Textures/` - PNG sprites and UI icons.
 

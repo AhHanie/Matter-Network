@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Patch>
+    <Operation Class="PatchOperationFindMod">
+        <mods>
+            <li>Power++</li>
+        </mods>
+        <match Class="PatchOperationSequence">
+            <operations>
+                <li Class="PatchOperationAdd">
+                    <xpath>/Defs/ThingDef[defName="MN_NetworkController" or defName="MN_NetworkControllerLarge"]/comps[not(li[@Class="aRandomKiwi.PPP.CompProperties_LocalWirelessPowerReceptor"])]</xpath>
+                    <value>
+                        <li Class="aRandomKiwi.PPP.CompProperties_LocalWirelessPowerReceptor">
+                            <compClass>aRandomKiwi.PPP.CompLocalWirelessPowerReceptor</compClass>
+                        </li>
+                    </value>
+                </li>
+            </operations>
+        </match>
+    </Operation>
+</Patch>

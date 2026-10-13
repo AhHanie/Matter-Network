@@ -1,0 +1,228 @@
+using System;
+using System.Collections.Generic;
+using RimWorld;
+using Verse;
+using Verse.AI;
+
+namespace SK_Matter_Network.Patches
+{
+    internal static class NetworkItemSearchUtility
+    {
+        public static IEnumerable<DataNetwork> Networks(Map map)
+        {
+            NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
+            foreach (DataNetwork network in mapComp.ExtractionEnabledNetworks)
+            {
+                yield return network;
+            }
+        }
+
+        public static IEnumerable<Thing> AllNetworkItems(Map map)
+        {
+            foreach (DataNetwork network in Networks(map))
+            {
+                foreach (Thing item in network.StoredItems)
+                {
+                    yield return item;
+                }
+            }
+        }
+
+        public static bool AnyMatchingThing(Map map, Predicate<Thing> validator)
+        {
+            foreach (Thing item in AllNetworkItems(map))
+            {
+                if (validator(item))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public static int CountMatchingThingStacks(Map map, Predicate<Thing> validator)
+        {
+            int count = 0;
+            foreach (Thing item in AllNetworkItems(map))
+            {
+                if (validator(item))
+                {
+                    count += item.stackCount;
+                }
+            }
+
+            return count;
+        }
+
+        public static Thing FindClosestReachableThing(Pawn pawn, Predicate<Thing> validator, out float closestDistanceSquared)
+        {
+            return FindClosestReachableThing(pawn.Position, pawn, validator, out closestDistanceSquared);
+        }
+
+        public static Thing FindClosestReachableThing(IntVec3 root, Pawn pawn, Predicate<Thing> validator, out float closestDistanceSquared)
+        {
+            Thing closestThing = null;
+            closestDistanceSquared = float.MaxValue;
+
+            foreach (DataNetwork network in Networks(pawn.Map))
+            {
+                float distanceSquared = GetClosestReachableInterfaceDistanceSquared(root, pawn, network);
+                if (distanceSquared == float.MaxValue)
+                {
+                    continue;
+                }
+
+                foreach (Thing item in network.StoredItems)
+                {
+                    if (!validator(item))
+                    {
+                        continue;
+                    }
+
+                    if (distanceSquared < closestDistanceSquared)
+                    {
+                        closestDistanceSquared = distanceSquared;
+                        closestThing = item;
+                    }
+                }
+            }
+
+            return closestThing;
+        }
+
+        public static float GetThingDistanceSquared(Pawn pawn, Thing thing)
+        {
+            return GetThingDistanceSquared(pawn.Position, pawn, thing);
+        }
+
+        public static float GetThingDistanceSquared(IntVec3 root, Pawn pawn, Thing thing)
+        {
+            NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
+            if (mapComp.TryGetItemNetwork(thing, out DataNetwork network))
+            {
+                if (!network.IsOperational)
+                {
+                    return float.MaxValue;
+                }
+
+                return GetClosestReachableInterfaceDistanceSquared(root, pawn, network);
+            }
+
+            return (root - thing.PositionHeld).LengthHorizontalSquared;
+        }
+
+        public static float GetClosestReachableInterfaceDistanceSquared(Pawn pawn, Thing item)
+        {
+            NetworksMapComponent mapComp = pawn.Map.GetComponent<NetworksMapComponent>();
+            if (!mapComp.TryGetItemNetwork(item, out DataNetwork network))
+            {
+                return float.MaxValue;
+            }
+
+            if (!network.IsOperational)
+            {
+                return float.MaxValue;
+            }
+
+            return GetClosestReachableInterfaceDistanceSquared(pawn.Position, pawn, network);
+        }
+
+        public static float GetClosestReachableInterfaceDistanceSquared(IntVec3 root, Pawn pawn, DataNetwork network)
+        {
+            if (!network.IsOperational)
+            {
+                return float.MaxValue;
+            }
+
+            float closestDistanceSquared = float.MaxValue;
+
+            foreach (NetworkBuildingNetworkInterface networkInterface in network.NetworkInterfaces)
+            {
+                if (!pawn.CanReach(networkInterface.InteractionCell, PathEndMode.OnCell, Danger.Deadly))
+                {
+                    continue;
+                }
+
+                float distanceSquared = (root - networkInterface.InteractionCell).LengthHorizontalSquared;
+                if (distanceSquared < closestDistanceSquared)
+                {
+                    closestDistanceSquared = distanceSquared;
+                }
+            }
+
+            return closestDistanceSquared;
+        }
+
+        public static bool TryResolveNetworkItem(Map map, Thing item, out DataNetwork network)
+        {
+            network = null;
+            if (map == null || item == null)
+            {
+                return false;
+            }
+
+            NetworksMapComponent mapComp = map.GetComponent<NetworksMapComponent>();
+            if (mapComp.TryGetItemNetwork(item, out network))
+            {
+                return true;
+            }
+
+            if (item.ParentHolder is NetworkBuildingController controller &&
+                controller.Spawned &&
+                controller.Map == map &&
+                controller.innerContainer != null &&
+                controller.innerContainer.Contains(item) &&
+                controller.ParentNetwork != null)
+            {
+                network = controller.ParentNetwork;
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool TryGetPawnMapNetwork(Pawn pawn, Thing item, out DataNetwork network)
+        {
+            return TryResolveNetworkItem(pawn.Map, item, out network);
+        }
+
+        public static bool IsUsableNetworkItemForExtraction(Pawn pawn, Thing item, out DataNetwork network)
+        {
+            if (!TryGetPawnMapNetwork(pawn, item, out network))
+                return false;
+
+            return network.CanExtractItems &&
+                GetClosestReachableInterfaceDistanceSquared(pawn, item) != float.MaxValue;
+        }
+
+        public static int GetReservableNetworkStackCount(Pawn pawn, Thing item, int maxPawns, int desiredCount = -1)
+        {
+            if (!IsUsableNetworkItemForExtraction(pawn, item, out _))
+                return 0;
+
+            int reservable = pawn.Map.reservationManager.CanReserveStack(pawn, item, maxPawns);
+            if (reservable <= 0)
+                return 0;
+
+            return desiredCount > 0 ? Math.Min(reservable, desiredCount) : reservable;
+        }
+
+        public static bool PawnCanUseNetworkItemForHaul(Pawn pawn, Thing item, bool forced, int maxPawns = 1)
+        {
+            if (!IsUsableNetworkItemForExtraction(pawn, item, out _))
+                return false;
+
+            if (!item.def.EverHaulable)
+                return false;
+
+            if (item.IsForbidden(pawn))
+                return false;
+
+            if (!pawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                return false;
+
+            return GetReservableNetworkStackCount(pawn, item, maxPawns) > 0;
+        }
+    }
+}
