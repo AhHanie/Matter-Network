@@ -55,9 +55,14 @@ namespace SK_Matter_Network
                 return null;
             }
 
+            public DataNetwork Network => network;
+
             public bool StorageTabVisible => false;
 
-            public void Notify_SettingsChanged() { }
+            public void Notify_SettingsChanged()
+            {
+                NetworkSettingsSync.NotifyEdited(network.storageSettings);
+            }
         }
 
         private List<NetworkBuilding> buildings;
@@ -72,8 +77,6 @@ namespace SK_Matter_Network
         private StorageSettings storageSettings;
         private NetworkStorageSettingsParent storageSettingsOwner;
         private bool storageSettingsSeeded = false;
-        private bool isBroadcastingSettingsChange = false;
-        private bool isAddingBuilding = false;
 
         public HashSet<Thing> storedItems;
         private Dictionary<ThingDef, int> itemCountByDef;
@@ -120,7 +123,6 @@ namespace SK_Matter_Network
         public int BuildingCount => buildings.Count;
         public StorageSettings StorageSettings => storageSettings;
         public bool HasSeededStorageSettings => storageSettingsSeeded;
-        public bool IsBroadcastingSettingsChange => isBroadcastingSettingsChange;
         public List<NetworkBuildingNetworkInterface> NetworkInterfaces => networkInterfaces;
         public List<NetworkBuildingNetworkChute> NetworkChutes => networkChutes;
         public NetworkBuildingController ActiveController => activeController;
@@ -786,7 +788,6 @@ namespace SK_Matter_Network
         {
             if (buildings.Contains(building)) return;
 
-            isAddingBuilding = true;
             buildings.Add(building);
             building.ParentNetwork = this;
 
@@ -806,44 +807,29 @@ namespace SK_Matter_Network
             else if (building is NetworkBuildingNetworkInterface iface)
             {
                 networkInterfaces.Add(iface);
-
-                if (!storageSettingsSeeded)
-                {
-                    storageSettings.CopyFrom(iface.GetStandaloneSettings());
-                    storageSettingsSeeded = true;
-                    InvalidateAcceptanceCache();
-                }
-                else
-                {
-                    iface.NotifyNetworkSettingsChanged();
-                }
+                AdoptEndpointStorageSettings(iface.GetDetachedStoreSettings(), iface.LinkedStorageGroup);
             }
             else if (building is NetworkBuildingNetworkChute chute)
             {
                 networkChutes.Add(chute);
-
-                if (!storageSettingsSeeded)
-                {
-                    storageSettings.CopyFrom(chute.GetStandaloneSettings());
-                    storageSettingsSeeded = true;
-                    InvalidateAcceptanceCache();
-                }
-                else
-                {
-                    chute.NotifyNetworkSettingsChanged();
-                }
+                AdoptEndpointStorageSettings(chute.GetDetachedStoreSettings(), chute.LinkedStorageGroup);
             }
 
             Logger.Message($"Added {building.def.defName} at {building.Position} to network {networkId}. Count: {buildings.Count}");
             EnsurePowerState();
             power.NotifyBuildingAdded(building);
             NotifyIOPortVisualStateChanged(building);
-            isAddingBuilding = false;
         }
 
         public void RemoveBuilding(NetworkBuilding building)
         {
             if (!buildings.Remove(building)) return;
+
+            // The departing endpoint keeps the network policy as its detached fallback, so a network
+            // later formed around it (split) or one it joins (merge) starts from the user's settings.
+            // This must happen before ParentNetwork is cleared.
+            (building as NetworkBuildingNetworkInterface)?.StoreNetworkPolicyAsFallback(storageSettings);
+            (building as NetworkBuildingNetworkChute)?.StoreNetworkPolicyAsFallback(storageSettings);
 
             building.ParentNetwork = null;
 
@@ -1337,29 +1323,6 @@ namespace SK_Matter_Network
             return false;
         }
 
-        public void Notify_SettingsChanged(StorageSettings interfaceSettings)
-        {
-            if (isBroadcastingSettingsChange || isAddingBuilding) return;
-
-            isBroadcastingSettingsChange = true;
-            try
-            {
-                storageSettings.CopyFrom(interfaceSettings);
-                storageSettingsSeeded = true;
-                InvalidateAcceptanceCache();
-
-                foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
-                    iface.NotifyNetworkSettingsChanged();
-
-                foreach (NetworkBuildingNetworkChute chute in networkChutes)
-                    chute.NotifyNetworkSettingsChanged();
-            }
-            finally
-            {
-                isBroadcastingSettingsChange = false;
-            }
-        }
-
         public void ExposeData()
         {
             Scribe_Values.Look(ref networkId, "networkId");
@@ -1394,15 +1357,19 @@ namespace SK_Matter_Network
 
         private void PostLoadInit()
         {
+            // A saved, seeded policy is authoritative. Only legacy networks without one are seeded from
+            // an endpoint. Linked storage groups are reconciled later (NetworksMapComponent.FinalizeInit),
+            // once every group reference and member list is resolved.
+            bool hasSavedPolicy = storageSettings != null && storageSettingsSeeded;
             EnsureStorageSettingsOwner();
-            storageSettingsSeeded = true;
+            storageSettingsSeeded = hasSavedPolicy;
 
             foreach (NetworkBuilding b in buildings)
             {
                 if (b != null) b.ParentNetwork = this;
             }
 
-            ReconcileStorageSettingsFromEndpoints();
+            SeedStorageSettingsFromStableEndpoint();
             RebuildStoredItemsFromController();
             RecalcTotalCapacityBytes();
             EnsurePowerState();
@@ -1616,61 +1583,84 @@ namespace SK_Matter_Network
             return System.Math.Min(remainingCapacity, remainingQuota);
         }
 
-        private void ReconcileStorageSettingsFromEndpoints()
+        // Seeds an unseeded network from one deterministic endpoint (interface before chute, then the
+        // lowest thingIDNumber), so the result does not depend on endpoint list ordering.
+        private void SeedStorageSettingsFromStableEndpoint()
         {
-            IStoreSettingsParent settingsSource = null;
+            if (storageSettingsSeeded) return;
+
+            NetworkBuildingNetworkInterface bestInterface = null;
             foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
             {
-                if (iface != null && !iface.Destroyed)
-                {
-                    settingsSource = iface;
-                    break;
-                }
+                if (iface != null && !iface.Destroyed && (bestInterface == null || iface.thingIDNumber < bestInterface.thingIDNumber))
+                    bestInterface = iface;
             }
 
-            if (settingsSource == null)
+            if (bestInterface != null)
             {
-                foreach (NetworkBuildingNetworkChute chute in networkChutes)
-                {
-                    if (chute != null && !chute.Destroyed)
-                    {
-                        settingsSource = chute;
-                        break;
-                    }
-                }
-            }
-
-            if (settingsSource == null)
-            {
+                SeedStorageSettings(bestInterface.GetDetachedStoreSettings());
                 return;
             }
 
-            storageSettings.CopyFrom(settingsSource.GetStoreSettings());
+            NetworkBuildingNetworkChute bestChute = null;
+            foreach (NetworkBuildingNetworkChute chute in networkChutes)
+            {
+                if (chute != null && !chute.Destroyed && (bestChute == null || chute.thingIDNumber < bestChute.thingIDNumber))
+                    bestChute = chute;
+            }
+
+            if (bestChute != null)
+                SeedStorageSettings(bestChute.GetDetachedStoreSettings());
+        }
+
+        private void SeedStorageSettings(StorageSettings source)
+        {
+            NetworkSettingsSync.CopyQuietly(storageSettings, source);
+            storageSettingsSeeded = true;
             InvalidateAcceptanceCache();
+        }
 
-            isBroadcastingSettingsChange = true;
-            try
-            {
-                foreach (NetworkBuildingNetworkInterface iface in networkInterfaces)
-                {
-                    if (iface != null && !iface.Destroyed)
-                    {
-                        iface.NotifyNetworkSettingsChanged();
-                    }
-                }
+        // Precedence when an endpoint joins: an already seeded network keeps its policy (and pushes it
+        // to any storage group the endpoint is linked to); an unseeded network is seeded from the
+        // endpoint's effective detached settings (its group's settings if linked, else its own).
+        private void AdoptEndpointStorageSettings(StorageSettings detachedSettings, StorageGroup linkedGroup)
+        {
+            if (!storageSettingsSeeded)
+                SeedStorageSettings(detachedSettings);
 
-                foreach (NetworkBuildingNetworkChute chute in networkChutes)
-                {
-                    if (chute != null && !chute.Destroyed)
-                    {
-                        chute.NotifyNetworkSettingsChanged();
-                    }
-                }
-            }
-            finally
+            if (linkedGroup != null)
+                NetworkSettingsSync.PropagateFromNetwork(this);
+            else
+                ApplyPolicyChanged();
+        }
+
+        // Runs after storageSettings was changed in place (or an endpoint joined): invalidates caches
+        // and re-evaluates everything whose answer depends on the network's filter or priority.
+        internal void ApplyPolicyChanged()
+        {
+            storageSettingsSeeded = true;
+            InvalidateAcceptanceCache();
+            RefreshUI();
+
+            if (map == null) return;
+
+            map.haulDestinationManager.Notify_HaulDestinationChangedPriority();
+
+            if (activeController != null && activeController.Spawned)
+                map.listerHaulables.Notify_HaulSourceChanged(activeController);
+
+            // Interfaces holding their own (offline fallback) items; online ones share the controller's container.
+            for (int i = 0; i < networkInterfaces.Count; i++)
             {
-                isBroadcastingSettingsChange = false;
+                NetworkBuildingNetworkInterface iface = networkInterfaces[i];
+                if (iface.Spawned && iface.Map == map && (activeController == null || iface.GetDirectlyHeldThings() != activeController.innerContainer))
+                    map.listerHaulables.Notify_HaulSourceChanged(iface);
             }
+        }
+
+        internal static DataNetwork FromSettings(StorageSettings settings)
+        {
+            return (settings?.owner as NetworkStorageSettingsParent)?.Network;
         }
 
         private static int ClampItemQuota(int quota)
@@ -1836,10 +1826,11 @@ namespace SK_Matter_Network
             RecalcTotalCapacityBytes();
             ValidateControllerConflicts();
             RestoreArchivedItemsToController();
-            ReconcileStorageSettingsFromEndpoints();
+            SeedStorageSettingsFromStableEndpoint();
             RebuildStoredItemsFromController();
             RebuildPowerCaches();
             MarkBytesDirty();
+            map.haulDestinationManager.Notify_HaulDestinationChangedPriority();
             RefreshHaulRegistrations();
             NotifyIOPortVisualStatesChanged();
         }

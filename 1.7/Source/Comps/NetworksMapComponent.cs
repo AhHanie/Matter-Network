@@ -23,6 +23,12 @@ namespace SK_Matter_Network
             if (networks == null) networks = new List<DataNetwork>();
         }
 
+        public override void FinalizeInit()
+        {
+            base.FinalizeInit();
+            NetworkSettingsSync.ReconcileAfterLoad(networks);
+        }
+
         public void AddBuilding(NetworkBuilding building)
         {
             NetworkManager.HandleBuildingAdded(building, this);

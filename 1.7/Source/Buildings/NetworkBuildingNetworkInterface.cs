@@ -71,12 +71,27 @@ namespace SK_Matter_Network
             return fallbackContainer;
         }
 
-        public StorageSettings GetStandaloneSettings() => settings;
+        public StorageGroup LinkedStorageGroup => storageGroup;
 
-        public StorageSettings GetStoreSettings()
+        // Settings this terminal would use on its own: its storage group's if linked, else its private
+        // settings. Used to seed a new network and while the terminal is not part of one.
+        public StorageSettings GetDetachedStoreSettings()
         {
             if (storageGroup != null) return storageGroup.GetStoreSettings();
             return settings;
+        }
+
+        public void StoreNetworkPolicyAsFallback(StorageSettings networkPolicy)
+        {
+            NetworkSettingsSync.CopyQuietly(settings, networkPolicy);
+        }
+
+        // A connected terminal always reports the network's own settings object, so admission,
+        // current-storage priority and destination priority agree with the controller.
+        public StorageSettings GetStoreSettings()
+        {
+            if (ParentNetwork != null) return ParentNetwork.StorageSettings;
+            return GetDetachedStoreSettings();
         }
 
         public StorageSettings GetParentStoreSettings() => def.building.fixedStorageSettings;
@@ -93,19 +108,17 @@ namespace SK_Matter_Network
             return ParentNetwork.SpaceRemainingFor(def);
         }
 
+        // Vanilla calls this after a storage group link/unlink and when the private settings change.
+        // A connected terminal's policy lives on the network, so only a group link needs handling.
         public void Notify_SettingsChanged()
         {
-            if (ParentNetwork != null && !ParentNetwork.IsBroadcastingSettingsChange)
-                ParentNetwork.Notify_SettingsChanged(settings);
+            if (NetworkSettingsSync.IsSuppressed) return;
 
-            if (base.Spawned)
-                base.MapHeld.listerHaulables.Notify_HaulSourceChanged(this);
-        }
-
-        public void NotifyNetworkSettingsChanged()
-        {
             if (ParentNetwork != null)
-                settings.CopyFrom(ParentNetwork.StorageSettings);
+            {
+                NetworkSettingsSync.NotifyEndpointGroupChanged(this, storageGroup);
+                return;
+            }
 
             if (base.Spawned)
                 base.MapHeld.listerHaulables.Notify_HaulSourceChanged(this);
@@ -125,7 +138,7 @@ namespace SK_Matter_Network
                 StorageSettings storeSettings = storageGroup.GetStoreSettings();
                 storageGroup.RemoveMember(this);
                 storageGroup = null;
-                settings.CopyFrom(storeSettings);
+                NetworkSettingsSync.CopyQuietly(settings, storeSettings);
             }
         }
 
