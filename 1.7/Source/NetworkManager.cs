@@ -309,7 +309,8 @@ namespace SK_Matter_Network
                 if (!adj.InBounds(map)) continue;
                 foreach (Thing t in map.thingGrid.ThingsListAt(adj))
                 {
-                    if (t is NetworkBuilding nb && nb != building)
+                    // Unregistered buildings (no ParentNetwork) are not part of any topology.
+                    if (t is NetworkBuilding nb && nb != building && nb.ParentNetwork != null)
                         result.Add(nb);
                 }
             }

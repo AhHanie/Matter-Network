@@ -19,7 +19,7 @@ namespace SK_Matter_Network
                 if (!adj.InBounds(map)) continue;
                 foreach (Thing t in map.thingGrid.ThingsListAt(adj))
                 {
-                    if (t is NetworkBuilding nb && t != thingToIgnore && !visited.Contains(nb))
+                    if (t is NetworkBuilding nb && t != thingToIgnore && IsRegistered(nb) && !visited.Contains(nb))
                     {
                         visited.Add(nb);
                         queue.Enqueue(nb);
@@ -45,7 +45,7 @@ namespace SK_Matter_Network
                     if (!adj.InBounds(map)) continue;
                     foreach (Thing t in map.thingGrid.ThingsListAt(adj))
                     {
-                        if (t is NetworkBuilding nb && t != thingToIgnore && !visited.Contains(nb))
+                        if (t is NetworkBuilding nb && t != thingToIgnore && IsRegistered(nb) && !visited.Contains(nb))
                         {
                             visited.Add(nb);
                             queue.Enqueue(nb);
@@ -55,6 +55,14 @@ namespace SK_Matter_Network
             }
 
             return AcceptanceReport.WasAccepted;
+        }
+
+        // Only buildings that belong to a live DataNetwork count as topology. An unregistered
+        // NetworkBuilding (e.g. a composite pipe whose registration is gated) is spawned on the
+        // ThingGrid but does not connect anything.
+        private static bool IsRegistered(NetworkBuilding building)
+        {
+            return building.ParentNetwork != null;
         }
     }
 }

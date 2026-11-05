@@ -26,9 +26,13 @@ namespace SK_Matter_Network
             DataNetwork network = parentNetwork;
             NetworksMapComponent mapComp = oldMap.GetComponent<NetworksMapComponent>();
 
+            // An instance with no ParentNetwork was never registered; there is nothing to remove.
             if (!beingTransportedOnGravship)
             {
-                mapComp.RemoveBuilding(this);
+                if (network != null)
+                {
+                    mapComp.RemoveBuilding(this);
+                }
             }
             else if (network == null || !NetworkBuildingTransferTracker.IsFullNetworkMove(network))
             {
@@ -42,7 +46,10 @@ namespace SK_Matter_Network
                     if (pendingQuotaTransfer.Count == 0)
                         pendingQuotaTransfer = null;
                 }
-                mapComp.RemoveBuilding(this);
+                if (network != null)
+                {
+                    mapComp.RemoveBuilding(this);
+                }
             }
             else
             {
