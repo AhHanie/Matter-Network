@@ -1,4 +1,4 @@
-using System.Linq;
+using System.Collections.Generic;
 using HarmonyLib;
 using RimWorld;
 using Verse;
@@ -7,50 +7,54 @@ namespace SK_Matter_Network.Patches
 {
     public static class Patch_RecipeWorkerCounter
     {
-        [HarmonyPatch(typeof(RecipeWorkerCounter), nameof(RecipeWorkerCounter.CountProducts))]
+        [HarmonyPatch(typeof(RecipeWorkerCounter), nameof(RecipeWorkerCounter.CountProducts), typeof(Bill_Production))]
         public static class CountProducts
         {
-            public static void Postfix(RecipeWorkerCounter __instance, Bill_Production bill, ref int __result)
+            [HarmonyPostfix]
+            [HarmonyInfix(typeof(HaulDestinationManager), nameof(HaulDestinationManager.AllHaulSourcesListForReading), InnerTargetKind.Getter)]
+            public static List<IHaulSource> ProjectNetworkSources(List<IHaulSource> __result, [HarmonyOuter] Bill_Production bill)
             {
-                ThingDefCountClass product = __instance.recipe.products[0];
-                ThingDef thingDef = product.thingDef;
-                if (product.thingDef.CountAsResource && !bill.includeEquipped && (bill.includeTainted || !product.thingDef.IsApparel || !product.thingDef.apparel.careIfWornByCorpse) && bill.GetIncludeSlotGroup() == null && bill.hpRange.min == 0f && bill.hpRange.max == 1f && bill.qualityRange.min == QualityCategory.Awful && bill.qualityRange.max == QualityCategory.Legendary && !bill.limitToAllowedStuff)
+                List<IHaulSource> sources = null;
+                for (int i = 0; i < __result.Count; i++)
                 {
-                    return;
-                }
-
-                if (bill.GetIncludeSlotGroup() != null)
-                {
-                    return;
-                }
-
-                int overcount = 0;
-                foreach (DataNetwork network in NetworkItemSearchUtility.Networks(bill.Map))
-                {
-                    int exposureCount = network.NetworkInterfaces.Count(x => x.Spawned);
-                    if (network.ActiveController != null && network.ActiveController.Spawned && network.ActiveController.Map == bill.Map)
+                    IHaulSource source = __result[i];
+                    if (source is NetworkBuildingController ||
+                        (source is NetworkBuildingNetworkInterface iface && iface.GetDirectlyHeldThings() is ControllerItemOwner))
                     {
-                        exposureCount++;
-                    }
-
-                    if (exposureCount <= 1)
-                    {
+                        sources ??= __result.GetRange(0, i);
                         continue;
                     }
 
-                    foreach (Thing item in network.StoredItems)
+                    sources?.Add(source);
+                }
+
+                // A live controller can be absent from the registry after a topology change.
+                Map map = bill.Map;
+                HashSet<ControllerItemOwner> seenOwners = null;
+                foreach (DataNetwork network in NetworkItemSearchUtility.Networks(map))
+                {
+                    NetworkBuildingController controller = network.ActiveController;
+                    ControllerItemOwner owner = controller?.innerContainer;
+                    if (owner == null || !controller.Spawned || controller.Map != map)
+                        continue;
+
+                    foreach (NetworkBuildingNetworkInterface iface in network.NetworkInterfaces)
                     {
-                        if (__instance.CountValidThing(item, bill, thingDef))
+                        if (!iface.Spawned || iface.Map != map || iface.GetDirectlyHeldThings() != owner)
+                            continue;
+
+                        seenOwners ??= new HashSet<ControllerItemOwner>();
+                        if (seenOwners.Add(owner))
                         {
-                            overcount += item.stackCount * (exposureCount - 1);
+                            sources ??= new List<IHaulSource>(__result);
+                            sources.Add(controller);
                         }
+
+                        break;
                     }
                 }
 
-                if (overcount > 0)
-                {
-                    __result -= overcount;
-                }
+                return sources ?? __result;
             }
         }
     }

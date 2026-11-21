@@ -16,6 +16,7 @@ namespace SK_Matter_Network
         private StorageSettings settings;
         private StorageGroup storageGroup;
         private bool locked = false;
+        private bool droppingDisksForDespawn;
 
         // innerContainer is constructed with dontTickContents = true - held disks are inert storage
         // media, never ticked. Without this, Thing.DoTick() would still call
@@ -100,6 +101,9 @@ namespace SK_Matter_Network
 
         public void Notify_ItemRemoved(Thing disk)
         {
+            if (!Spawned || droppingDisksForDespawn)
+                return;
+
             ParentNetwork?.NotifyDiskRemovedFromDrive(disk);
             Logger.Message($"Disk {disk.LabelShort} removed from drive at {Position}. Recalculated capacity.");
         }
@@ -174,16 +178,24 @@ namespace SK_Matter_Network
             bool preserveContents = mode == DestroyMode.WillReplace
                 || NetworkBuildingTransferTracker.ShouldPreserveDuringTransfer(this);
 
-            if (!preserveContents)
-                ParentNetwork?.NotifyDiskDriveWillBeUnavailable(this);
-
             if (storageGroup != null)
             {
                 storageGroup.RemoveMember(this);
                 storageGroup = null;
             }
             if (!preserveContents)
-                innerContainer.TryDropAll(base.Position, base.Map, ThingPlaceMode.Near);
+            {
+                // Network removal recalculates capacity after the drive leaves its group.
+                droppingDisksForDespawn = true;
+                try
+                {
+                    innerContainer.TryDropAll(base.Position, base.Map, ThingPlaceMode.Near);
+                }
+                finally
+                {
+                    droppingDisksForDespawn = false;
+                }
+            }
 
             // When locked, SpawnSetup removed this drive from the haul-source registry.
             // Re-register it here so base.DeSpawn (Thing.DeSpawn) can cleanly unregister it.

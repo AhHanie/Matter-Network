@@ -211,7 +211,7 @@ namespace SK_Matter_Network
 
         public int TotalCapacityBytes => cachedTotalCapacityBytes;
 
-        public int OvercommittedBytes => System.Math.Max(0, cachedUsedBytes - cachedTotalCapacityBytes);
+        public int OvercommittedBytes => System.Math.Max(0, UsedBytes - TotalCapacityBytes);
 
         public int ControllerCapacityLimitForAdds => cachedTotalCapacityBytes + controllerCapacityAllowance;
 
@@ -965,7 +965,6 @@ namespace SK_Matter_Network
         public void NotifyDiskCapacityChanged()
         {
             RecalcTotalCapacityBytes();
-            ReconcileCapacityAfterDiskCapacityChanged();
             RestoreArchivedItemsToController();
             MarkBytesDirty();
         }
@@ -974,21 +973,13 @@ namespace SK_Matter_Network
         {
             RecalcTotalCapacityBytes();
 
-            CompDiskCapacity removedDiskCapacity = removedDisk?.TryGetComp<CompDiskCapacity>();
-            if (removedDiskCapacity != null && HasActiveController && UsedBytes > TotalCapacityBytes)
+            if (HasActiveController && removedDisk != null && !removedDisk.Destroyed
+                && removedDisk.TryGetComp<CompDiskCapacity>() is CompDiskCapacity disk)
             {
-                int overflow = UsedBytes - TotalCapacityBytes;
-                ArchiveOverflowToDisk(removedDiskCapacity, overflow);
+                ArchiveOverflowToDisk(disk, OvercommittedBytes);
             }
 
-            ReconcileCapacityAfterDiskCapacityChanged(recalculateFirst: false);
-            MarkBytesDirty();
-        }
-
-        public void NotifyDiskDriveWillBeUnavailable(NetworkBuildingDiskDrive unavailableDrive)
-        {
-            RecalcTotalCapacityBytes(excludedDrive: unavailableDrive);
-            ReconcileCapacityAfterDiskCapacityChanged(recalculateFirst: false);
+            RestoreArchivedItemsToController();
             MarkBytesDirty();
         }
 
@@ -1060,48 +1051,13 @@ namespace SK_Matter_Network
             }
         }
 
-        public void ReconcileCapacityAfterDiskCapacityChanged(bool recalculateFirst = true)
+        private void ArchiveOverflowToDisk(CompDiskCapacity disk, int requiredBytes)
         {
-            if (recalculateFirst)
-                RecalcTotalCapacityBytes();
+            int bytesToArchive = System.Math.Min(requiredBytes, disk.ArchivedFreeBytes);
+            if (bytesToArchive <= 0)
+                return;
 
-            while (HasActiveController && UsedBytes > TotalCapacityBytes)
-            {
-                int overflow = UsedBytes - TotalCapacityBytes;
-                int archived = ArchiveOverflowToDisks(overflow);
-                RecalcTotalCapacityBytes();
-
-                if (archived > 0)
-                    continue;
-
-                if (!TryGetDropTarget(out IntVec3 dropCell, out Map dropMap))
-                    break;
-
-                DropControllerItemsDeterministically(overflow, dropCell, dropMap);
-                RecalcTotalCapacityBytes();
-            }
-
-            RebuildStoredItemsFromController();
-            MarkBytesDirty();
-        }
-
-        private void RecalcTotalCapacityBytes(NetworkBuildingDiskDrive excludedDrive)
-        {
-            cachedTotalCapacityBytes = 0;
-            foreach (NetworkBuildingDiskDrive drive in diskDrives)
-            {
-                if (drive == null || drive == excludedDrive)
-                    continue;
-
-                cachedTotalCapacityBytes += drive.GetTotalCapacityBytes();
-            }
-
-            InvalidateAcceptanceCache();
-        }
-
-        private int ArchiveOverflowToDisks(int requiredBytes)
-        {
-            int remaining = requiredBytes;
+            int remaining = bytesToArchive;
             foreach (Thing item in EnumerateActiveItemsDeterministic())
             {
                 if (remaining <= 0)
@@ -1110,46 +1066,14 @@ namespace SK_Matter_Network
                 if (item == null || item.Destroyed || item.stackCount <= 0)
                     continue;
 
-                int moved = TryMoveSomeToDisks(item, remaining);
+                int moved = SafeTransfer(item, activeController.innerContainer, disk.ArchivedContainer, remaining);
                 remaining -= moved;
             }
 
-            int archived = requiredBytes - remaining;
-            if (archived > 0)
+            if (remaining < bytesToArchive)
             {
-                RebuildStoredItemsFromController();
                 MarkBytesDirty();
             }
-
-            return archived;
-        }
-
-        private int ArchiveOverflowToDisk(CompDiskCapacity disk, int requiredBytes)
-        {
-            if (disk == null || requiredBytes <= 0)
-                return 0;
-
-            int remaining = requiredBytes;
-            foreach (Thing item in EnumerateActiveItemsDeterministic())
-            {
-                if (remaining <= 0)
-                    break;
-
-                if (item == null || item.Destroyed || item.stackCount <= 0)
-                    continue;
-
-                int moved = TryMoveSomeToDisk(item, disk, remaining);
-                remaining -= moved;
-            }
-
-            int archived = requiredBytes - remaining;
-            if (archived > 0)
-            {
-                RebuildStoredItemsFromController();
-                MarkBytesDirty();
-            }
-
-            return archived;
         }
 
         private int TryMoveSomeToDisks(Thing item, int requestedBytes)
@@ -1176,36 +1100,6 @@ namespace SK_Matter_Network
             }
 
             return movedTotal;
-        }
-
-        private int TryMoveSomeToDisk(Thing item, CompDiskCapacity disk, int requestedBytes)
-        {
-            if (activeController?.innerContainer == null || item == null || item.Destroyed || disk == null || requestedBytes <= 0)
-                return 0;
-
-            int freeBytes = disk.ArchivedFreeBytes;
-            if (freeBytes <= 0)
-                return 0;
-
-            int count = System.Math.Min(requestedBytes, System.Math.Min(freeBytes, item.stackCount));
-            return SafeTransfer(item, activeController.innerContainer, disk.ArchivedContainer, count);
-        }
-
-        private void DropControllerItemsDeterministically(int requiredBytes, IntVec3 dropCell, Map dropMap)
-        {
-            int remaining = requiredBytes;
-            foreach (Thing item in EnumerateActiveItemsDeterministic())
-            {
-                if (remaining <= 0)
-                    break;
-
-                if (item == null || item.Destroyed || item.stackCount <= 0)
-                    continue;
-
-                int count = System.Math.Min(remaining, item.stackCount);
-                DropActiveItem(item, dropCell, dropMap, count);
-                remaining -= count;
-            }
         }
 
         private void DropActiveItem(Thing item, IntVec3 dropCell, Map dropMap, int count)
@@ -1258,7 +1152,10 @@ namespace SK_Matter_Network
             if (added)
                 return count;
 
-            from.TryAdd(moving, canMergeWithExistingStacks: true);
+            if (from is ControllerItemOwner originalControllerOwner)
+                originalControllerOwner.TryAddExistingNetworkItem(moving, canMergeWithExistingStacks: true);
+            else
+                from.TryAdd(moving, canMergeWithExistingStacks: true);
             return 0;
         }
 

@@ -83,21 +83,33 @@ namespace SK_Matter_Network
 
         public int PushFrom(Thing thing, int count)
         {
-            if (!Accepts(thing) || count <= 0)
+            if (count <= 0 || !IsValid || thing.Destroyed || !slotGroup.parent.Accepts(thing)
+                || !TryFindStoreCell(thing, out IntVec3 storeCell))
             {
                 return 0;
             }
 
+            return PlaceFromOwner(thing, count, storeCell, map);
+        }
+
+        internal static int PlaceFromOwner(Thing thing, int count, IntVec3 cell, Map map)
+        {
             int moveCount = System.Math.Min(count, thing.stackCount);
             ThingOwner source = thing.holdingOwner;
             Thing moving = source.Take(thing, moveCount);
-            if (TryFindStoreCell(moving, out IntVec3 storeCell) && GenPlace.TryPlaceThing(moving, storeCell, map, ThingPlaceMode.Direct))
+            if (GenPlace.TryPlaceThing(moving, cell, map, ThingPlaceMode.Direct))
             {
                 return moveCount;
             }
 
-            source.TryAdd(moving, canMergeWithExistingStacks: true);
-            return 0;
+            // Direct placement can fill an existing stack and leave some of the item in hand.
+            int placedCount = moveCount - moving.stackCount;
+            if (source is ControllerItemOwner controllerOwner)
+                controllerOwner.TryAddExistingNetworkItem(moving, canMergeWithExistingStacks: true);
+            else
+                source.TryAdd(moving, canMergeWithExistingStacks: true);
+
+            return placedCount;
         }
 
         public string GetStatus()

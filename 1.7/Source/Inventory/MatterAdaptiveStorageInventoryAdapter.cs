@@ -123,21 +123,13 @@ namespace SK_Matter_Network
 
         public int PushFrom(Thing thing, int count)
         {
-            if (!Accepts(thing) || count <= 0)
+            if (count <= 0 || !IsValid || thing.Destroyed || !AdaptiveStorageAccepts(thing)
+                || !TryFindStoreCell(thing, out IntVec3 storeCell))
             {
                 return 0;
             }
 
-            int moveCount = Math.Min(count, thing.stackCount);
-            ThingOwner source = thing.holdingOwner;
-            Thing moving = source.Take(thing, moveCount);
-            if (TryFindStoreCell(moving, out IntVec3 storeCell) && GenPlace.TryPlaceThing(moving, storeCell, storage.Map, ThingPlaceMode.Direct))
-            {
-                return moveCount;
-            }
-
-            source.TryAdd(moving, canMergeWithExistingStacks: true);
-            return 0;
+            return MatterSlotGroupInventoryAdapter.PlaceFromOwner(thing, count, storeCell, storage.Map);
         }
 
         public string GetStatus()
