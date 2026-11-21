@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using SK_Matter_Network.Patches;
 using UnityEngine;
 using Verse;
 
@@ -18,7 +19,9 @@ namespace SK_Matter_Network
             GetSettings<ModSettings>();
             ModSettings.InitializeNetworkBuildingPowerDefaults();
             ModSettings.ApplyNetworkBuildingPowerUsageOverrides();
-            new Harmony("rimworld.sk.matternetwork").PatchAll();
+            Harmony harmony = new Harmony("rimworld.sk.matternetwork");
+            harmony.PatchAll();
+            RimMarketCompat.Install(harmony);
         }
 
         public override string SettingsCategory()
